@@ -63,7 +63,7 @@ def make_filename(filename, seed, modelname, counter, time_format):
 class SeedGenerator:
     RETURN_TYPES = ("INT",)
     FUNCTION = "get_seed"
-    CATEGORY = "ImageSaverTools/utils"
+    CATEGORY = "ImageSaver/utils"
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -76,7 +76,7 @@ class SeedGenerator:
 class StringLiteral:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "get_string"
-    CATEGORY = "ImageSaverTools/utils"
+    CATEGORY = "ImageSaver/utils"
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -89,7 +89,7 @@ class StringLiteral:
 class SizeLiteral:
     RETURN_TYPES = ("INT",)
     FUNCTION = "get_int"
-    CATEGORY = "ImageSaverTools/utils"
+    CATEGORY = "ImageSaver/utils"
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -102,7 +102,7 @@ class SizeLiteral:
 class IntLiteral:
     RETURN_TYPES = ("INT",)
     FUNCTION = "get_int"
-    CATEGORY = "ImageSaverTools/utils"
+    CATEGORY = "ImageSaver/utils"
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -115,7 +115,7 @@ class IntLiteral:
 class CfgLiteral:
     RETURN_TYPES = ("FLOAT",)
     FUNCTION = "get_float"
-    CATEGORY = "ImageSaverTools/utils"
+    CATEGORY = "ImageSaver/utils"
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -126,7 +126,7 @@ class CfgLiteral:
 
 
 class CheckpointSelector:
-    CATEGORY = 'ImageSaverTools/utils'
+    CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = (folder_paths.get_filename_list("checkpoints"),)
     RETURN_NAMES = ("ckpt_name",)
     FUNCTION = "get_names"
@@ -140,7 +140,7 @@ class CheckpointSelector:
 
 
 class SamplerSelector:
-    CATEGORY = 'ImageSaverTools/utils'
+    CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = (comfy.samplers.KSampler.SAMPLERS,)
     RETURN_NAMES = ("sampler_name",)
     FUNCTION = "get_names"
@@ -154,7 +154,7 @@ class SamplerSelector:
 
 
 class SchedulerSelector:
-    CATEGORY = 'ImageSaverTools/utils'
+    CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = (comfy.samplers.KSampler.SCHEDULERS,)
     RETURN_NAMES = ("scheduler",)
     FUNCTION = "get_names"
@@ -167,7 +167,7 @@ class SchedulerSelector:
         return (scheduler,)
 
 
-class ImageSaveWithMetadata:
+class ImageSaver:
     def __init__(self):
         self.output_dir = folder_paths.output_directory
 
@@ -207,7 +207,7 @@ class ImageSaveWithMetadata:
 
     OUTPUT_NODE = True
 
-    CATEGORY = "ImageSaverTools"
+    CATEGORY = "ImageSaver"
 
     def save_files(self, images, seed_value, steps, cfg, sampler_name, scheduler, positive, negative, modelname, quality_jpeg_or_webp,
                    lossless_webp, width, height, counter, filename, path, extension, time_format, prompt=None, extra_pnginfo=None):
@@ -267,13 +267,13 @@ class ImageSaveWithMetadata:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Checkpoint Selector": CheckpointSelector,
-    "Save Image w/Metadata": ImageSaveWithMetadata,
-    "Sampler Selector": SamplerSelector,
-    "Scheduler Selector": SchedulerSelector,
-    "Seed Generator": SeedGenerator,
-    "String Literal": StringLiteral,
-    "Width/Height Literal": SizeLiteral,
-    "Cfg Literal": CfgLiteral,
-    "Int Literal": IntLiteral,
+    "Checkpoint Selector (Image Saver)": CheckpointSelector,
+    "Image Saver": ImageSaver,
+    "Sampler Selector (Image Saver)": SamplerSelector,
+    "Scheduler Selector (Image Saver)": SchedulerSelector,
+    "Seed Generator (Image Saver)": SeedGenerator,
+    "String Literal (Image Saver)": StringLiteral,
+    "Width/Height Literal (Image Saver)": SizeLiteral,
+    "Cfg Literal (Image Saver)": CfgLiteral,
+    "Int Literal (Image Saver)": IntLiteral,
 }
