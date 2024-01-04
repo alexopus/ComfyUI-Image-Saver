@@ -1,8 +1,7 @@
 import re
 from typing import List, AnyStr
-import folder_paths
 
-from .utils import get_sha256
+from .utils import civitai_embedding_key_name, civitai_lora_key_name, full_embedding_path_for, full_lora_path_for, get_sha256
 
 """
 Extracts Embeddings and Lora's from the given prompts
@@ -15,64 +14,52 @@ class PromptMetadataExtractor:
     LORA = r'<lora:([^>:]+)(?::.+)?>'
 
     def __init__(self, prompts: List[AnyStr]):
-        self.prompts = prompts
-        self._embeddings = {}
-        self._loras = {}
-        self._performed = False
+        self.__embeddings = {}
+        self.__loras = {}
+        self.__perform(prompts)
 
-    def perform(self):
-        for prompt in self.prompts:
+    """
+    Returns the embeddings used in the given prompts in a format as known by civitAI
+    """
+    def get_embeddings(self):
+        return self.__embeddings
+        
+    """
+    Returns the lora's used in the given prompts in a format as known by civitAI
+    """
+    def get_loras(self):
+        return self.__loras
+
+    # Private API
+    def __perform(self, prompts):
+        for prompt in prompts:
             embeddings = re.findall(self.EMBEDDING, prompt, re.IGNORECASE | re.MULTILINE)
             
             for embedding in embeddings:
-                self.extract_embedding_information(embedding)
+                self.__extract_embedding_information(embedding)
             
             loras = re.findall(self.LORA, prompt, re.IGNORECASE | re.MULTILINE)
             for lora in loras:
-                self.extract_lora_information(lora)
-        self._performed = True
+                self.__extract_lora_information(lora)
 
-    def get_embeddings(self):
-        if not self._performed:
-            self.perform()
-        return self._embeddings
-        
-    def get_loras(self):
-        if not self._performed:
-            self.perform()
-        return self._loras
+    def __extract_embedding_information(self, embedding: AnyStr):
+        embedding_name = civitai_embedding_key_name(embedding)
+        embedding_path = full_embedding_path_for(embedding)
+        if embedding_path == None:
+            return
+        sha = self.__get_shortened_sha(embedding_path)
+        self.__embeddings[embedding_name] = sha
 
-    def extract_embedding_information(self, embedding: AnyStr):
-        embedding_name = self.civitai_embedding_key_name(embedding)
-        sha = self.get_hash(self.embedding_path(embedding))
-        self._embeddings[embedding_name] = sha
-
-    def extract_lora_information(self, lora: AnyStr):
-        lora_name = self.civitai_lora_key_name(lora)
-        print(lora)
-        sha = self.get_hash(self.lora_path(lora))
-        self._loras[lora_name] = sha
-         
-    def embedding_path(self, embedding: AnyStr):
-        matching_embedding = next(x for x in self.embeddings() if x.startswith(embedding))
-        return folder_paths.get_full_path("embeddings", matching_embedding)
+    def __extract_lora_information(self, lora: AnyStr):
+        lora_name = civitai_lora_key_name(lora)
+        lora_path = full_lora_path_for(lora)
+        if lora_path == None:
+            return
+        sha = self.__get_shortened_sha(lora_path)
+        self.__loras[lora_name] = sha
     
-    def lora_path(self, lora: AnyStr):
-        matching_lora = next(x for x in self.loras() if x.startswith(lora))
-        return folder_paths.get_full_path("loras", matching_lora)
-    
-    def loras(self):
-        return folder_paths.get_filename_list("loras")
-
-    def embeddings(self):
-        return folder_paths.get_filename_list("embeddings")
-    
-    def get_hash(self, file_path: AnyStr):
+    def __get_shortened_sha(self, file_path: AnyStr):
        return get_sha256(file_path)[:10]
 
-    def civitai_embedding_key_name(self, embedding: AnyStr):
-       return f'embed:{embedding}'
 
-    def civitai_lora_key_name(self, lora: AnyStr):
-       return f'LORA:{lora}'
     
