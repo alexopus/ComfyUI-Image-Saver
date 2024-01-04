@@ -350,10 +350,10 @@ class ImageSaver:
         metadata_extractor = PromptMetadataExtractor([positive, negative])
         embeddings = metadata_extractor.get_embeddings()
         loras = metadata_extractor.get_loras()
-        print(f'Loras: {loras}')
-        print(f'Embeddings: {embeddings}')
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name, scheduler)
-        comment = f"{handle_whitespace(positive)}\nNegative prompt: {handle_whitespace(negative)}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}, Model hash: {modelhash}, Model: {basemodelname}, Version: ComfyUI"
+
+        extension_hashes = json.dumps(embeddings | loras)
+        comment = f"{handle_whitespace(positive)}\nNegative prompt: {handle_whitespace(negative)}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes} Version: ComfyUI"
         output_path = os.path.join(self.output_dir, path)
 
         if output_path.strip() != '':
