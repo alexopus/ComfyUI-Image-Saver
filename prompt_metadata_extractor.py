@@ -12,7 +12,7 @@ class PromptMetadataExtractor:
     # Anything that follows embedding:<characters except , or whitespace
     EMBEDDING = r'embedding:([^,\s\(\)\:]+)'
     # Anything that follows <lora:NAME> with allowance for :weight, :weight.fractal or LBW
-    LORA = r'<lora:([^:]+)(?::[1-9]+\.?[1-9]?.*)?>'
+    LORA = r'<lora:([^>:]+)(?::.+)?>'
 
     def __init__(self, prompts: List[AnyStr]):
         self.prompts = prompts
@@ -22,9 +22,7 @@ class PromptMetadataExtractor:
 
     def perform(self):
         for prompt in self.prompts:
-            print(prompt)
             embeddings = re.findall(self.EMBEDDING, prompt, re.IGNORECASE | re.MULTILINE)
-            print(embeddings)
             
             for embedding in embeddings:
                 self.extract_embedding_information(embedding)
@@ -51,6 +49,7 @@ class PromptMetadataExtractor:
 
     def extract_lora_information(self, lora: AnyStr):
         lora_name = self.civitai_lora_key_name(lora)
+        print(lora)
         sha = self.get_hash(self.lora_path(lora))
         self._loras[lora_name] = sha
          
