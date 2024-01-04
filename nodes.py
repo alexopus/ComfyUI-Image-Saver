@@ -352,7 +352,7 @@ class ImageSaver:
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name, scheduler)
 
-        extension_hashes = json.dumps(embeddings | loras)
+        extension_hashes = json.dumps(embeddings | loras | { "model": modelhash })
         comment = f"{handle_whitespace(positive)}\nNegative prompt: {handle_whitespace(negative)}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes} Version: ComfyUI"
         output_path = os.path.join(self.output_dir, path)
 
