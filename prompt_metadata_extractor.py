@@ -1,5 +1,5 @@
 import re
-from typing import List, AnyStr
+from typing import List
 
 from .utils import civitai_embedding_key_name, civitai_lora_key_name, full_embedding_path_for, full_lora_path_for, get_sha256
 
@@ -17,7 +17,7 @@ class PromptMetadataExtractor:
     # Anything that follows <lora:NAME> with allowance for :weight, :weight.fractal or LBW
     LORA = r'<lora:([^>:]+)(?::.+)?>'
 
-    def __init__(self, prompts: List[AnyStr]):
+    def __init__(self, prompts: List[str]):
         self.__embeddings = {}
         self.__loras = {}
         self.__perform(prompts)
@@ -48,7 +48,7 @@ class PromptMetadataExtractor:
             for lora in loras:
                 self.__extract_lora_information(lora)
 
-    def __extract_embedding_information(self, embedding: AnyStr):
+    def __extract_embedding_information(self, embedding: str):
         embedding_name = civitai_embedding_key_name(embedding)
         embedding_path = full_embedding_path_for(embedding)
         if embedding_path == None:
@@ -57,7 +57,7 @@ class PromptMetadataExtractor:
         # Based on https://github.com/civitai/sd_civitai_extension/blob/2008ba9126ddbb448f23267029b07e4610dffc15/scripts/gen_hashing.py#L53
         self.__embeddings[embedding_name] = sha
 
-    def __extract_lora_information(self, lora: AnyStr):
+    def __extract_lora_information(self, lora: str):
         lora_name = civitai_lora_key_name(lora)
         lora_path = full_lora_path_for(lora)
         if lora_path == None:
@@ -66,5 +66,5 @@ class PromptMetadataExtractor:
         # Based on https://github.com/civitai/sd_civitai_extension/blob/2008ba9126ddbb448f23267029b07e4610dffc15/scripts/gen_hashing.py#L63
         self.__loras[lora_name] = sha
     
-    def __get_shortened_sha(self, file_path: AnyStr):
+    def __get_shortened_sha(self, file_path: str):
        return get_sha256(file_path)[:10]
