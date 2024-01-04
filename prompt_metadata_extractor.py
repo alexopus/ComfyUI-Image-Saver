@@ -60,6 +60,3 @@ class PromptMetadataExtractor:
     
     def __get_shortened_sha(self, file_path: AnyStr):
        return get_sha256(file_path)[:10]
-
-
-    
