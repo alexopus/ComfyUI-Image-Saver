@@ -24,12 +24,14 @@ class PromptMetadataExtractor:
 
     """
     Returns the embeddings used in the given prompts in a format as known by civitAI
+    Example output: {"embed:EasyNegative": "66a7279a88", "embed:FastNegativeEmbedding": "687b669d82", "embed:ng_deepnegative_v1_75t": "54e7e4826d", "embed:imageSharpener": "fe5a4dfc4a"}
     """
     def get_embeddings(self):
         return self.__embeddings
         
     """
     Returns the lora's used in the given prompts in a format as known by civitAI
+    Example output: {"LORA:epi_noiseoffset2": "81680c064e", "LORA:GoodHands-beta2": "ba43b0efee"}
     """
     def get_loras(self):
         return self.__loras
