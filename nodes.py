@@ -14,12 +14,13 @@ from .prompt_metadata_extractor import PromptMetadataExtractor
 from nodes import MAX_RESOLUTION
 
 
-def parse_name(ckpt_name):
-    path = ckpt_name
-    filename = path.split("/")[-1]
-    filename = filename.split(".")[:-1]
-    filename = ".".join(filename)
-    return filename
+def parse_checkpoint_name(ckpt_name):
+    return os.path.basename(ckpt_name)
+
+
+def parse_checkpoint_name_without_extension(ckpt_name):
+    return os.path.splitext(parse_checkpoint_name(ckpt_name))[0]
+
 
 def handle_whitespace(string: str):
     return string.strip().replace("\n", " ").replace("\r", " ").replace("\t", " ")
@@ -45,19 +46,18 @@ def make_pathname(
         steps,
         cfg,
         scheduler,
-        basemodelname,
         denoise,
 ):
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
-    filename = filename.replace("%model", modelname)
+    filename = filename.replace("%model", parse_checkpoint_name(modelname))
     filename = filename.replace("%seed", str(seed))
     filename = filename.replace("%counter", str(counter))
     filename = filename.replace("%sampler_name", sampler_name)
     filename = filename.replace("%steps", str(steps))
     filename = filename.replace("%cfg", str(cfg))
     filename = filename.replace("%scheduler", scheduler)
-    filename = filename.replace("%basemodelname", basemodelname)
+    filename = filename.replace("%basemodelname", parse_checkpoint_name_without_extension(modelname))
     filename = filename.replace("%denoise", str(denoise))
     return filename
 
@@ -72,7 +72,6 @@ def make_filename(
         steps,
         cfg,
         scheduler,
-        basemodelname,
         denoise,
 ):
     filename = make_pathname(
@@ -85,7 +84,6 @@ def make_filename(
         steps,
         cfg,
         scheduler,
-        basemodelname,
         denoise,
     )
 
@@ -315,7 +313,6 @@ class ImageSaver:
             prompt=None,
             extra_pnginfo=None,
     ):
-        basemodelname = parse_name(modelname)
 
         filename = make_filename(
             filename,
@@ -327,7 +324,6 @@ class ImageSaver:
             steps,
             cfg,
             scheduler,
-            basemodelname,
             denoise,
         )
 
@@ -341,7 +337,6 @@ class ImageSaver:
             steps,
             cfg,
             scheduler,
-            basemodelname,
             denoise,
         )
 
@@ -353,6 +348,7 @@ class ImageSaver:
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name, scheduler)
 
         extension_hashes = json.dumps(embeddings | loras | { "model": modelhash })
+        basemodelname = parse_checkpoint_name_without_extension(modelname)
         comment = f"{handle_whitespace(positive)}\nNegative prompt: {handle_whitespace(negative)}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes} Version: ComfyUI"
         output_path = os.path.join(self.output_dir, path)
 
