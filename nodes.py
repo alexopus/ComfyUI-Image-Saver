@@ -139,16 +139,11 @@ class CheckpointLoaderWithName:
 
     def load_checkpoint(self, ckpt_name, output_vae=True, output_clip=True):
         ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
-        ckpt_filename = self.get_ckpt_name_string(ckpt_name)
         out = comfy.sd.load_checkpoint_guess_config(ckpt_path, output_vae=True, output_clip=True, embedding_directory=folder_paths.get_folder_paths("embeddings"))
 
-        # add checkpoint filename to the output tuple (without the ClipVisionModel)
-        out = (*out[:3], ckpt_filename)
+        # add checkpoint name to the output tuple (without the ClipVisionModel)
+        out = (*out[:3], ckpt_name)
         return out
-
-    def get_ckpt_name_string(self, ckpt_name):
-        filename = os.path.basename(ckpt_name)
-        return filename
 
 class SamplerSelector:
     CATEGORY = 'ImageSaver/utils'
