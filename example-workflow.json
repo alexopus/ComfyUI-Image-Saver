@@ -1,96 +1,262 @@
 {
-  "last_node_id": 24,
-  "last_link_id": 40,
+  "last_node_id": 26,
+  "last_link_id": 56,
   "nodes": [
     {
-      "id": 24,
-      "type": "CLIPTextEncode",
+      "id": 25,
+      "type": "Checkpoint Loader with Name (Image Saver)",
       "pos": [
-        520,
-        -170
+        -130,
+        70
       ],
-      "size": [
-        210,
-        50
-      ],
+      "size": {
+        "0": 315,
+        "1": 118
+      },
       "flags": {},
-      "order": 14,
+      "order": 0,
       "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 33
-        },
-        {
-          "name": "text",
-          "type": "STRING",
-          "link": 34,
-          "widget": {
-            "name": "text"
-          }
-        }
-      ],
       "outputs": [
         {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
+          "name": "MODEL",
+          "type": "MODEL",
           "links": [
-            36
+            42
           ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            43,
+            44
+          ],
+          "shape": 3,
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            45
+          ],
+          "shape": 3,
+          "slot_index": 2
+        },
+        {
+          "name": "modelname",
+          "type": "STRING",
+          "links": [
+            46
+          ],
+          "shape": 3,
+          "slot_index": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Checkpoint Loader with Name (Image Saver)"
+      },
+      "widgets_values": [
+        "aZovyaRPGArtistTools_v3.safetensors"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "Int Literal (Image Saver)",
+      "pos": [
+        370,
+        830
+      ],
+      "size": {
+        "0": 210,
+        "1": 60
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            25,
+            47
+          ],
+          "shape": 3,
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "CLIPTextEncode"
+        "Node name for S&R": "Int Literal (Image Saver)"
       },
       "widgets_values": [
-        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
+        30
+      ]
+    },
+    {
+      "id": 20,
+      "type": "Float Literal (Image Saver)",
+      "pos": [
+        350,
+        520
+      ],
+      "size": {
+        "0": 230,
+        "1": 60
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": [
+            28,
+            48
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Float Literal (Image Saver)"
+      },
+      "widgets_values": [
+        7
+      ]
+    },
+    {
+      "id": 16,
+      "type": "Sampler Selector (Image Saver)",
+      "pos": [
+        330,
+        190
+      ],
+      "size": {
+        "0": 252,
+        "1": 60
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "links": [
+            10,
+            49
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Sampler Selector (Image Saver)"
+      },
+      "widgets_values": [
+        "dpmpp_2m"
+      ]
+    },
+    {
+      "id": 15,
+      "type": "Scheduler Selector (Image Saver)",
+      "pos": [
+        310,
+        290
+      ],
+      "size": {
+        "0": 270,
+        "1": 60
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "scheduler",
+          "type": "COMBO",
+          "links": [
+            11,
+            50
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Scheduler Selector (Image Saver)"
+      },
+      "widgets_values": [
+        "karras"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "String Literal (Image Saver)",
+      "pos": [
+        200,
+        -150
+      ],
+      "size": {
+        "0": 300,
+        "1": 90
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            34,
+            51
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "String Literal (Image Saver)"
+      },
+      "widgets_values": [
+        "beautiful scenery nature glass bottle landscape, purple galaxy bottle"
       ],
       "color": "#232",
       "bgcolor": "#353"
     },
     {
-      "id": 7,
-      "type": "CLIPTextEncode",
+      "id": 23,
+      "type": "String Literal (Image Saver)",
       "pos": [
-        520,
-        -40
+        200,
+        -20
       ],
-      "size": [
-        210,
-        50
-      ],
+      "size": {
+        "0": 300,
+        "1": 90
+      },
       "flags": {},
-      "order": 13,
+      "order": 6,
       "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 5
-        },
-        {
-          "name": "text",
-          "type": "STRING",
-          "link": 35,
-          "widget": {
-            "name": "text"
-          }
-        }
-      ],
       "outputs": [
         {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
+          "name": "STRING",
+          "type": "STRING",
           "links": [
-            6
+            35,
+            52
           ],
+          "shape": 3,
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "CLIPTextEncode"
+        "Node name for S&R": "String Literal (Image Saver)"
       },
       "widgets_values": [
         "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
@@ -99,24 +265,75 @@
       "bgcolor": "#533"
     },
     {
+      "id": 5,
+      "type": "EmptyLatentImage",
+      "pos": [
+        640,
+        660
+      ],
+      "size": {
+        "0": 210,
+        "1": 80
+      },
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 20,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 21,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        512,
+        512,
+        1
+      ]
+    },
+    {
       "id": 3,
       "type": "KSampler",
       "pos": [
         810,
         -140
       ],
-      "size": [
-        210,
-        230
-      ],
+      "size": {
+        "0": 210,
+        "1": 230
+      },
       "flags": {},
-      "order": 15,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 32
+          "link": 42
         },
         {
           "name": "positive",
@@ -212,12 +429,12 @@
         1030,
         -140
       ],
-      "size": [
-        140,
-        50
-      ],
+      "size": {
+        "0": 140,
+        "1": 50
+      },
       "flags": {},
-      "order": 16,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -228,7 +445,7 @@
         {
           "name": "vae",
           "type": "VAE",
-          "link": 8
+          "link": 45
         }
       ],
       "outputs": [
@@ -236,7 +453,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            24
+            41
           ],
           "slot_index": 0
         }
@@ -246,53 +463,30 @@
       }
     },
     {
-      "id": 11,
+      "id": 26,
       "type": "Image Saver",
       "pos": [
-        1200,
-        80
+        1170,
+        110
       ],
       "size": [
         400,
         530
       ],
       "flags": {},
-      "order": 17,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 24
-        },
-        {
-          "name": "seed_value",
-          "type": "INT",
-          "link": 19,
-          "widget": {
-            "name": "seed_value"
-          }
-        },
-        {
-          "name": "width",
-          "type": "INT",
-          "link": 22,
-          "widget": {
-            "name": "width"
-          }
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "link": 23,
-          "widget": {
-            "name": "height"
-          }
+          "link": 41,
+          "slot_index": 0
         },
         {
           "name": "modelname",
-          "type": "COMBO",
-          "link": 26,
+          "type": "STRING",
+          "link": 46,
           "widget": {
             "name": "modelname"
           }
@@ -300,7 +494,7 @@
         {
           "name": "steps",
           "type": "INT",
-          "link": 27,
+          "link": 47,
           "widget": {
             "name": "steps"
           }
@@ -308,39 +502,15 @@
         {
           "name": "cfg",
           "type": "FLOAT",
-          "link": 29,
+          "link": 48,
           "widget": {
             "name": "cfg"
           }
         },
         {
-          "name": "denoise",
-          "type": "FLOAT",
-          "link": 30,
-          "widget": {
-            "name": "denoise"
-          }
-        },
-        {
-          "name": "positive",
-          "type": "STRING",
-          "link": 37,
-          "widget": {
-            "name": "positive"
-          }
-        },
-        {
-          "name": "negative",
-          "type": "STRING",
-          "link": 38,
-          "widget": {
-            "name": "negative"
-          }
-        },
-        {
           "name": "sampler_name",
           "type": "COMBO",
-          "link": 39,
+          "link": 49,
           "widget": {
             "name": "sampler_name"
           }
@@ -348,9 +518,57 @@
         {
           "name": "scheduler",
           "type": "COMBO",
-          "link": 40,
+          "link": 50,
           "widget": {
             "name": "scheduler"
+          }
+        },
+        {
+          "name": "positive",
+          "type": "STRING",
+          "link": 51,
+          "widget": {
+            "name": "positive"
+          }
+        },
+        {
+          "name": "negative",
+          "type": "STRING",
+          "link": 52,
+          "widget": {
+            "name": "negative"
+          }
+        },
+        {
+          "name": "seed_value",
+          "type": "INT",
+          "link": 53,
+          "widget": {
+            "name": "seed_value"
+          }
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 54,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 55,
+          "widget": {
+            "name": "height"
+          }
+        },
+        {
+          "name": "denoise",
+          "type": "FLOAT",
+          "link": 56,
+          "widget": {
+            "name": "denoise"
           }
         }
       ],
@@ -363,7 +581,7 @@
         "png",
         20,
         8,
-        "aZovyaRPGArtistTools_v3.safetensors",
+        "",
         "euler",
         "normal",
         "unknown",
@@ -377,129 +595,49 @@
         0,
         1,
         "%Y-%m-%d-%H%M%S"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 17,
-      "type": "Checkpoint Selector (Image Saver)",
-      "pos": [
-        -170,
-        150
-      ],
-      "size": {
-        "0": 315,
-        "1": 58
-      },
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "ckpt_name",
-          "type": "COMBO",
-          "links": [
-            12,
-            26
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Checkpoint Selector (Image Saver)"
-      },
-      "widgets_values": [
-        "aZovyaRPGArtistTools_v3.safetensors"
       ]
     },
     {
-      "id": 4,
-      "type": "CheckpointLoaderSimple",
+      "id": 7,
+      "type": "CLIPTextEncode",
       "pos": [
-        170,
-        80
+        520,
+        -40
       ],
       "size": [
         210,
-        70
+        50
       ],
       "flags": {},
-      "order": 11,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
-          "name": "ckpt_name",
-          "type": "COMBO",
-          "link": 12,
+          "name": "clip",
+          "type": "CLIP",
+          "link": 43
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 35,
           "widget": {
-            "name": "ckpt_name"
+            "name": "text"
           }
         }
       ],
       "outputs": [
         {
-          "name": "MODEL",
-          "type": "MODEL",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
           "links": [
-            32
+            6
           ],
-          "slot_index": 0
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            5,
-            33
-          ],
-          "slot_index": 1
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            8
-          ],
-          "slot_index": 2
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CheckpointLoaderSimple"
-      },
-      "widgets_values": [
-        "revAnimated_v122.safetensors"
-      ]
-    },
-    {
-      "id": 23,
-      "type": "String Literal (Image Saver)",
-      "pos": [
-        210,
-        -50
-      ],
-      "size": [
-        300,
-        90
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            35,
-            38
-          ],
-          "shape": 3,
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "String Literal (Image Saver)"
+        "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
         "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
@@ -508,105 +646,52 @@
       "bgcolor": "#533"
     },
     {
-      "id": 22,
-      "type": "String Literal (Image Saver)",
+      "id": 24,
+      "type": "CLIPTextEncode",
       "pos": [
-        210,
-        -180
+        520,
+        -170
       ],
       "size": [
-        300,
-        90
+        210,
+        50
       ],
       "flags": {},
-      "order": 2,
+      "order": 11,
       "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 44
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 34,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
       "outputs": [
         {
-          "name": "STRING",
-          "type": "STRING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
           "links": [
-            34,
-            37
+            36
           ],
-          "shape": 3,
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "String Literal (Image Saver)"
+        "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "beautiful scenery nature glass bottle landscape, purple galaxy bottle"
+        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
       ],
       "color": "#232",
       "bgcolor": "#353"
-    },
-    {
-      "id": 15,
-      "type": "Scheduler Selector (Image Saver)",
-      "pos": [
-        310,
-        300
-      ],
-      "size": [
-        270,
-        60
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "scheduler",
-          "type": "COMBO",
-          "links": [
-            11,
-            40
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Scheduler Selector (Image Saver)"
-      },
-      "widgets_values": [
-        "karras"
-      ]
-    },
-    {
-      "id": 16,
-      "type": "Sampler Selector (Image Saver)",
-      "pos": [
-        330,
-        200
-      ],
-      "size": [
-        250,
-        60
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "sampler_name",
-          "type": "COMBO",
-          "links": [
-            10,
-            39
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Sampler Selector (Image Saver)"
-      },
-      "widgets_values": [
-        "dpmpp_2m"
-      ]
     },
     {
       "id": 18,
@@ -615,12 +700,12 @@
         340,
         400
       ],
-      "size": [
-        240,
-        80
-      ],
+      "size": {
+        "0": 240,
+        "1": 82
+      },
       "flags": {},
-      "order": 5,
+      "order": 7,
       "mode": 0,
       "outputs": [
         {
@@ -628,7 +713,7 @@
           "type": "INT",
           "links": [
             18,
-            19
+            53
           ],
           "shape": 3,
           "slot_index": 0
@@ -643,51 +728,18 @@
       ]
     },
     {
-      "id": 20,
-      "type": "Float Literal (Image Saver)",
-      "pos": [
-        350,
-        520
-      ],
-      "size": [
-        230,
-        60
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "FLOAT",
-          "type": "FLOAT",
-          "links": [
-            28,
-            29
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Float Literal (Image Saver)"
-      },
-      "widgets_values": [
-        7
-      ]
-    },
-    {
       "id": 12,
       "type": "Width/Height Literal (Image Saver)",
       "pos": [
         290,
         630
       ],
-      "size": [
-        290,
-        60
-      ],
+      "size": {
+        "0": 290,
+        "1": 60
+      },
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "outputs": [
         {
@@ -695,7 +747,7 @@
           "type": "INT",
           "links": [
             20,
-            22
+            54
           ],
           "shape": 3,
           "slot_index": 0
@@ -720,7 +772,7 @@
         "1": 60
       },
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "outputs": [
         {
@@ -728,7 +780,7 @@
           "type": "INT",
           "links": [
             21,
-            23
+            55
           ],
           "shape": 3,
           "slot_index": 0
@@ -742,100 +794,16 @@
       ]
     },
     {
-      "id": 5,
-      "type": "EmptyLatentImage",
-      "pos": [
-        660,
-        640
-      ],
-      "size": [
-        210,
-        80
-      ],
-      "flags": {},
-      "order": 12,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "width",
-          "type": "INT",
-          "link": 20,
-          "widget": {
-            "name": "width"
-          }
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "link": 21,
-          "widget": {
-            "name": "height"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "name": "LATENT",
-          "type": "LATENT",
-          "links": [
-            2
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "EmptyLatentImage"
-      },
-      "widgets_values": [
-        512,
-        512,
-        1
-      ]
-    },
-    {
-      "id": 19,
-      "type": "Int Literal (Image Saver)",
-      "pos": [
-        370,
-        830
-      ],
-      "size": [
-        210,
-        60
-      ],
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "INT",
-          "type": "INT",
-          "links": [
-            25,
-            27
-          ],
-          "shape": 3,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Int Literal (Image Saver)"
-      },
-      "widgets_values": [
-        30
-      ]
-    },
-    {
       "id": 21,
       "type": "Float Literal (Image Saver)",
       "pos": [
         350,
         930
       ],
-      "size": [
-        230,
-        60
-      ],
+      "size": {
+        "0": 230,
+        "1": 60
+      },
       "flags": {},
       "order": 10,
       "mode": 0,
@@ -844,8 +812,8 @@
           "name": "FLOAT",
           "type": "FLOAT",
           "links": [
-            30,
-            31
+            31,
+            56
           ],
           "shape": 3,
           "slot_index": 0
@@ -869,14 +837,6 @@
       "LATENT"
     ],
     [
-      5,
-      4,
-      1,
-      7,
-      0,
-      "CLIP"
-    ],
-    [
       6,
       7,
       0,
@@ -891,14 +851,6 @@
       8,
       0,
       "LATENT"
-    ],
-    [
-      8,
-      4,
-      2,
-      8,
-      1,
-      "VAE"
     ],
     [
       10,
@@ -917,27 +869,11 @@
       "COMBO"
     ],
     [
-      12,
-      17,
-      0,
-      4,
-      0,
-      "COMBO"
-    ],
-    [
       18,
       18,
       0,
       3,
       6,
-      "INT"
-    ],
-    [
-      19,
-      18,
-      0,
-      11,
-      1,
       "INT"
     ],
     [
@@ -957,51 +893,11 @@
       "INT"
     ],
     [
-      22,
-      12,
-      0,
-      11,
-      2,
-      "INT"
-    ],
-    [
-      23,
-      13,
-      0,
-      11,
-      3,
-      "INT"
-    ],
-    [
-      24,
-      8,
-      0,
-      11,
-      0,
-      "IMAGE"
-    ],
-    [
       25,
       19,
       0,
       3,
       7,
-      "INT"
-    ],
-    [
-      26,
-      17,
-      0,
-      11,
-      4,
-      "COMBO"
-    ],
-    [
-      27,
-      19,
-      0,
-      11,
-      5,
       "INT"
     ],
     [
@@ -1013,44 +909,12 @@
       "FLOAT"
     ],
     [
-      29,
-      20,
-      0,
-      11,
-      6,
-      "FLOAT"
-    ],
-    [
-      30,
-      21,
-      0,
-      11,
-      7,
-      "FLOAT"
-    ],
-    [
       31,
       21,
       0,
       3,
       9,
       "FLOAT"
-    ],
-    [
-      32,
-      4,
-      0,
-      3,
-      0,
-      "MODEL"
-    ],
-    [
-      33,
-      4,
-      1,
-      24,
-      0,
-      "CLIP"
     ],
     [
       34,
@@ -1077,36 +941,132 @@
       "CONDITIONING"
     ],
     [
-      37,
-      22,
-      0,
-      11,
+      41,
       8,
-      "STRING"
-    ],
-    [
-      38,
-      23,
       0,
-      11,
-      9,
+      26,
+      0,
+      "IMAGE"
+    ],
+    [
+      42,
+      25,
+      0,
+      3,
+      0,
+      "MODEL"
+    ],
+    [
+      43,
+      25,
+      1,
+      7,
+      0,
+      "CLIP"
+    ],
+    [
+      44,
+      25,
+      1,
+      24,
+      0,
+      "CLIP"
+    ],
+    [
+      45,
+      25,
+      2,
+      8,
+      1,
+      "VAE"
+    ],
+    [
+      46,
+      25,
+      3,
+      26,
+      1,
       "STRING"
     ],
     [
-      39,
+      47,
+      19,
+      0,
+      26,
+      2,
+      "INT"
+    ],
+    [
+      48,
+      20,
+      0,
+      26,
+      3,
+      "FLOAT"
+    ],
+    [
+      49,
       16,
       0,
-      11,
-      10,
+      26,
+      4,
       "COMBO"
     ],
     [
-      40,
+      50,
       15,
       0,
-      11,
-      11,
+      26,
+      5,
       "COMBO"
+    ],
+    [
+      51,
+      22,
+      0,
+      26,
+      6,
+      "STRING"
+    ],
+    [
+      52,
+      23,
+      0,
+      26,
+      7,
+      "STRING"
+    ],
+    [
+      53,
+      18,
+      0,
+      26,
+      8,
+      "INT"
+    ],
+    [
+      54,
+      12,
+      0,
+      26,
+      9,
+      "INT"
+    ],
+    [
+      55,
+      13,
+      0,
+      26,
+      10,
+      "INT"
+    ],
+    [
+      56,
+      21,
+      0,
+      26,
+      11,
+      "FLOAT"
     ]
   ],
   "groups": [],
