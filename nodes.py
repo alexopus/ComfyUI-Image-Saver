@@ -166,19 +166,29 @@ class CfgLiteral:
     def get_float(self, float):
         return (float,)
 
+class CheckpointLoaderWithName:
+    RETURN_TYPES = ("MODEL", "CLIP", "VAE", "STRING",)
+    RETURN_NAMES = ("MODEL", "CLIP", "VAE", "modelname")
+    FUNCTION = "load_checkpoint"
 
-class CheckpointSelector:
-    CATEGORY = 'ImageSaver/utils'
-    RETURN_TYPES = (folder_paths.get_filename_list("checkpoints"),)
-    RETURN_NAMES = ("ckpt_name",)
-    FUNCTION = "get_names"
+    CATEGORY = "ImageSaver/utils"
 
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {"ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),}}
 
-    def get_names(self, ckpt_name):
-        return (ckpt_name,)
+    def load_checkpoint(self, ckpt_name, output_vae=True, output_clip=True):
+        ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
+        ckpt_filename = self.get_ckpt_name_string(ckpt_name)
+        out = comfy.sd.load_checkpoint_guess_config(ckpt_path, output_vae=True, output_clip=True, embedding_directory=folder_paths.get_folder_paths("embeddings"))
+
+        # add checkpoint filename to the output tuple (without the ClipVisionModel)
+        out = (*out[:3], ckpt_filename)
+        return out
+
+    def get_ckpt_name_string(self, ckpt_name):
+        filename = os.path.basename(ckpt_name)
+        return filename
 
 
 class SamplerSelector:
@@ -258,7 +268,7 @@ class ImageSaver:
                 "extension": (['png', 'jpeg', 'webp'],),
                 "steps": ("INT", {"default": 20, "min": 1, "max": 10000}),
                 "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0}),
-                "modelname": (folder_paths.get_filename_list("checkpoints"),),
+                "modelname": ("STRING", {"default": '', "multiline": False}),
                 "sampler_name": (comfy.samplers.KSampler.SAMPLERS,),
                 "scheduler": (comfy.samplers.KSampler.SCHEDULERS,),
             },
@@ -400,7 +410,7 @@ class ImageSaver:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Checkpoint Selector (Image Saver)": CheckpointSelector,
+    "Checkpoint Loader with Name (Image Saver)": CheckpointLoaderWithName,
     "Image Saver": ImageSaver,
     "Sampler Selector (Image Saver)": SamplerSelector,
     "Scheduler Selector (Image Saver)": SchedulerSelector,
