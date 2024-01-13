@@ -36,18 +36,7 @@ def get_timestamp(time_format):
     return timestamp
 
 
-def make_pathname(
-        filename,
-        seed,
-        modelname,
-        counter,
-        time_format,
-        sampler_name,
-        steps,
-        cfg,
-        scheduler,
-        denoise,
-):
+def make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise):
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
     filename = filename.replace("%model", parse_checkpoint_name(modelname))
@@ -61,34 +50,9 @@ def make_pathname(
     filename = filename.replace("%denoise", str(denoise))
     return filename
 
-
-def make_filename(
-        filename,
-        seed,
-        modelname,
-        counter,
-        time_format,
-        sampler_name,
-        steps,
-        cfg,
-        scheduler,
-        denoise,
-):
-    filename = make_pathname(
-        filename,
-        seed,
-        modelname,
-        counter,
-        time_format,
-        sampler_name,
-        steps,
-        cfg,
-        scheduler,
-        denoise,
-    )
-
+def make_filename(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise):
+    filename = make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise)
     return get_timestamp(time_format) if filename == "" else filename
-
 
 class SeedGenerator:
     RETURN_TYPES = ("INT",)
@@ -102,7 +66,6 @@ class SeedGenerator:
     def get_seed(self, seed):
         return (seed,)
 
-
 class StringLiteral:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "get_string"
@@ -115,7 +78,6 @@ class StringLiteral:
     def get_string(self, string):
         return (string,)
 
-
 class SizeLiteral:
     RETURN_TYPES = ("INT",)
     FUNCTION = "get_int"
@@ -127,7 +89,6 @@ class SizeLiteral:
 
     def get_int(self, int):
         return (int,)
-
 
 class IntLiteral:
     RETURN_TYPES = ("INT",)
@@ -152,7 +113,6 @@ class FloatLiteral:
 
     def get_float(self, float):
         return (float,)
-
 
 class CfgLiteral:
     RETURN_TYPES = ("FLOAT",)
@@ -190,7 +150,6 @@ class CheckpointLoaderWithName:
         filename = os.path.basename(ckpt_name)
         return filename
 
-
 class SamplerSelector:
     CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = (comfy.samplers.KSampler.SAMPLERS,)
@@ -204,7 +163,6 @@ class SamplerSelector:
     def get_names(self, sampler_name):
         return (sampler_name,)
 
-
 class SchedulerSelector:
     CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = (comfy.samplers.KSampler.SCHEDULERS,)
@@ -217,7 +175,6 @@ class SchedulerSelector:
 
     def get_names(self, scheduler):
         return (scheduler,)
-
 
 class ImageSaver:
     def __init__(self):
@@ -324,32 +281,8 @@ class ImageSaver:
             extra_pnginfo=None,
     ):
 
-        filename = make_filename(
-            filename,
-            seed_value,
-            modelname,
-            counter,
-            time_format,
-            sampler_name,
-            steps,
-            cfg,
-            scheduler,
-            denoise,
-        )
-
-        path = make_pathname(
-            path,
-            seed_value,
-            modelname,
-            counter,
-            time_format,
-            sampler_name,
-            steps,
-            cfg,
-            scheduler,
-            denoise,
-        )
-
+        filename = make_filename(filename, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise)
+        path = make_pathname(path, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise)
         ckpt_path = folder_paths.get_full_path("checkpoints", modelname)
         modelhash = get_sha256(ckpt_path)[:10]
         metadata_extractor = PromptMetadataExtractor([positive, negative])
