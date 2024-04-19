@@ -197,6 +197,7 @@ class ImageSaver:
             'dpmpp_sde': 'DPM++ SDE',
             'dpmpp_sde_gpu': 'DPM++ SDE',
             'dpmpp_2m_sde': 'DPM++ 2M SDE',
+            'dpmpp_3m_sde': 'DPM++ 3M SDE',
             'dpm_fast': 'DPM fast',
             'dpm_adaptive': 'DPM adaptive',
             'ddim': 'DDIM',
@@ -213,6 +214,9 @@ class ImageSaver:
 
             if scheduler == "karras":
                 civitai_name += " Karras"
+            
+            if scheduler == "exponential":
+                civitai_name += " Exponential"
 
             return civitai_name
         else:
@@ -296,7 +300,7 @@ class ImageSaver:
         metadata_extractor = PromptMetadataExtractor([positive, negative])
         embeddings = metadata_extractor.get_embeddings()
         loras = metadata_extractor.get_loras()
-        civitai_sampler_name = self.get_civitai_sampler_name(sampler_name, scheduler)
+        civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
 
         extension_hashes = json.dumps(embeddings | loras | { "model": modelhash })
         basemodelname = parse_checkpoint_name_without_extension(modelname)
