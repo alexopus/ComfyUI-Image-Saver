@@ -194,7 +194,6 @@ class ImageSaver:
             'dpm_2_ancestral': 'DPM2 a',
             'dpmpp_2s_ancestral': 'DPM++ 2S a',
             'dpmpp_2m': 'DPM++ 2M',
-            'dpmpp_3m': 'DPM++ 3M',
             'dpmpp_sde': 'DPM++ SDE',
             'dpmpp_2m_sde': 'DPM++ 2M SDE',
             'dpmpp_3m_sde': 'DPM++ 3M SDE',
