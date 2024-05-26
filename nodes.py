@@ -338,11 +338,13 @@ class ImageSaver:
                 metadata = PngInfo()
                 metadata.add_text("parameters", comment)
 
-                if embed_workflow and prompt is not None:
-                    metadata.add_text("prompt", json.dumps(prompt))
-                if embed_workflow and extra_pnginfo is not None:
-                    for x in extra_pnginfo:
-                        metadata.add_text(x, json.dumps(extra_pnginfo[x]))
+                # embed workflow and prompt json only if embed_workflow is true
+                if embed_workflow:
+                    if prompt is not None:
+                        metadata.add_text("prompt", json.dumps(prompt))
+                    if extra_pnginfo is not None:
+                        for x in extra_pnginfo:
+                            metadata.add_text(x, json.dumps(extra_pnginfo[x]))
 
                 filename = f"{current_filename_prefix}.png"
                 img.save(os.path.join(output_path, filename), pnginfo=metadata, optimize=optimize_png)
