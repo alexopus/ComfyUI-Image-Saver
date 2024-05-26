@@ -339,8 +339,9 @@ class ImageSaver:
                 metadata.add_text("parameters", comment)
 
                 if prompt is not None:
+                    print(f'Prompt `{json.dumps(prompt)}`')
                     metadata.add_text("prompt", json.dumps(prompt))
-                if embed_workflow is True and extra_pnginfo is not None:
+                if embed_workflow and extra_pnginfo is not None:
                     for x in extra_pnginfo:
                         metadata.add_text(x, json.dumps(extra_pnginfo[x]))
 
