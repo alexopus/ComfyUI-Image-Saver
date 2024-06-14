@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-image-saver"
+description = "Allows you to save images with their generation metadata compatible with Civitai. Works with png, jpeg and webp. Stores LoRAs, models and embeddings hashes for resource recognition."
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["piexif"]
+
+[project.urls]
+Repository = "https://github.com/alexopus/ComfyUI-Image-Saver"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-Image-Saver"
+Icon = ""
