@@ -2,7 +2,7 @@
 name = "comfyui-image-saver"
 description = "Save images with generation metadata compatible with Civitai. Works with png, jpeg and webp. Stores LoRAs, models and embeddings hashes for resource recognition."
 version = "1.2.1"
-license = "LICENSE"
+license = { file = "LICENSE" }
 dependencies = ["piexif"]
 
 [project.urls]
