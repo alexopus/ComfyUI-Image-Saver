@@ -211,7 +211,7 @@ class SchedulerSelectorComfy:
 class SchedulerToString:
     CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("scheduler_name")
+    RETURN_NAMES = ("scheduler_name",)
     FUNCTION = "get_name"
 
     @classmethod
@@ -224,7 +224,7 @@ class SchedulerToString:
 class SchedulerComfyToString:
     CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("scheduler_name")
+    RETURN_NAMES = ("scheduler_name",)
     FUNCTION = "get_name"
 
     @classmethod
@@ -237,7 +237,7 @@ class SchedulerComfyToString:
 class SamplerToString:
     CATEGORY = 'ImageSaver/utils'
     RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("sampler_name")
+    RETURN_NAMES = ("sampler_name",)
     FUNCTION = "get_name"
 
     @classmethod
