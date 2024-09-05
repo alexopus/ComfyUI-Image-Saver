@@ -471,16 +471,12 @@ class ImageSaver:
         return {"ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)}}
 
     def save_images(self, images, output_path, filename_prefix, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow_in_png) -> list[str]:
-        img_count = 1
         paths = list()
         for image in images:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-
-            if images.size()[0] > 1:
-                current_filename_prefix = "{}_{:02d}".format(filename_prefix, img_count)
-            else:
-                current_filename_prefix = filename_prefix
+            
+            current_filename_prefix = self.get_unique_filename(output_path, filename_prefix, extension)
 
             if extension == 'png':
                 metadata = PngInfo()
@@ -511,8 +507,31 @@ class ImageSaver:
                 save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
 
             paths.append(filename)
-            img_count += 1
         return paths
+        
+    def get_unique_filename(self, output_path, filename_prefix, extension):
+        """
+        Возвращает уникальное имя файла, добавляя суффикс _0x к имени файла, если файл уже существует.
+        """
+        existing_files = [f for f in os.listdir(output_path) if f.startswith(filename_prefix) and f.endswith(extension)]
+        
+        if not existing_files:
+            return f"{filename_prefix}"
+
+        # Извлекаем числовые суффиксы из существующих файлов
+        suffixes = []
+        for f in existing_files:
+            name, _ = os.path.splitext(f)
+            parts = name.split('_')
+            if parts[-1].isdigit():
+                suffixes.append(int(parts[-1]))
+
+        if suffixes:
+            next_suffix = max(suffixes) + 1
+        else:
+            next_suffix = 1
+
+        return f"{filename_prefix}_{next_suffix:02d}"
 
 
 NODE_CLASS_MAPPINGS = {
