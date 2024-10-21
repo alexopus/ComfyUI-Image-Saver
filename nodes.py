@@ -510,15 +510,11 @@ class ImageSaver:
         return paths
         
     def get_unique_filename(self, output_path, filename_prefix, extension):
-        """
-        Возвращает уникальное имя файла, добавляя суффикс _0x к имени файла, если файл уже существует.
-        """
         existing_files = [f for f in os.listdir(output_path) if f.startswith(filename_prefix) and f.endswith(extension)]
         
         if not existing_files:
             return f"{filename_prefix}"
 
-        # Извлекаем числовые суффиксы из существующих файлов
         suffixes = []
         for f in existing_files:
             name, _ = os.path.splitext(f)
