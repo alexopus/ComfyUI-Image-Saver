@@ -47,7 +47,7 @@ def save_json(image_info, filename):
         print(f'Failed to save workflow as json due to: {e}, proceeding with the remainder of saving execution')
 
 
-def make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise):
+def make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
     filename = filename.replace("%model", parse_checkpoint_name(modelname))
@@ -59,10 +59,11 @@ def make_pathname(filename, seed, modelname, counter, time_format, sampler_name,
     filename = filename.replace("%scheduler", scheduler)
     filename = filename.replace("%basemodelname", parse_checkpoint_name_without_extension(modelname))
     filename = filename.replace("%denoise", str(denoise))
+    filename = filename.replace("%clip_skip", str(clip_skip))
     return filename
 
-def make_filename(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise):
-    filename = make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise)
+def make_filename(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
+    filename = make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
     return get_timestamp(time_format) if filename == "" else filename
 
 class SeedGenerator:
@@ -372,7 +373,7 @@ class ImageSaver:
         return {
             "required": {
                 "images":                ("IMAGE",   {                                                             "tooltip": "image(s) to save"}),
-                "filename":              ("STRING",  {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise)"}),
+                "filename":              ("STRING",  {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
                 "path":                  ("STRING",  {"default": '', "multiline": False,                           "tooltip": "path to save the images (under Comfy's save directory)"}),
                 "extension":             (['png', 'jpeg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
             },
@@ -392,6 +393,7 @@ class ImageSaver:
                 "optimize_png":          ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saved PNG files will be optimized (can reduce file size but is slower)"}),
                 "counter":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff,           "tooltip": "counter"}),
                 "denoise":               ("FLOAT",   {"default": 1.0, "min": 0.0, "max": 1.0,                      "tooltip": "denoise value"}),
+                "clip_skip":             ("INT",     {"default": 1, "min": 0, "max": 2,                            "tooltip": "clip skip value (positive int)"}),
                 "time_format":           ("STRING",  {"default": "%Y-%m-%d-%H%M%S", "multiline": False,            "tooltip": "timestamp format"}),
                 "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving the image"}),
                 "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG file (if saving as PNG)"}),
@@ -432,13 +434,14 @@ class ImageSaver:
         extension,
         time_format,
         denoise,
+        clip_skip,
         save_workflow_as_json=False,
         embed_workflow_in_png=True,
         prompt=None,
         extra_pnginfo=None,
     ):
-        filename = make_filename(filename, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise)
-        path = make_pathname(path, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise)
+        filename = make_filename(filename, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
+        path = make_pathname(path, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
         ckpt_path = folder_paths.get_full_path("checkpoints", modelname)
 
         if not ckpt_path:
@@ -459,7 +462,7 @@ class ImageSaver:
 
         positive_a111_params = handle_whitespace(positive)
         negative_a111_params = f"\nNegative prompt: {handle_whitespace(negative)}"
-        a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes}, Version: ComfyUI"
+        a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}, Clip skip: {clip_skip}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes}, Version: ComfyUI"
 
         output_path = os.path.join(self.output_dir, path)
 
