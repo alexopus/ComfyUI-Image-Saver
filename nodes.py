@@ -393,7 +393,7 @@ class ImageSaver:
                 "optimize_png":          ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saved PNG files will be optimized (can reduce file size but is slower)"}),
                 "counter":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff,           "tooltip": "counter"}),
                 "denoise":               ("FLOAT",   {"default": 1.0, "min": 0.0, "max": 1.0,                      "tooltip": "denoise value"}),
-                "clip_skip":             ("INT",     {"default": -1, "min": -24, "max": -1,                        "tooltip": "clip skip value (positive int)"}),
+                "clip_skip":             ("INT",     {"default": -1, "min": -24, "max": -1,                        "tooltip": "clip skip value"}),
                 "time_format":           ("STRING",  {"default": "%Y-%m-%d-%H%M%S", "multiline": False,            "tooltip": "timestamp format"}),
                 "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving the image"}),
                 "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG file (if saving as PNG)"}),
