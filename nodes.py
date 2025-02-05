@@ -24,8 +24,10 @@ def parse_checkpoint_name_without_extension(ckpt_name):
 
 
 def handle_whitespace(string: str):
-    return string.strip().replace("\n", " ").replace("\r", " ").replace("\t", " ")
+    return string.strip()  # Only strip leading/trailing whitespace
 
+def handle_prompt_whitespace(string: str):
+    return string.strip()  # Only strip leading/trailing whitespace
 
 def get_timestamp(time_format):
     now = datetime.now()
@@ -493,8 +495,8 @@ class ImageSaver:
         extension_hashes = json.dumps(embeddings | loras | { "model": modelhash })
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
-        positive_a111_params = handle_whitespace(positive)
-        negative_a111_params = f"\nNegative prompt: {handle_whitespace(negative)}"
+        positive_a111_params = handle_prompt_whitespace(positive)
+        negative_a111_params = f"\nNegative prompt: {handle_prompt_whitespace(negative)}"
         a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}{f', Clip skip: {abs(clip_skip)}' if clip_skip != 0 else ''}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes}, Version: ComfyUI"
 
         output_path = os.path.join(self.output_dir, path)
@@ -534,13 +536,24 @@ class ImageSaver:
             else:
                 filename = f"{current_filename_prefix}.{extension}"
                 file = os.path.join(output_path, filename)
-                img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
-                exif_bytes = piexif.dump({
-                    "Exif": {
-                        piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode")
-                    },
-                })
-                piexif.insert(exif_bytes, file)
+
+                # Use the image's existing EXIF data (or create a new one)
+                exif = img.getexif()
+
+                # Store the standard parameters in UserComment (EXIF tag 0x9286) – for external programs
+                exif[piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(a111_params, encoding="unicode")
+
+                # Store ComfyUI’s workflow in ImageDescription (0x010E) as a separate entry
+                if extra_pnginfo is not None and "workflow" in extra_pnginfo:
+                    exif[0x010E] = "Workflow:" + json.dumps(extra_pnginfo["workflow"])
+
+                # Store prompt separately in Make (0x010F), in case other software reads it
+                if prompt is not None:
+                    exif[0x010F] = "Prompt:" + json.dumps(prompt)
+
+                # Convert EXIF data to bytes and save the image
+                img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp, exif=exif.tobytes())
+
 
             if save_workflow_as_json:
                 save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
