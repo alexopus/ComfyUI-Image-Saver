@@ -495,7 +495,11 @@ class ImageSaver:
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
 
         # Add manual hash to the hashes
-        extension_hashes = json.dumps(embeddings | loras | { "model": modelhash, "manual": manual_hash })
+        hash_data = { "model": modelhash }
+        if manual_hash:  # Only include manual_hash if it has a value
+            hash_data["manual_hash"] = manual_hash
+
+        extension_hashes = json.dumps(embeddings | loras | hash_data)
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
         positive_a111_params = handle_prompt_whitespace(positive)
