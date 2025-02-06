@@ -407,31 +407,32 @@ class ImageSaver:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "images":                ("IMAGE",   {                                                             "tooltip": "image(s) to save"}),
-                "filename":              ("STRING",  {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
-                "path":                  ("STRING",  {"default": '', "multiline": False,                           "tooltip": "path to save the images (under Comfy's save directory)"}),
-                "extension":             (['png', 'jpeg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
+                "images": ("IMAGE", {"tooltip": "image(s) to save"}),
+                "filename": ("STRING", {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
+                "path": ("STRING", {"default": '', "multiline": False, "tooltip": "path to save the images (under Comfy's save directory)"}),
+                "extension": (['png', 'jpeg', 'webp'], {"tooltip": "file extension/type to save image as"}),
+                "manual_hash": ("STRING", {"default": '', "multiline": False, "tooltip": "manual hash to be saved along with the LoRas hashes"}),
             },
             "optional": {
-                "steps":                 ("INT",     {"default": 20, "min": 1, "max": 10000,                       "tooltip": "number of steps"}),
-                "cfg":                   ("FLOAT",   {"default": 7.0, "min": 0.0, "max": 100.0,                    "tooltip": "CFG value"}),
-                "modelname":             ("STRING",  {"default": '', "multiline": False,                           "tooltip": "model name"}),
-                "sampler_name":          ("STRING",  {"default": '', "multiline": False,                           "tooltip": "sampler name (as string)"}),
-                "scheduler":             ("STRING",  {"default": 'normal', "multiline": False,                     "tooltip": "scheduler name (as string)"}),
-                "positive":              ("STRING",  {"default": 'unknown', "multiline": True,                     "tooltip": "positive prompt"}),
-                "negative":              ("STRING",  {"default": 'unknown', "multiline": True,                     "tooltip": "negative prompt"}),
-                "seed_value":            ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff,           "tooltip": "seed"}),
-                "width":                 ("INT",     {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8,  "tooltip": "image width"}),
-                "height":                ("INT",     {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8,  "tooltip": "image height"}),
-                "lossless_webp":         ("BOOLEAN", {"default": True,                                             "tooltip": "if True, saved WEBP files will be lossless"}),
-                "quality_jpeg_or_webp":  ("INT",     {"default": 100, "min": 1, "max": 100,                        "tooltip": "quality setting of JPEG/WEBP"}),
-                "optimize_png":          ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saved PNG files will be optimized (can reduce file size but is slower)"}),
-                "counter":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff,           "tooltip": "counter"}),
-                "denoise":               ("FLOAT",   {"default": 1.0, "min": 0.0, "max": 1.0,                      "tooltip": "denoise value"}),
-                "clip_skip":             ("INT",     {"default": 0, "min": -24, "max": 24,                         "tooltip": "skip last CLIP layers (positive or negative value, 0 for no skip)"}),
-                "time_format":           ("STRING",  {"default": "%Y-%m-%d-%H%M%S", "multiline": False,            "tooltip": "timestamp format"}),
-                "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving the image"}),
-                "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG file (if saving as PNG)"}),
+                "steps": ("INT", {"default": 20, "min": 1, "max": 10000, "tooltip": "number of steps"}),
+                "cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "tooltip": "CFG value"}),
+                "modelname": ("STRING", {"default": '', "multiline": False, "tooltip": "model name"}),
+                "sampler_name": ("STRING", {"default": '', "multiline": False, "tooltip": "sampler name (as string)"}),
+                "scheduler": ("STRING", {"default": 'normal', "multiline": False, "tooltip": "scheduler name (as string)"}),
+                "positive": ("STRING", {"default": 'unknown', "multiline": True, "tooltip": "positive prompt"}),
+                "negative": ("STRING", {"default": 'unknown', "multiline": True, "tooltip": "negative prompt"}),
+                "seed_value": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "seed"}),
+                "width": ("INT", {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8, "tooltip": "image width"}),
+                "height": ("INT", {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8, "tooltip": "image height"}),
+                "lossless_webp": ("BOOLEAN", {"default": True, "tooltip": "if True, saved WEBP files will be lossless"}),
+                "quality_jpeg_or_webp": ("INT", {"default": 100, "min": 1, "max": 100, "tooltip": "quality setting of JPEG/WEBP"}),
+                "optimize_png": ("BOOLEAN", {"default": False, "tooltip": "if True, saved PNG files will be optimized (can reduce file size but is slower)"}),
+                "counter": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "counter"}),
+                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "tooltip": "denoise value"}),
+                "clip_skip": ("INT", {"default": 0, "min": -24, "max": 24, "tooltip": "skip last CLIP layers (positive or negative value, 0 for no skip)"}),
+                "time_format": ("STRING", {"default": "%Y-%m-%d-%H%M%S", "multiline": False, "tooltip": "timestamp format"}),
+                "save_workflow_as_json": ("BOOLEAN", {"default": False, "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving it in the image metadata"}),
+                "embed_workflow_in_png": ("BOOLEAN", {"default": True, "tooltip": "if True, embeds the workflow in the saved PNG file (if saving as PNG)"}),
             },
             "hidden": {
                 "prompt": "PROMPT",
@@ -470,6 +471,7 @@ class ImageSaver:
         time_format,
         denoise,
         clip_skip,
+        manual_hash,
         save_workflow_as_json=False,
         embed_workflow_in_png=True,
         prompt=None,
@@ -492,7 +494,8 @@ class ImageSaver:
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
 
-        extension_hashes = json.dumps(embeddings | loras | { "model": modelhash })
+        # Add manual hash to the hashes
+        extension_hashes = json.dumps(embeddings | loras | { "model": modelhash, "manual": manual_hash })
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
         positive_a111_params = handle_prompt_whitespace(positive)
@@ -510,7 +513,7 @@ class ImageSaver:
 
         subfolder = os.path.normpath(path)
         return {"ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)}}
-
+        
     def save_images(self, images, output_path, filename_prefix, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow_in_png) -> list[str]:
         paths = list()
         for image in images:
