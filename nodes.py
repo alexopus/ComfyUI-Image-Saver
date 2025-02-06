@@ -499,6 +499,15 @@ class ImageSaver:
         if manual_hash:  # Only include manual_hash if it has a value
             hash_data["manual_hash"] = manual_hash
 
+        hash_data = { "model": modelhash }
+
+        # Process manual_hash field (handles new lines, extra spaces, and empty values)
+        if manual_hash:
+            manual_list = [h.strip() for h in manual_hash.replace("\n", ",").split(",") if h.strip()]  # Normalize and clean
+            manual_list = manual_list[:30]  # Limit to 30 hashes
+            for i, h in enumerate(manual_list, start=1):
+                hash_data[f"manual{i}"] = h  # Store as "manual1", "manual2", etc.
+
         extension_hashes = json.dumps(embeddings | loras | hash_data)
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
