@@ -1,6 +1,6 @@
 [!] Forked from https://github.com/giriss/comfy-image-saver, which seems to be inactive since a while.
 
-##Updates
+## Updates
 2025/01/06 
 - I Removed new line trim function on the positive prompt, since I like to be able to manipulate how the prompt looks and store the loras name in a more visually clean way.
 - I tried implementing WebP workflow embedding so you can store the ComfyUI json in the metadata while also storing generation parameter. This is working on Civitai. But when reading with "SD Prompt Reader" the information are not showing up. But since Civitai is, I think it's good.
