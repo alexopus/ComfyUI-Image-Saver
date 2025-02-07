@@ -411,9 +411,9 @@ class ImageSaver:
                 "filename": ("STRING", {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
                 "path": ("STRING", {"default": '', "multiline": False, "tooltip": "path to save the images (under Comfy's save directory)"}),
                 "extension": (['png', 'jpeg', 'webp'], {"tooltip": "file extension/type to save image as"}),
-                "manual_hash": ("STRING", {"default": '', "multiline": False, "tooltip": "manual hash to be saved along with the LoRas hashes"}),
             },
             "optional": {
+                "manual_hash": ("STRING", {"default": "", "multiline": False, "tooltip": "manual hash to be saved along with the LoRas hashes"}),
                 "steps": ("INT", {"default": 20, "min": 1, "max": 10000, "tooltip": "number of steps"}),
                 "cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "tooltip": "CFG value"}),
                 "modelname": ("STRING", {"default": '', "multiline": False, "tooltip": "model name"}),
@@ -447,7 +447,7 @@ class ImageSaver:
 
     CATEGORY = "ImageSaver"
     DESCRIPTION = "Save images with civitai-compatible generation metadata"
-
+        
     def save_files(
         self,
         images,
@@ -471,7 +471,7 @@ class ImageSaver:
         time_format,
         denoise,
         clip_skip,
-        manual_hash,
+        manual_hash="",  # ✅ Now it has a default empty string
         save_workflow_as_json=False,
         embed_workflow_in_png=True,
         prompt=None,
@@ -493,21 +493,22 @@ class ImageSaver:
         embeddings = metadata_extractor.get_embeddings()
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
+ 
+        # Ensure manual_hash is a string (handles optional input case)
+        manual_hash = manual_hash if manual_hash else ""
 
-        # Add manual hash to the hashes
-        hash_data = { "model": modelhash }
-        if manual_hash:  # Only include manual_hash if it has a value
-            hash_data["manual_hash"] = manual_hash
-
-        hash_data = { "model": modelhash }
+        # Initialize hash data with model hash
+        hash_data = {"model": modelhash}
 
         # Process manual_hash field (handles new lines, extra spaces, and empty values)
-        if manual_hash:
-            manual_list = [h.strip() for h in manual_hash.replace("\n", ",").split(",") if h.strip()]  # Normalize and clean
-            manual_list = manual_list[:30]  # Limit to 30 hashes
-            for i, h in enumerate(manual_list, start=1):
-                hash_data[f"manual{i}"] = h  # Store as "manual1", "manual2", etc.
+        manual_list = [h.strip() for h in manual_hash.replace("\n", ",").split(",") if h.strip()]  # Normalize and clean
+        manual_list = manual_list[:30]  # Limit to 30 hashes
 
+        # Store hashes as "manual1", "manual2", etc.
+        for i, h in enumerate(manual_list, start=1):
+            hash_data[f"manual{i}"] = h  
+
+        # Convert all hashes to JSON format
         extension_hashes = json.dumps(embeddings | loras | hash_data)
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
@@ -553,22 +554,29 @@ class ImageSaver:
                 filename = f"{current_filename_prefix}.{extension}"
                 file = os.path.join(output_path, filename)
 
-                # Use the image's existing EXIF data (or create a new one)
-                exif = img.getexif()
+                # First, save the image without any EXIF metadata
+                img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
 
-                # Store the standard parameters in UserComment (EXIF tag 0x9286) – for external programs
-                exif[piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(a111_params, encoding="unicode")
-
-                # Store ComfyUI’s workflow in ImageDescription (0x010E) as a separate entry
+                # Build a new EXIF dictionary using the old-style method
+                exif_dict = {
+                    "Exif": {
+                        # Store parameters in UserComment (this returns bytes)
+                        piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode")
+                    },
+                    "0th": {}
+                }
+                # Store workflow in ImageDescription (tag 0x010E) as bytes
                 if extra_pnginfo is not None and "workflow" in extra_pnginfo:
-                    exif[0x010E] = "Workflow:" + json.dumps(extra_pnginfo["workflow"])
-
-                # Store prompt separately in Make (0x010F), in case other software reads it
+                    workflow_str = "Workflow:" + json.dumps(extra_pnginfo["workflow"], ensure_ascii=False)
+                    exif_dict["0th"][0x010E] = workflow_str.encode("utf-8")
+                # Store prompt in Make (tag 0x010F) as bytes
                 if prompt is not None:
-                    exif[0x010F] = "Prompt:" + json.dumps(prompt)
+                    prompt_str = "Prompt:" + json.dumps(prompt, ensure_ascii=False)
+                    exif_dict["0th"][0x010F] = prompt_str.encode("utf-8")
 
-                # Convert EXIF data to bytes and save the image
-                img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp, exif=exif.tobytes())
+                exif_bytes = piexif.dump(exif_dict)
+                piexif.insert(exif_bytes, file)
+
 
 
             if save_workflow_as_json:
