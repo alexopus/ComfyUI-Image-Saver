@@ -490,19 +490,42 @@ class ImageSaver:
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
  
-        # Ensure manual_hash is a string (handles optional input case)
+         # Ensure manual_hash is a string (handles optional input case)
         manual_hash = manual_hash if manual_hash else ""
 
         # Initialize hash data with model hash
         hash_data = {"model": modelhash}
 
-        # Process manual_hash field (handles new lines, extra spaces, and empty values)
-        manual_list = [h.strip() for h in manual_hash.replace("\n", ",").split(",") if h.strip()]  # Normalize and clean
-        manual_list = manual_list[:30]  # Limit to 30 hashes
+        # Process manual_hash field: normalize, remove extra spaces/newlines, and split by comma
+        manual_list = manual_hash.replace("\n", ",").split(",")
+        manual_list = [h.strip() for h in manual_list if h.strip()]  # Remove empty entries and trim spaces
 
-        # Store hashes as "manual1", "manual2", etc.
-        for i, h in enumerate(manual_list, start=1):
-            hash_data[f"manual{i}"] = h  
+        # Remove duplicates among the manually entered hashes (preserving order)
+        seen_hashes = set()
+        unique_manual_list = []
+        for h in manual_list:
+            if h in seen_hashes:
+                print(f"[ImageSaver] Skipping duplicate manual hash: {h}")  # Console message
+            else:
+                seen_hashes.add(h)
+                unique_manual_list.append(h)
+
+        # Remove any manual hash that is already present in the computed LoRas
+        # (Assumes 'loras' is a dictionary where the values are the LoRA hashes)
+        existing_lora_hashes = set(loras.values())  # Get set of LoRA hashes
+        final_manual_list = []
+        for h in unique_manual_list:
+            if h in existing_lora_hashes:
+                print(f"[ImageSaver] Skipping manual hash already present in LoRAs: {h}")  # Console message
+            else:
+                final_manual_list.append(h)
+
+        # Limit to 30 manual hashes
+        final_manual_list = final_manual_list[:30]
+
+        # Store the cleaned manual hashes as "manual1", "manual2", etc.
+        for i, h in enumerate(final_manual_list, start=1):
+            hash_data[f"manual{i}"] = h
 
         # Convert all hashes to JSON format
         extension_hashes = json.dumps(embeddings | loras | hash_data)
