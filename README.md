@@ -3,10 +3,10 @@
 ## Updates
 2025/01/06 
 - I Removed new line trim function on the positive prompt, since I like to be able to manipulate how the prompt looks and store the loras name in a more visually clean way.
-- I tried implementing WebP workflow embedding so you can store the ComfyUI json in the metadata while also storing generation parameter. This is working on Civitai. But when reading with "SD Prompt Reader" the information are not showing up. But since Civitai is, I think it's good.
+- I tried implementing WebP workflow embedding so that you can store the ComfyUI JSON in the metadata along with generation parameters. This works on Civitai.
 - I implemented a new field "manual hash"! Here you can get Civitai AutoV3 hash and input here, Civitai will recognize your images with that model in cross posting! It works with workflows as well. It probably works with anything that has a AutoV3 hash.
-- I wanted to implement a way to Cross post the Workflow itself when saving the image. The biggest challenge here was that since Civitai will actually read the zipped file hash, it's a circular thing to try to store the hash on the json and the re-zip because it would change the hash. So I made a NEW node called "Civitai Hash Fetcher" where you can input your 'username' and your 'model name', the first hit from the API (the most current version) hash will be fetched. Now you connect that to the "manual hash" and now you can share your workflow and if the user itself don't change this, the image will be cross-posted to our workflow!
-- Allow up to 30 manual hashes on the manual_hash field, comma separated string.
+- I implemented a method to cross-post the workflow when saving the image. The main challenge was that Civitai reads the hash from the zipped file, creating a circular dependency when trying to store and update the hash in the JSON. To solve this, I created a new node called "Civitai Hash Fetcher." In this node, you input your 'username' and 'model name' to fetch the most current version’s hash from the API. By connecting this node to the "manual hash" field, you ensure that workflows can be shared and, if left unchanged by the user, images will be correctly cross-posted.
+- Allow up to 30 manual hashes in the manual_hash field, provided as a comma-separated string.
 
 
 # Save image with generation metadata in ComfyUI

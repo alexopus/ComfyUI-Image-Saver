@@ -22,10 +22,6 @@ def parse_checkpoint_name(ckpt_name):
 def parse_checkpoint_name_without_extension(ckpt_name):
     return os.path.splitext(parse_checkpoint_name(ckpt_name))[0]
 
-
-def handle_whitespace(string: str):
-    return string.strip()  # Only strip leading/trailing whitespace
-
 def handle_prompt_whitespace(string: str):
     return string.strip()  # Only strip leading/trailing whitespace
 
