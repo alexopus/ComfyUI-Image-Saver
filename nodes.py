@@ -398,44 +398,42 @@ class ImageSaver:
                 return f"{sampler_name}_{scheduler}"
             else:
                 return sampler_name
-
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "images": ("IMAGE", {"tooltip": "image(s) to save"}),
-                "filename": ("STRING", {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
-                "path": ("STRING", {"default": '', "multiline": False, "tooltip": "path to save the images (under Comfy's save directory)"}),
-                "extension": (['png', 'jpeg', 'webp'], {"tooltip": "file extension/type to save image as"}),
+                "images":                ("IMAGE",   {                                                             "tooltip": "image(s) to save"}),
+                "filename":              ("STRING",  {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
+                "path":                  ("STRING",  {"default": '', "multiline": False,                           "tooltip": "path to save the images (under Comfy's save directory)"}),
+                "extension":             (['png', 'jpeg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
             },
             "optional": {
-                "manual_hash": ("STRING", {"default": "", "multiline": False, "tooltip": "manual hash to be saved along with the LoRas hashes"}),
-                "steps": ("INT", {"default": 20, "min": 1, "max": 10000, "tooltip": "number of steps"}),
-                "cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "tooltip": "CFG value"}),
-                "modelname": ("STRING", {"default": '', "multiline": False, "tooltip": "model name"}),
-                "sampler_name": ("STRING", {"default": '', "multiline": False, "tooltip": "sampler name (as string)"}),
-                "scheduler": ("STRING", {"default": 'normal', "multiline": False, "tooltip": "scheduler name (as string)"}),
-                "positive": ("STRING", {"default": 'unknown', "multiline": True, "tooltip": "positive prompt"}),
-                "negative": ("STRING", {"default": 'unknown', "multiline": True, "tooltip": "negative prompt"}),
-                "seed_value": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "seed"}),
-                "width": ("INT", {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8, "tooltip": "image width"}),
-                "height": ("INT", {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8, "tooltip": "image height"}),
-                "lossless_webp": ("BOOLEAN", {"default": True, "tooltip": "if True, saved WEBP files will be lossless"}),
-                "quality_jpeg_or_webp": ("INT", {"default": 100, "min": 1, "max": 100, "tooltip": "quality setting of JPEG/WEBP"}),
-                "optimize_png": ("BOOLEAN", {"default": False, "tooltip": "if True, saved PNG files will be optimized (can reduce file size but is slower)"}),
-                "counter": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "counter"}),
-                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "tooltip": "denoise value"}),
-                "clip_skip": ("INT", {"default": 0, "min": -24, "max": 24, "tooltip": "skip last CLIP layers (positive or negative value, 0 for no skip)"}),
-                "time_format": ("STRING", {"default": "%Y-%m-%d-%H%M%S", "multiline": False, "tooltip": "timestamp format"}),
-                "save_workflow_as_json": ("BOOLEAN", {"default": False, "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving it in the image metadata"}),
-                "embed_workflow_in_png": ("BOOLEAN", {"default": True, "tooltip": "if True, embeds the workflow in the saved PNG file (if saving as PNG)"}),
+                "manual_hash":           ("STRING",  {"default": "", "multiline": False,                           "tooltip": "manual hash to be saved along with the LoRas hashes"}),
+                "steps":                 ("INT",     {"default": 20, "min": 1, "max": 10000,                       "tooltip": "number of steps"}),
+                "cfg":                   ("FLOAT",   {"default": 7.0, "min": 0.0, "max": 100.0,                    "tooltip": "CFG value"}),
+                "modelname":             ("STRING",  {"default": '', "multiline": False,                           "tooltip": "model name"}),
+                "sampler_name":          ("STRING",  {"default": '', "multiline": False,                           "tooltip": "sampler name (as string)"}),
+                "scheduler":             ("STRING",  {"default": 'normal', "multiline": False,                     "tooltip": "scheduler name (as string)"}),
+                "positive":              ("STRING",  {"default": 'unknown', "multiline": True,                     "tooltip": "positive prompt"}),
+                "negative":              ("STRING",  {"default": 'unknown', "multiline": True,                     "tooltip": "negative prompt"}),
+                "seed_value":            ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff,           "tooltip": "seed"}),
+                "width":                 ("INT",     {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8,  "tooltip": "image width"}),
+                "height":                ("INT",     {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8,  "tooltip": "image height"}),
+                "lossless_webp":         ("BOOLEAN", {"default": True,                                             "tooltip": "if True, saved WEBP files will be lossless"}),
+                "quality_jpeg_or_webp":  ("INT",     {"default": 100, "min": 1, "max": 100,                        "tooltip": "quality setting of JPEG/WEBP"}),
+                "optimize_png":          ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saved PNG files will be optimized (can reduce file size but is slower)"}),
+                "counter":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff,           "tooltip": "counter"}),
+                "denoise":               ("FLOAT",   {"default": 1.0, "min": 0.0, "max": 1.0,                      "tooltip": "denoise value"}),
+                "clip_skip":             ("INT",     {"default": 0, "min": -24, "max": 24,                         "tooltip": "skip last CLIP layers (positive or negative value, 0 for no skip)"}),
+                "time_format":           ("STRING",  {"default": "%Y-%m-%d-%H%M%S", "multiline": False,            "tooltip": "timestamp format"}),
+                "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving it in the image metadata"}),
+                "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG and WEBP files (but not in JPEG)"}),
             },
             "hidden": {
                 "prompt": "PROMPT",
                 "extra_pnginfo": "EXTRA_PNGINFO",
             },
         }
-
     RETURN_TYPES = ()
     FUNCTION = "save_files"
 
@@ -467,7 +465,7 @@ class ImageSaver:
         time_format,
         denoise,
         clip_skip,
-        manual_hash="",  # ✅ Now it has a default empty string
+        manual_hash="",  # default empty string to work when input is disconnected
         save_workflow_as_json=False,
         embed_workflow_in_png=True,
         prompt=None,
@@ -490,9 +488,6 @@ class ImageSaver:
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
  
-         # Ensure manual_hash is a string (handles optional input case)
-        manual_hash = manual_hash if manual_hash else ""
-
         # Initialize hash data with model hash
         hash_data = {"model": modelhash}
 
@@ -552,9 +547,7 @@ class ImageSaver:
         for image in images:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-            
             current_filename_prefix = self.get_unique_filename(output_path, filename_prefix, extension)
-
             if extension == 'png':
                 metadata = PngInfo()
                 metadata.add_text("parameters", a111_params)
@@ -569,6 +562,7 @@ class ImageSaver:
 
                 filename = f"{current_filename_prefix}.png"
                 img.save(os.path.join(output_path, filename), pnginfo=metadata, optimize=optimize_png)
+
             else:
                 filename = f"{current_filename_prefix}.{extension}"
                 file = os.path.join(output_path, filename)
@@ -576,7 +570,7 @@ class ImageSaver:
                 # First, save the image without any EXIF metadata
                 img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
 
-                # Build a new EXIF dictionary using the old-style method
+                # Store metadata in both JPEG & WEBP
                 exif_dict = {
                     "Exif": {
                         # Store parameters in UserComment (this returns bytes)
@@ -584,20 +578,20 @@ class ImageSaver:
                     },
                     "0th": {}
                 }
-                # Store workflow in ImageDescription (tag 0x010E) as bytes
-                if extra_pnginfo is not None and "workflow" in extra_pnginfo:
+
+                # Only store workflow metadata in WEBP (not JPEG)
+                if extension == "webp" and extra_pnginfo is not None and "workflow" in extra_pnginfo:
                     workflow_str = "Workflow:" + json.dumps(extra_pnginfo["workflow"], ensure_ascii=False)
                     exif_dict["0th"][0x010E] = workflow_str.encode("utf-8")
-                # Store prompt in Make (tag 0x010F) as bytes
+
+                # Store prompt metadata for both JPEG & WEBP
                 if prompt is not None:
                     prompt_str = "Prompt:" + json.dumps(prompt, ensure_ascii=False)
                     exif_dict["0th"][0x010F] = prompt_str.encode("utf-8")
 
+                # Apply EXIF metadata to the image
                 exif_bytes = piexif.dump(exif_dict)
                 piexif.insert(exif_bytes, file)
-
-
-
             if save_workflow_as_json:
                 save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
 
