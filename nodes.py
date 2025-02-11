@@ -408,7 +408,7 @@ class ImageSaver:
                 "extension":             (['png', 'jpeg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
             },
             "optional": {
-                "manual_hash":           ("STRING",  {"default": "", "multiline": False,                           "tooltip": "manual hash to be saved along with the LoRas hashes"}),
+                "manual_hash":           ("STRING",  {"default": "", "multiline": False,                           "tooltip": "enter hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:3F735E583F98')"}),
                 "steps":                 ("INT",     {"default": 20, "min": 1, "max": 10000,                       "tooltip": "number of steps"}),
                 "cfg":                   ("FLOAT",   {"default": 7.0, "min": 0.0, "max": 100.0,                    "tooltip": "CFG value"}),
                 "modelname":             ("STRING",  {"default": '', "multiline": False,                           "tooltip": "model name"}),
@@ -490,37 +490,45 @@ class ImageSaver:
  
         # Initialize hash data with model hash
         hash_data = {"model": modelhash}
-
+        
         # Process manual_hash field: normalize, remove extra spaces/newlines, and split by comma
         manual_list = manual_hash.replace("\n", ",").split(",")
-        manual_list = [h.strip() for h in manual_list if h.strip()]  # Remove empty entries and trim spaces
+        manual_entries = {}
 
-        # Remove duplicates among the manually entered hashes (preserving order)
-        seen_hashes = set()
-        unique_manual_list = []
-        for h in manual_list:
-            if h in seen_hashes:
-                print(f"[ImageSaver] Skipping duplicate manual hash: {h}")  # Console message
+        for entry in manual_list:
+            entry = entry.strip()
+            if not entry:
+                continue
+
+            # Check if a name is provided using "Name:HASH" format
+            if ":" in entry:
+                name, hash_value = entry.split(":", 1)  # Only split at the first `:`
+                name, hash_value = name.strip(), hash_value.strip()
             else:
-                seen_hashes.add(h)
-                unique_manual_list.append(h)
+                name, hash_value = None, entry.strip()
 
-        # Remove any manual hash that is already present in the computed LoRas
-        # (Assumes 'loras' is a dictionary where the values are the LoRA hashes)
+            if hash_value in manual_entries:
+                print(f"[ImageSaver] Skipping duplicate hash: {hash_value}")
+                continue  # Skip duplicates
+
+            manual_entries[hash_value] = name  # Store name-hash mapping
+
+        # Remove hashes already present in the computed LoRAs
         existing_lora_hashes = set(loras.values())  # Get set of LoRA hashes
-        final_manual_list = []
-        for h in unique_manual_list:
-            if h in existing_lora_hashes:
-                print(f"[ImageSaver] Skipping manual hash already present in LoRAs: {h}")  # Console message
-            else:
-                final_manual_list.append(h)
+        filtered_entries = {}
+        for hash_value, name in manual_entries.items():
+            if hash_value in existing_lora_hashes:
+                print(f"[ImageSaver] Skipping manual hash already present in LoRAs: {hash_value}")
+                continue
+            filtered_entries[hash_value] = name
 
         # Limit to 30 manual hashes
-        final_manual_list = final_manual_list[:30]
+        limited_entries = dict(list(filtered_entries.items())[:30])
 
-        # Store the cleaned manual hashes as "manual1", "manual2", etc.
-        for i, h in enumerate(final_manual_list, start=1):
-            hash_data[f"manual{i}"] = h
+        # Store named hashes using the given name, otherwise use "manualX"
+        for i, (hash_value, name) in enumerate(limited_entries.items(), start=1):
+            key_name = name if name else f"manual{i}"  # Use the given name, otherwise default to manualX
+            hash_data[key_name] = hash_value
 
         # Convert all hashes to JSON format
         extension_hashes = json.dumps(embeddings | loras | hash_data)
