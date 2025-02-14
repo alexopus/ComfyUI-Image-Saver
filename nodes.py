@@ -408,7 +408,6 @@ class ImageSaver:
                 "extension":             (['png', 'jpeg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
             },
             "optional": {
-                "manual_hash":           ("STRING",  {"default": "", "multiline": False,                           "tooltip": "enter hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:3F735E583F98')"}),
                 "steps":                 ("INT",     {"default": 20, "min": 1, "max": 10000,                       "tooltip": "number of steps"}),
                 "cfg":                   ("FLOAT",   {"default": 7.0, "min": 0.0, "max": 100.0,                    "tooltip": "CFG value"}),
                 "modelname":             ("STRING",  {"default": '', "multiline": False,                           "tooltip": "model name"}),
@@ -428,6 +427,7 @@ class ImageSaver:
                 "time_format":           ("STRING",  {"default": "%Y-%m-%d-%H%M%S", "multiline": False,            "tooltip": "timestamp format"}),
                 "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving it in the image metadata"}),
                 "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG and WEBP files (but not in JPEG)"}),
+                "manual_hash":           ("STRING",  {"default": "", "multiline": False,                           "tooltip": "enter hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:3F735E583F98')"}),
             },
             "hidden": {
                 "prompt": "PROMPT",
