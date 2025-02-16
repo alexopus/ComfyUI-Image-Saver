@@ -487,10 +487,7 @@ class ImageSaver:
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
 
-        # Initialize hash data with model hash
-        additional_hashes = {}
-
-        # Process additional_hashes field: normalize, remove extra spaces/newlines, and split by comma
+        # Process additional_hashes input (a string) by normalizing, removing extra spaces/newlines, and splitting by comma
         manual_list = additional_hashes.replace("\n", ",").split(",")
         manual_entries = {}
 
@@ -525,12 +522,13 @@ class ImageSaver:
         limited_entries = dict(list(filtered_entries.items())[:30])
 
         # Store named hashes using the given name, otherwise use "manualX"
+        additional_hashes_dict = {}
         for i, (hash_value, name) in enumerate(limited_entries.items(), start=1):
             key_name = name if name else f"manual{i}"  # Use the given name, otherwise default to manualX
-            additional_hashes[key_name] = hash_value
+            additional_hashes_dict[key_name] = hash_value
 
         # Convert all hashes to JSON format
-        hashes = json.dumps(embeddings | loras | additional_hashes | { "model": modelhash })
+        hashes = json.dumps(embeddings | loras | additional_hashes_dict | {"model": modelhash})
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
         positive_a111_params = positive.strip()
