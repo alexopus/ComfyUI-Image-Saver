@@ -22,11 +22,6 @@ def parse_checkpoint_name(ckpt_name):
 def parse_checkpoint_name_without_extension(ckpt_name):
     return os.path.splitext(parse_checkpoint_name(ckpt_name))[0]
 
-
-def handle_whitespace(string: str):
-    return string.strip().replace("\n", " ").replace("\r", " ").replace("\t", " ")
-
-
 def get_timestamp(time_format):
     now = datetime.now()
     try:
@@ -493,8 +488,8 @@ class ImageSaver:
         extension_hashes = json.dumps(embeddings | loras | { "model": modelhash })
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
-        positive_a111_params = handle_whitespace(positive)
-        negative_a111_params = f"\nNegative prompt: {handle_whitespace(negative)}"
+        positive_a111_params = positive.strip()
+        negative_a111_params = f"\nNegative prompt: {negative.strip()}"
         a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}{f', Clip skip: {abs(clip_skip)}' if clip_skip != 0 else ''}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes}, Version: ComfyUI"
 
         output_path = os.path.join(self.output_dir, path)
