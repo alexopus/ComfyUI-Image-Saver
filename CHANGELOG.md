@@ -1,3 +1,10 @@
+# v1.5.0
+
+- New lines are no longer removed from prompts.
+- Added Civitai Hash Fetcher node that can retrieve a ressource hash from civitai based on its name.
+- Added an "aditional hashes" input that accepts a comma separated list of resource hahes that will be stored in the image metadata.
+- Experimental support for storing workflow in webp.
+
 # v1.4.0
 
 - Add UNETLoaderWithName
