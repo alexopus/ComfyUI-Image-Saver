@@ -423,8 +423,9 @@ class ImageSaver:
                 "denoise":               ("FLOAT",   {"default": 1.0, "min": 0.0, "max": 1.0,                      "tooltip": "denoise value"}),
                 "clip_skip":             ("INT",     {"default": 0, "min": -24, "max": 24,                         "tooltip": "skip last CLIP layers (positive or negative value, 0 for no skip)"}),
                 "time_format":           ("STRING",  {"default": "%Y-%m-%d-%H%M%S", "multiline": False,            "tooltip": "timestamp format"}),
-                "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, saves the workflow as a separate JSON file, in addition to saving the image"}),
-                "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG file (if saving as PNG)"}),
+                "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, also saves the workflow as a separate JSON file"}),
+                "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG and WEBP files (but not in JPEG)"}),
+                "additional_hashes":     ("STRING",  {"default": "", "multiline": False,                           "tooltip": "hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:FF735FF83F98')"}),
             },
             "hidden": {
                 "prompt": "PROMPT",
@@ -463,6 +464,7 @@ class ImageSaver:
         time_format,
         denoise,
         clip_skip,
+        additional_hashes="",
         save_workflow_as_json=False,
         embed_workflow_in_png=True,
         prompt=None,
@@ -485,12 +487,55 @@ class ImageSaver:
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
 
-        extension_hashes = json.dumps(embeddings | loras | { "model": modelhash })
+        # Initialize hash data with model hash
+        additional_hashes = {}
+
+        # Process additional_hashes field: normalize, remove extra spaces/newlines, and split by comma
+        manual_list = additional_hashes.replace("\n", ",").split(",")
+        manual_entries = {}
+
+        for entry in manual_list:
+            entry = entry.strip()
+            if not entry:
+                continue
+
+            # Check if a name is provided using "Name:HASH" format
+            if ":" in entry:
+                name, hash_value = entry.split(":", 1)  # Only split at the first `:`
+                name, hash_value = name.strip(), hash_value.strip()
+            else:
+                name, hash_value = None, entry.strip()
+
+            if hash_value in manual_entries:
+                print(f"[ImageSaver] Skipping duplicate hash: {hash_value}")
+                continue  # Skip duplicates
+
+            manual_entries[hash_value] = name  # Store name-hash mapping
+
+        # Remove hashes already present in the computed LoRAs
+        existing_lora_hashes = set(loras.values())  # Get set of LoRA hashes
+        filtered_entries = {}
+        for hash_value, name in manual_entries.items():
+            if hash_value in existing_lora_hashes:
+                print(f"[ImageSaver] Skipping manual hash already present in LoRAs: {hash_value}")
+                continue
+            filtered_entries[hash_value] = name
+
+        # Limit to 30 manual hashes
+        limited_entries = dict(list(filtered_entries.items())[:30])
+
+        # Store named hashes using the given name, otherwise use "manualX"
+        for i, (hash_value, name) in enumerate(limited_entries.items(), start=1):
+            key_name = name if name else f"manual{i}"  # Use the given name, otherwise default to manualX
+            additional_hashes[key_name] = hash_value
+
+        # Convert all hashes to JSON format
+        hashes = json.dumps(embeddings | loras | additional_hashes | { "model": modelhash })
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
         positive_a111_params = positive.strip()
         negative_a111_params = f"\nNegative prompt: {negative.strip()}"
-        a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}{f', Clip skip: {abs(clip_skip)}' if clip_skip != 0 else ''}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {extension_hashes}, Version: ComfyUI"
+        a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}{f', Clip skip: {abs(clip_skip)}' if clip_skip != 0 else ''}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {hashes}, Version: ComfyUI"
 
         output_path = os.path.join(self.output_dir, path)
 
@@ -509,9 +554,7 @@ class ImageSaver:
         for image in images:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-            
             current_filename_prefix = self.get_unique_filename(output_path, filename_prefix, extension)
-
             if extension == 'png':
                 metadata = PngInfo()
                 metadata.add_text("parameters", a111_params)
@@ -529,12 +572,31 @@ class ImageSaver:
             else:
                 filename = f"{current_filename_prefix}.{extension}"
                 file = os.path.join(output_path, filename)
+
+                # First, save the image without any EXIF metadata
                 img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
-                exif_bytes = piexif.dump({
+
+                # Store metadata in both JPEG & WEBP
+                exif_dict = {
                     "Exif": {
+                        # Store parameters in UserComment (this returns bytes)
                         piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode")
                     },
-                })
+                    "0th": {}
+                }
+
+                # Only store workflow metadata in WEBP (not JPEG)
+                if extension == "webp" and extra_pnginfo is not None and "workflow" in extra_pnginfo:
+                    workflow_str = "Workflow:" + json.dumps(extra_pnginfo["workflow"], ensure_ascii=False)
+                    exif_dict["0th"][0x010E] = workflow_str.encode("utf-8")
+
+                # Store prompt metadata for both JPEG & WEBP
+                if prompt is not None:
+                    prompt_str = "Prompt:" + json.dumps(prompt, ensure_ascii=False)
+                    exif_dict["0th"][0x010F] = prompt_str.encode("utf-8")
+
+                # Apply EXIF metadata to the image
+                exif_bytes = piexif.dump(exif_dict)
                 piexif.insert(exif_bytes, file)
 
             if save_workflow_as_json:
@@ -542,10 +604,10 @@ class ImageSaver:
 
             paths.append(filename)
         return paths
-        
+
     def get_unique_filename(self, output_path, filename_prefix, extension):
         existing_files = [f for f in os.listdir(output_path) if f.startswith(filename_prefix) and f.endswith(extension)]
-        
+
         if not existing_files:
             return f"{filename_prefix}"
 
