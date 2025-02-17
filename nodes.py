@@ -574,14 +574,11 @@ class ImageSaver:
                 # First, save the image without any EXIF metadata
                 img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
 
+                # Ensure exif_dict is always initialized
+                exif_dict = {"Exif": {}, "0th": {}}
+
                 # Store metadata in both JPEG & WEBP
-                exif_dict = {
-                    "Exif": {
-                        # Store parameters in UserComment (this returns bytes)
-                        piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode")
-                    },
-                    "0th": {}
-                }
+                exif_dict["Exif"][piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(a111_params, encoding="unicode")
 
                 # Only store workflow metadata in WEBP (not JPEG)
                 if extension == "webp" and extra_pnginfo is not None and "workflow" in extra_pnginfo:
@@ -593,9 +590,10 @@ class ImageSaver:
                     prompt_str = "Prompt:" + json.dumps(prompt, ensure_ascii=False)
                     exif_dict["0th"][0x010F] = prompt_str.encode("utf-8")
 
-                # Apply EXIF metadata to the image
-                exif_bytes = piexif.dump(exif_dict)
-                piexif.insert(exif_bytes, file)
+                # Convert exif_dict to bytes only if it contains data
+                if exif_dict["Exif"] or exif_dict["0th"]:
+                    exif_bytes = piexif.dump(exif_dict)
+                    piexif.insert(exif_bytes, file)
 
             if save_workflow_as_json:
                 save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
