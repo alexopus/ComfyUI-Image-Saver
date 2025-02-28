@@ -585,6 +585,13 @@ class ImageSaver:
                     workflow_str = "Workflow:" + json.dumps(extra_pnginfo["workflow"], ensure_ascii=False)
                     exif_dict["0th"][0x010E] = workflow_str.encode("utf-8")
 
+                    # Force EXIF for lossless WebP
+                    if lossless_webp:
+                        img.save(file, format="WebP", lossless=True, exif=piexif.dump(exif_dict))
+                    else:
+                        exif_bytes = piexif.dump(exif_dict)
+                        piexif.insert(exif_bytes, file)
+
                 # Store prompt metadata for both JPEG & WEBP
                 if prompt is not None:
                     prompt_str = "Prompt:" + json.dumps(prompt, ensure_ascii=False)
