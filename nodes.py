@@ -11,7 +11,6 @@ from .utils import get_sha256
 from .prompt_metadata_extractor import PromptMetadataExtractor
 from nodes import MAX_RESOLUTION
 
-
 def parse_checkpoint_name(ckpt_name):
     return os.path.basename(ckpt_name)
 
@@ -254,12 +253,15 @@ class ImageSaver:
         for image in images:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+
             current_filename_prefix = self.get_unique_filename(output_path, filename_prefix, extension)
+            filename = f"{current_filename_prefix}.{extension}"
+            filepath = os.path.join(output_path, filename)
+
             if extension == 'png':
                 metadata = PngInfo()
                 metadata.add_text("parameters", a111_params)
 
-                # embed workflow and prompt json only if embed_workflow_in_png is true
                 if embed_workflow_in_png:
                     if prompt is not None:
                         metadata.add_text("prompt", json.dumps(prompt))
@@ -322,5 +324,4 @@ class ImageSaver:
             next_suffix = max(suffixes) + 1
         else:
             next_suffix = 1
-
         return f"{filename_prefix}_{next_suffix:02d}"
