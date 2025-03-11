@@ -1,15 +1,12 @@
 import os
 from datetime import datetime
-from sys import float_info
 import json
 import piexif
 import piexif.helper
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 import numpy as np
-import torch
 import folder_paths
-import comfy.sd
 from .utils import get_sha256
 from .prompt_metadata_extractor import PromptMetadataExtractor
 from nodes import MAX_RESOLUTION
@@ -17,7 +14,6 @@ from nodes import MAX_RESOLUTION
 
 def parse_checkpoint_name(ckpt_name):
     return os.path.basename(ckpt_name)
-
 
 def parse_checkpoint_name_without_extension(ckpt_name):
     return os.path.splitext(parse_checkpoint_name(ckpt_name))[0]
@@ -42,7 +38,6 @@ def save_json(image_info, filename):
     except Exception as e:
         print(f'Failed to save workflow as json due to: {e}, proceeding with the remainder of saving execution')
 
-
 def make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
@@ -61,299 +56,6 @@ def make_pathname(filename, seed, modelname, counter, time_format, sampler_name,
 def make_filename(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
     filename = make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
     return get_timestamp(time_format) if filename == "" else filename
-
-class SeedGenerator:
-    RETURN_TYPES = ("INT",)
-    OUTPUT_TOOLTIPS = ("seed (INT)",)
-    FUNCTION = "get_seed"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = "Provides seed as integer"
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "seed as integer number"}),
-            }
-        }
-
-    def get_seed(self, seed):
-        return (seed,)
-
-class StringLiteral:
-    RETURN_TYPES = ("STRING",)
-    OUTPUT_TOOLTIPS = ("string (STRING)",)
-    FUNCTION = "get_string"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = "Provides a string"
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "string": ("STRING", {"default": "", "multiline": True, "tooltip": "string"}),
-            }
-        }
-
-    def get_string(self, string):
-        return (string,)
-
-class SizeLiteral:
-    RETURN_TYPES = ("INT",)
-    RETURN_NAMES = ("size",)
-    OUTPUT_TOOLTIPS = ("size (INT)",)
-    FUNCTION = "get_int"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = f"Provides integer number between 0 and {MAX_RESOLUTION} (step=8)"
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "int": ("INT", {"default": 512, "min": 0, "max": MAX_RESOLUTION, "step": 8, "tooltip": "size as integer (in steps of 8)"}),
-            }
-        }
-
-    def get_int(self, int):
-        return (int,)
-
-class IntLiteral:
-    RETURN_TYPES = ("INT",)
-    OUTPUT_TOOLTIPS = ("int (INT)",)
-    FUNCTION = "get_int"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = "Provides integer number between 0 and 1000000"
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "int": ("INT", {"default": 0, "min": 0, "max": 1000000, "tooltip": "integer number"}),
-            }
-        }
-
-    def get_int(self, int):
-        return (int,)
-
-class FloatLiteral:
-    RETURN_TYPES = ("FLOAT",)
-    OUTPUT_TOOLTIPS = ("float (FLOAT)",)
-    FUNCTION = "get_float"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = f"Provides a floating point number between {float_info.min} and {float_info.max} (step=0.01)"
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "float": ("FLOAT", {"default": 1.0, "min": float_info.min, "max": float_info.max, "step": 0.01, "tooltip": "floating point number"}),
-            }
-        }
-
-    def get_float(self, float):
-        return (float,)
-
-class CfgLiteral:
-    RETURN_TYPES = ("FLOAT",)
-    RETURN_NAMES = ("value",)
-    OUTPUT_TOOLTIPS = ("cfg (FLOAT)",)
-    FUNCTION = "get_float"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = "Provides CFG value between 0.0 and 100.0"
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "float": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "tooltip": "CFG as a floating point number"}),
-            }
-        }
-
-    def get_float(self, float):
-        return (float,)
-
-class CheckpointLoaderWithName:
-    RETURN_TYPES = ("MODEL", "CLIP", "VAE", "STRING")
-    RETURN_NAMES = ("MODEL", "CLIP", "VAE", "model_name")
-    OUTPUT_TOOLTIPS = ("U-Net model (denoising latents)", "CLIP (Contrastive Language-Image Pre-Training) model (encoding text prompts)", "VAE (Variational autoencoder) model (latent<->pixel encoding/decoding)", "checkpoint name")
-    FUNCTION = "load_checkpoint"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = "Loads U-Net model, CLIP model and VAE model from a checkpoint file"
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "ckpt_name": (folder_paths.get_filename_list("checkpoints"), {"tooltip": "checkpoint"}),
-            }
-        }
-
-    def load_checkpoint(self, ckpt_name, output_vae=True, output_clip=True):
-        ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
-        out = comfy.sd.load_checkpoint_guess_config(ckpt_path, output_vae=True, output_clip=True, embedding_directory=folder_paths.get_folder_paths("embeddings"))
-
-        # add checkpoint name to the output tuple (without the ClipVisionModel)
-        out = (*out[:3], ckpt_name)
-        return out
-
-class UNETLoaderWithName:
-    RETURN_TYPES = ("MODEL", "STRING")
-    RETURN_NAMES = ("model", "filename")
-    OUTPUT_TOOLTIPS = ("U-Net model (denoising latents)", "model filename")
-    FUNCTION = "load_unet"
-
-    CATEGORY = "ImageSaver/utils"
-    DESCRIPTION = "Loads U-Net model and outputs it's filename"
-
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "unet_name": (folder_paths.get_filename_list("diffusion_models"),),
-                "weight_dtype": (["default", "fp8_e4m3fn", "fp8_e4m3fn_fast", "fp8_e5m2"],)
-            }
-        }
-
-    def load_unet(self, unet_name, weight_dtype):
-        model_options = {}
-        if weight_dtype == "fp8_e4m3fn":
-            model_options["dtype"] = torch.float8_e4m3fn
-        elif weight_dtype == "fp8_e4m3fn_fast":
-            model_options["dtype"] = torch.float8_e4m3fn
-            model_options["fp8_optimizations"] = True
-        elif weight_dtype == "fp8_e5m2":
-            model_options["dtype"] = torch.float8_e5m2
-
-        unet_path = folder_paths.get_full_path_or_raise("diffusion_models", unet_name)
-        model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
-        return (model, unet_name)
-
-class SamplerSelector:
-    RETURN_TYPES = (comfy.samplers.KSampler.SAMPLERS, "STRING")
-    RETURN_NAMES = ("sampler",                        "sampler_name")
-    OUTPUT_TOOLTIPS = ("sampler (SAMPLERS)", "sampler name (STRING)")
-    FUNCTION = "get_names"
-
-    CATEGORY = 'ImageSaver/utils'
-    DESCRIPTION = 'Provides one of the available ComfyUI samplers'
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "sampler_name": (comfy.samplers.KSampler.SAMPLERS, {"tooltip": "sampler (Comfy's standard)"}),
-            }
-        }
-
-    def get_names(self, sampler_name):
-        return (sampler_name, sampler_name)
-
-class SchedulerSelector:
-    RETURN_TYPES = (comfy.samplers.KSampler.SCHEDULERS + ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]'], "STRING")
-    RETURN_NAMES = ("scheduler",                                                                                "scheduler_name")
-    OUTPUT_TOOLTIPS = ("scheduler (SCHEDULERS + ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]'])", "scheduler name (STRING)")
-    FUNCTION = "get_names"
-
-    CATEGORY = 'ImageSaver/utils'
-    DESCRIPTION = 'Provides one of the standard ComfyUI plus some extra schedulers'
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS + ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]'], {"tooltip": "scheduler (Comfy's standard + extras)"}),
-            }
-        }
-
-    def get_names(self, scheduler):
-        return (scheduler, scheduler)
-
-class SchedulerSelectorComfy:
-    RETURN_TYPES = (comfy.samplers.KSampler.SCHEDULERS, "STRING")
-    RETURN_NAMES = ("scheduler",                        "scheduler_name")
-    OUTPUT_TOOLTIPS = ("scheduler (SCHEDULERS)", "scheduler name (STRING)")
-    FUNCTION = "get_names"
-
-    CATEGORY = 'ImageSaver/utils'
-    DESCRIPTION = 'Provides one of the standard ComfyUI schedulers'
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "scheduler (Comfy's standard)"}),
-            }
-        }
-
-    def get_names(self, scheduler):
-        return (scheduler, scheduler)
-
-class SchedulerToString:
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("scheduler_name",)
-    OUTPUT_TOOLTIPS = ("scheduler name (STRING)",)
-    FUNCTION = "get_name"
-
-    CATEGORY = 'ImageSaver/utils'
-    DESCRIPTION = 'Provides a given sandard ComfyUI or some extra scheduler\'s name as string'
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS + ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]'], {"tooltip": "scheduler (Comfy's standard + extras)"}),
-            }
-        }
-
-    def get_name(self, scheduler):
-        return (scheduler,)
-
-class SchedulerComfyToString:
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("scheduler_name",)
-    OUTPUT_TOOLTIPS = ("scheduler name (STRING)",)
-    FUNCTION = "get_name"
-
-    CATEGORY = 'ImageSaver/utils'
-    DESCRIPTION = 'Provides a given sandard ComfyUI scheduler\'s name as string'
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "scheduler (Comfy's standard)"}),
-            }
-        }
-
-    def get_name(self, scheduler):
-        return (scheduler,)
-
-class SamplerToString:
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("sampler_name",)
-    OUTPUT_TOOLTIPS = ("sampler name (STRING)",)
-    FUNCTION = "get_name"
-
-    CATEGORY = 'ImageSaver/utils'
-    DESCRIPTION = 'Provides a given sandard ComfyUI samplers\'s name as string'
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "sampler": (comfy.samplers.KSampler.SAMPLERS, {"tooltip": "sampler (Comfy's standard)"}),
-            }
-        }
-
-    def get_name(self, sampler):
-        return (sampler,)
 
 class ImageSaver:
     def __init__(self):
@@ -622,22 +324,3 @@ class ImageSaver:
             next_suffix = 1
 
         return f"{filename_prefix}_{next_suffix:02d}"
-
-
-NODE_CLASS_MAPPINGS = {
-    "Checkpoint Loader with Name (Image Saver)": CheckpointLoaderWithName,
-    "UNet loader with Name (Image Saver)": UNETLoaderWithName,
-    "Image Saver": ImageSaver,
-    "Sampler Selector (Image Saver)": SamplerSelector,
-    "Scheduler Selector (Image Saver)": SchedulerSelector,
-    "Scheduler Selector (Comfy) (Image Saver)": SchedulerSelectorComfy,
-    "Seed Generator (Image Saver)": SeedGenerator,
-    "String Literal (Image Saver)": StringLiteral,
-    "Width/Height Literal (Image Saver)": SizeLiteral,
-    "Cfg Literal (Image Saver)": CfgLiteral,
-    "Int Literal (Image Saver)": IntLiteral,
-    "Float Literal (Image Saver)": FloatLiteral,
-    "SchedulerToString (Image Saver)": SchedulerToString,
-    "SchedulerComfyToString (Image Saver)": SchedulerComfyToString,
-    "SamplerToString (Image Saver)": SamplerToString,
-}

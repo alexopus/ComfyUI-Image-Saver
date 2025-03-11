@@ -5,7 +5,7 @@ from .utils import civitai_embedding_key_name, civitai_lora_key_name, full_embed
 
 """
 Extracts Embeddings and Lora's from the given prompts
-and allows asking for their sha's 
+and allows asking for their sha's
 This module is based on civit's plugin and website implementations
 The image saver node goes through the automatic flow, not comfy, on civit
 see: https://github.com/civitai/sd_civitai_extension/blob/2008ba9126ddbb448f23267029b07e4610dffc15/scripts/gen_hashing.py
@@ -28,7 +28,7 @@ class PromptMetadataExtractor:
     """
     def get_embeddings(self):
         return self.__embeddings
-        
+
     """
     Returns the lora's used in the given prompts in a format as known by civitAI
     Example output: {"LORA:epi_noiseoffset2": "81680c064e", "LORA:GoodHands-beta2": "ba43b0efee"}
@@ -42,7 +42,7 @@ class PromptMetadataExtractor:
             embeddings = re.findall(self.EMBEDDING, prompt, re.IGNORECASE | re.MULTILINE)
             for embedding in embeddings:
                 self.__extract_embedding_information(embedding)
-            
+
             loras = re.findall(self.LORA, prompt, re.IGNORECASE | re.MULTILINE)
             for lora in loras:
                 self.__extract_lora_information(lora)
@@ -64,6 +64,6 @@ class PromptMetadataExtractor:
         sha = self.__get_shortened_sha(lora_path)
         # Based on https://github.com/civitai/sd_civitai_extension/blob/2008ba9126ddbb448f23267029b07e4610dffc15/scripts/gen_hashing.py#L63
         self.__loras[lora_name] = sha
-    
+
     def __get_shortened_sha(self, file_path: str):
        return get_sha256(file_path)[:10]

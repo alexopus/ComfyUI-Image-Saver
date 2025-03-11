@@ -1,3 +1,8 @@
+# v1.5.2
+
+- Reverted experimental webp support for the moment. Needs more testing.
+- Fix putting "prompt" into JPEGs.
+
 # v1.5.1
 
 - Fix workflow storage in lossless webp

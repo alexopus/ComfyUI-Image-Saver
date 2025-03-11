@@ -83,8 +83,3 @@ class CivitaiHashFetcher:
 
         except Exception as e:
             return (f"Error: {e}",)
-
-# Ensure the node is correctly registered
-NODE_CLASS_MAPPINGS = {
-    "Civitai Hash Fetcher (Image Saver)": CivitaiHashFetcher,
-}
