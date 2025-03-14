@@ -125,7 +125,7 @@ class ImageSaver:
                 "clip_skip":             ("INT",     {"default": 0, "min": -24, "max": 24,                         "tooltip": "skip last CLIP layers (positive or negative value, 0 for no skip)"}),
                 "time_format":           ("STRING",  {"default": "%Y-%m-%d-%H%M%S", "multiline": False,            "tooltip": "timestamp format"}),
                 "save_workflow_as_json": ("BOOLEAN", {"default": False,                                            "tooltip": "if True, also saves the workflow as a separate JSON file"}),
-                "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG files"}),
+                "embed_workflow_in_png": ("BOOLEAN", {"default": True,                                             "tooltip": "if True, embeds the workflow in the saved PNG and lossy WEBP files (workflow is not embedded for lossless WEBP or JPEG)"}),
                 "additional_hashes":     ("STRING",  {"default": "", "multiline": False,                           "tooltip": "hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:FF735FF83F98')"}),
             },
             "hidden": {
@@ -269,15 +269,37 @@ class ImageSaver:
                         for x in extra_pnginfo:
                             metadata.add_text(x, json.dumps(extra_pnginfo[x]))
 
-                img.save(filepath, pnginfo=metadata, optimize=optimize_png)
-            else: # webp & jpeg
-                img.save(filepath, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
-                exif_bytes = piexif.dump({
-                    "Exif": {
-                        piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode")
-                    },
-                })
-                piexif.insert(exif_bytes, filepath)
+                filename = f"{current_filename_prefix}.png"
+                img.save(os.path.join(output_path, filename), pnginfo=metadata, optimize=optimize_png)
+            else:
+                filename = f"{current_filename_prefix}.{extension}"
+                file = os.path.join(output_path, filename)
+
+                # First, save the image without any EXIF metadata
+                img.save(file, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
+
+                # Ensure exif_dict is always initialized
+                exif_dict = {"Exif": {}, "0th": {}}
+
+                # Store metadata in both JPEG & WEBP
+                exif_dict["Exif"][piexif.ExifIFD.UserComment] = piexif.helper.UserComment.dump(a111_params, encoding="unicode")
+
+                # Only store workflow metadata in WEBP for lossy files (not for lossless WEBP or JPEG)
+                if extension == "webp" and (not lossless_webp) and embed_workflow_in_png and extra_pnginfo is not None and "workflow" in extra_pnginfo:
+                    workflow_str = "Workflow:" + json.dumps(extra_pnginfo["workflow"], ensure_ascii=False)
+                    exif_dict["0th"][0x010E] = workflow_str.encode("utf-8")
+                    exif_bytes = piexif.dump(exif_dict)
+                    piexif.insert(exif_bytes, file)
+
+                # Store prompt metadata ONLY in WebP (not JPEGs)
+                if extension == "webp" and prompt is not None:
+                    prompt_str = "Prompt:" + json.dumps(prompt, ensure_ascii=False)
+                    exif_dict["0th"][0x010F] = prompt_str.encode("utf-8")
+
+                # Convert exif_dict to bytes only if it contains data
+                if exif_dict["Exif"] or exif_dict["0th"]:
+                    exif_bytes = piexif.dump(exif_dict)
+                    piexif.insert(exif_bytes, file)
 
             if save_workflow_as_json:
                 save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
@@ -302,5 +324,4 @@ class ImageSaver:
             next_suffix = max(suffixes) + 1
         else:
             next_suffix = 1
-
         return f"{filename_prefix}_{next_suffix:02d}"
