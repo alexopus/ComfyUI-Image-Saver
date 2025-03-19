@@ -37,10 +37,12 @@ def save_json(image_info, filename):
     except Exception as e:
         print(f'Failed to save workflow as json due to: {e}, proceeding with the remainder of saving execution')
 
-def make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
+def make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
     filename = filename.replace("%model", parse_checkpoint_name(modelname))
+    filename = filename.replace("%width", str(width))
+    filename = filename.replace("%height", str(height))
     filename = filename.replace("%seed", str(seed))
     filename = filename.replace("%counter", str(counter))
     filename = filename.replace("%sampler_name", sampler_name)
@@ -52,8 +54,8 @@ def make_pathname(filename, seed, modelname, counter, time_format, sampler_name,
     filename = filename.replace("%clip_skip", str(clip_skip))
     return filename
 
-def make_filename(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
-    filename = make_pathname(filename, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
+def make_filename(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
+    filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
     return get_timestamp(time_format) if filename == "" else filename
 
 class ImageSaver:
@@ -171,8 +173,8 @@ class ImageSaver:
         prompt=None,
         extra_pnginfo=None,
     ):
-        filename = make_filename(filename, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
-        path = make_pathname(path, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
+        filename = make_filename(filename, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
+        path = make_pathname(path, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
         ckpt_path = folder_paths.get_full_path("checkpoints", modelname)
 
         if not ckpt_path:
