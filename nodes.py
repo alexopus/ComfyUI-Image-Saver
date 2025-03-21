@@ -243,6 +243,9 @@ class ImageSaver:
                 print(f'The path `{output_path.strip()}` specified doesn\'t exist! Creating directory.')
                 os.makedirs(output_path, exist_ok=True)
 
+        if extension == "jpeg":
+            extension = "jpg"
+
         filenames = self.save_images(images, output_path, filename, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow_in_png)
 
         subfolder = os.path.normpath(path)
