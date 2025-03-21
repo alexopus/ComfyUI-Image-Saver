@@ -104,7 +104,7 @@ class ImageSaver:
                 "images":                ("IMAGE",   {                                                             "tooltip": "image(s) to save"}),
                 "filename":              ("STRING",  {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
                 "path":                  ("STRING",  {"default": '', "multiline": False,                           "tooltip": "path to save the images (under Comfy's save directory)"}),
-                "extension":             (['png', 'jpeg', 'jpg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
+                "extension":             (['png', 'jpeg', 'jpg', 'webp'], {                                        "tooltip": "file extension/type to save image as"}),
             },
             "optional": {
                 "steps":                 ("INT",     {"default": 20, "min": 1, "max": 10000,                       "tooltip": "number of steps"}),
