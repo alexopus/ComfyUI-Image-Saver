@@ -1,5 +1,7 @@
 import os
+from pathlib import Path
 import hashlib
+from tqdm import tqdm
 import folder_paths
 
 """
@@ -19,7 +21,12 @@ def get_sha256(file_path: str):
 
     sha256_hash = hashlib.sha256()
     with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
+        file_size = os.fstat(f.fileno()).st_size
+        block_size = 1048576 # 1 MB
+
+        progress_bar = tqdm(None, f"Calculating sha256 '{Path(file_path).stem}'", file_size, unit="B", unit_scale=True, unit_divisor=1024)
+        for byte_block in iter(lambda: f.read(block_size), b""):
+            progress_bar.update(len(byte_block))
             sha256_hash.update(byte_block)
 
     try:
