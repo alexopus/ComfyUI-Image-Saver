@@ -5,6 +5,7 @@ import piexif
 import piexif.helper
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
+from PIL.Image import ExifTags
 import numpy as np
 import folder_paths
 from .utils import get_sha256
@@ -273,10 +274,16 @@ class ImageSaver:
 
                 img.save(filepath, pnginfo=metadata, optimize=optimize_png)
             else: # webp & jpeg
+                # https://github.com/comfyanonymous/ComfyUI/blob/095610717000bffd477a7e72988d1fb2299afacb/comfy_extras/nodes_images.py#L113
                 img.save(filepath, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
+                # Correct exif-saving code, but ComfyUI cannot correctly parse it
                 exif_bytes = piexif.dump({
+                    "0th": {
+                        piexif.ImageIFD.Make: "".join(map(lambda x: f"{x[0]}:{json.dumps(x[1])}", extra_pnginfo.items())),
+                        piexif.ImageIFD.Model: f"prompt:{json.dumps(prompt)}",
+                    },
                     "Exif": {
-                        piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode")
+                        piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode"),
                     },
                 })
                 piexif.insert(exif_bytes, filepath)
