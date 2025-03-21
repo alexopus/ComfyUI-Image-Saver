@@ -385,7 +385,6 @@ class ImageSaverCivitai(ImageSaver):
             response = requests.get(
                 url,
                 stream=True,
-                verify=False,
                 headers={},
                 proxies={ "http": None, "https": None },
                 timeout=300
