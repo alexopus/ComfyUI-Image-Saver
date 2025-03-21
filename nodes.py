@@ -202,7 +202,8 @@ class ImageSaver:
         manual_entries = {}
         unnamed_count = 0
         existing_hashes = {modelhash.lower()} | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}  # Get set of parsed hashes
-        for entry in additional_hashes.replace("\n", ",").split(","):
+        additional_hash_split = additional_hashes.replace("\n", ",").split(",") if additional_hashes else []
+        for entry in additional_hash_split:
             match = (self.re_manual_hash_weights if download_civitai_data else self.re_manual_hash).search(entry)
             if match is None:
                 print(f"ComfyUI-Image-Saver: Invalid additional hash string: '{entry}'")
