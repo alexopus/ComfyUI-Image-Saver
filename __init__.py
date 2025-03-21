@@ -1,4 +1,4 @@
-from .nodes import ImageSaver
+from .nodes import ImageSaver, ImageSaverCivitai
 from .nodes_literals import SeedGenerator, StringLiteral, SizeLiteral, IntLiteral, FloatLiteral, CfgLiteral
 from .nodes_loaders import CheckpointLoaderWithName, UNETLoaderWithName
 from .nodes_selectors import SamplerSelector, SchedulerSelector, SchedulerSelectorComfy, SchedulerToString, SamplerToString, SchedulerComfyToString
@@ -8,6 +8,7 @@ NODE_CLASS_MAPPINGS = {
     "Checkpoint Loader with Name (Image Saver)": CheckpointLoaderWithName,
     "UNet loader with Name (Image Saver)": UNETLoaderWithName,
     "Image Saver": ImageSaver,
+    "Image Saver (Civitai Downloader)": ImageSaverCivitai,
     "Sampler Selector (Image Saver)": SamplerSelector,
     "Scheduler Selector (Image Saver)": SchedulerSelector,
     "Scheduler Selector (Comfy) (Image Saver)": SchedulerSelectorComfy,
