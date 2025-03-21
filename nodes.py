@@ -104,7 +104,7 @@ class ImageSaver:
                 "images":                ("IMAGE",   {                                                             "tooltip": "image(s) to save"}),
                 "filename":              ("STRING",  {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
                 "path":                  ("STRING",  {"default": '', "multiline": False,                           "tooltip": "path to save the images (under Comfy's save directory)"}),
-                "extension":             (['png', 'jpeg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
+                "extension":             (['png', 'jpeg', 'jpg', 'webp'], {                                               "tooltip": "file extension/type to save image as"}),
             },
             "optional": {
                 "steps":                 ("INT",     {"default": 20, "min": 1, "max": 10000,                       "tooltip": "number of steps"}),
@@ -242,9 +242,6 @@ class ImageSaver:
             if not os.path.exists(output_path.strip()):
                 print(f'The path `{output_path.strip()}` specified doesn\'t exist! Creating directory.')
                 os.makedirs(output_path, exist_ok=True)
-
-        if extension == "jpeg":
-            extension = "jpg"
 
         filenames = self.save_images(images, output_path, filename, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow_in_png)
 
