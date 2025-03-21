@@ -28,6 +28,7 @@ def get_sha256(file_path: str):
         for byte_block in iter(lambda: f.read(block_size), b""):
             progress_bar.update(len(byte_block))
             sha256_hash.update(byte_block)
+        progress_bar.close()
 
     try:
         with open(hash_file, "w") as f:
