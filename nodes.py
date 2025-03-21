@@ -279,7 +279,7 @@ class ImageSaver:
                 # Correct exif-saving code, but ComfyUI cannot correctly parse it
                 exif_bytes = piexif.dump({
                     "0th": {
-                        piexif.ImageIFD.Make: "".join(map(lambda x: f"{x[0]}:{json.dumps(x[1])}", extra_pnginfo.items())),
+                        piexif.ImageIFD.Make: "".join(f"{k}:{json.dumps(v)}" for k, v in extra_pnginfo.items()),
                         piexif.ImageIFD.Model: f"prompt:{json.dumps(prompt)}",
                     },
                     "Exif": {
