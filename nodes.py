@@ -240,7 +240,7 @@ class ImageSaver:
             manual_entries[name] = (None, weight, hash)
 
             if len(manual_entries) > 29:
-                print(f"ComfyUI-Image-Saver: Reached maximum limit of 30 manual hashes. Skipping the rest.")
+                print("ComfyUI-Image-Saver: Reached maximum limit of 30 manual hashes. Skipping the rest.")
                 break
 
         # Download or load cache of Civitai data, save specially-formatted data to metadata
