@@ -1,5 +1,6 @@
 import re
 from typing import List
+from comfy.sd1_clip import escape_important, unescape_important, token_weights
 
 from .utils import civitai_embedding_key_name, civitai_lora_key_name, full_embedding_path_for, full_lora_path_for, get_sha256
 
@@ -15,7 +16,7 @@ class PromptMetadataExtractor:
     # Anything that follows embedding:<characters except , or whitespace
     EMBEDDING = r'embedding:([^,\s\(\)\:]+)'
     # Anything that follows <lora:NAME> with allowance for :weight, :weight.fractal or LBW
-    LORA = r'<lora:([^>:]+)(?::[^>]+)?>'
+    LORA = r'<lora:([^>:]+)(?::([^>]+))?>'
 
     def __init__(self, prompts: List[str]):
         self.__embeddings = {}
@@ -39,31 +40,38 @@ class PromptMetadataExtractor:
     # Private API
     def __perform(self, prompts):
         for prompt in prompts:
-            embeddings = re.findall(self.EMBEDDING, prompt, re.IGNORECASE | re.MULTILINE)
-            for embedding in embeddings:
-                self.__extract_embedding_information(embedding)
+            # Use ComfyUI's built-in attention parser to get accurate weights for embeddings
+            parsed = ((unescape_important(value), weight) for value, weight in token_weights(escape_important(prompt), 1.0))
+            for text, weight in parsed:
+                embeddings = re.findall(self.EMBEDDING, text, re.IGNORECASE | re.MULTILINE)
+                for embedding in embeddings:
+                    self.__extract_embedding_information(embedding, weight)
 
             loras = re.findall(self.LORA, prompt, re.IGNORECASE | re.MULTILINE)
             for lora in loras:
                 self.__extract_lora_information(lora)
 
-    def __extract_embedding_information(self, embedding: str):
+    def __extract_embedding_information(self, embedding: str, weight: float):
         embedding_name = civitai_embedding_key_name(embedding)
         embedding_path = full_embedding_path_for(embedding)
         if embedding_path == None:
             return
         sha = self.__get_shortened_sha(embedding_path)
         # Based on https://github.com/civitai/sd_civitai_extension/blob/2008ba9126ddbb448f23267029b07e4610dffc15/scripts/gen_hashing.py#L53
-        self.__embeddings[embedding_name] = sha
+        self.__embeddings[embedding_name] = (embedding_path, weight, sha)
 
-    def __extract_lora_information(self, lora: str):
-        lora_name = civitai_lora_key_name(lora)
-        lora_path = full_lora_path_for(lora)
+    def __extract_lora_information(self, lora: tuple[str, str]):
+        lora_name = civitai_lora_key_name(lora[0])
+        lora_path = full_lora_path_for(lora[0])
         if lora_path == None:
             return
+        try:
+            lora_weight = float(lora[1].split(':')[0])
+        except (ValueError, TypeError):
+            lora_weight = 1
         sha = self.__get_shortened_sha(lora_path)
         # Based on https://github.com/civitai/sd_civitai_extension/blob/2008ba9126ddbb448f23267029b07e4610dffc15/scripts/gen_hashing.py#L63
-        self.__loras[lora_name] = sha
+        self.__loras[lora_name] = (lora_path, lora_weight, sha)
 
     def __get_shortened_sha(self, file_path: str):
        return get_sha256(file_path)[:10]

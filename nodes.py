@@ -1,11 +1,14 @@
 import os
 from datetime import datetime
+from pathlib import Path
 import json
+import requests
 import piexif
 import piexif.helper
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 import numpy as np
+import re
 import folder_paths
 from .utils import get_sha256
 from .prompt_metadata_extractor import PromptMetadataExtractor
@@ -142,6 +145,11 @@ class ImageSaver:
     CATEGORY = "ImageSaver"
     DESCRIPTION = "Save images with civitai-compatible generation metadata"
 
+    # Match 'anything' or 'anything:anything' with trimmed white space
+    re_manual_hash = re.compile(r'^\s*([^:]+?)(?:\s*:\s*([^\s:][^:]*?))?\s*$')
+    # Match 'anything', 'anything:anything' or 'anything:anything:number' with trimmed white space
+    re_manual_hash_weights = re.compile(r'^\s*([^:]+?)(?:\s*:\s*([^\s:][^:]*?))?(?:\s*:\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+)))?\s*$')
+
     def save_files(
         self,
         images,
@@ -170,6 +178,8 @@ class ImageSaver:
         embed_workflow_in_png=True,
         prompt=None,
         extra_pnginfo=None,
+        download_civitai_data=False,
+        easy_remix=False,
     ):
         filename = make_filename(filename, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
         path = make_pathname(path, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
@@ -189,52 +199,95 @@ class ImageSaver:
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
 
         # Process additional_hashes input (a string) by normalizing, removing extra spaces/newlines, and splitting by comma
-        manual_list = additional_hashes.replace("\n", ",").split(",")
         manual_entries = {}
-
-        for entry in manual_list:
-            entry = entry.strip()
-            if not entry:
+        unnamed_count = 0
+        existing_hashes = {modelhash.lower()} | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}  # Get set of parsed hashes
+        for entry in additional_hashes.replace("\n", ",").split(","):
+            match = (self.re_manual_hash_weights if download_civitai_data else self.re_manual_hash).search(entry)
+            if match is None:
+                print(f"ComfyUI-Image-Saver: Invalid additional hash string: '{entry}'")
                 continue
 
-            # Check if a name is provided using "Name:HASH" format
-            if ":" in entry:
-                name, hash_value = entry.split(":", 1)  # Only split at the first `:`
-                name, hash_value = name.strip(), hash_value.strip()
-            else:
-                name, hash_value = None, entry.strip()
+            groups = tuple(group for group in match.groups() if group is not None)
 
-            if hash_value in manual_entries:
-                print(f"[ImageSaver] Skipping duplicate hash: {hash_value}")
+            # Read weight and remove from groups, if needed
+            weight = None
+            if download_civitai_data and len(groups) > 1:
+                try:
+                    weight = float(groups[-1])
+                    groups = groups[:-1]
+                except (ValueError, TypeError):
+                    pass
+
+            # Read hash, optionally preceded by name
+            name, hash = groups if len(groups) > 1 else None, groups[0]
+
+            if any(hash.lower() == existing_hash.lower() for _, _, existing_hash in manual_entries.values()):
+                print(f"ComfyUI-Image-Saver: Skipping duplicate hash: {hash}")
                 continue  # Skip duplicates
 
-            manual_entries[hash_value] = name  # Store name-hash mapping
-
-        # Remove hashes already present in the computed LoRAs
-        existing_lora_hashes = set(loras.values())  # Get set of LoRA hashes
-        filtered_entries = {}
-        for hash_value, name in manual_entries.items():
-            if hash_value in existing_lora_hashes:
-                print(f"[ImageSaver] Skipping manual hash already present in LoRAs: {hash_value}")
+            if hash.lower() in existing_hashes:
+                print(f"ComfyUI-Image-Saver: Skipping manual hash already present in resources: {hash}")
                 continue
-            filtered_entries[hash_value] = name
 
-        # Limit to 30 manual hashes
-        limited_entries = dict(list(filtered_entries.items())[:30])
+            if name is None:
+                unnamed_count += 1
+                name = f"manual{unnamed_count}"
+            elif name in manual_entries:
+                print(f"ComfyUI-Image-Saver: Duplicate manual hash name '{name}' is being overwritten.")
 
-        # Store named hashes using the given name, otherwise use "manualX"
-        additional_hashes_dict = {}
-        for i, (hash_value, name) in enumerate(limited_entries.items(), start=1):
-            key_name = name if name else f"manual{i}"  # Use the given name, otherwise default to manualX
-            additional_hashes_dict[key_name] = hash_value
+            manual_entries[name] = (None, weight, hash)
 
-        # Convert all hashes to JSON format
-        hashes = json.dumps(embeddings | loras | additional_hashes_dict | {"model": modelhash})
+            if len(manual_entries) > 29:
+                print(f"ComfyUI-Image-Saver: Reached maximum limit of 30 manual hashes. Skipping the rest.")
+                break
+
+        # Download or load cache of Civitai data, save specially-formatted data to metadata
+        civitai_resources = []
+        if download_civitai_data:
+            for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items():
+                civitai_info = ImageSaverCivitai.get_civitai_info(filepath, hash)
+                if civitai_info is not None:
+                    resource_data = {
+                        "type": "embed" if name in embeddings else civitai_info["model"]["type"].lower()
+                    } | ({
+                        "weight": weight
+                        } if weight is not None else {}) | {
+                        "modelVersionId": civitai_info["id"],
+                        "modelName": civitai_info["model"]["name"],
+                        "modelVersionName": civitai_info["name"],
+                    }
+                    if resource_data["type"] in ["locon", "loha"]:
+                        resource_data["type"] = "lycoris"
+                    elif resource_data["type"] == "textualinversion":
+                        resource_data["type"] = "embed"
+                    civitai_resources.append(resource_data)
+        else:
+            # Convert all hashes to JSON format
+            hashes = json.dumps({key: value[2] for key, value in embeddings.items()} | {key: value[2] for key, value in loras.items()} | {key: value[2] for key, value in manual_entries.items()} | {"model": modelhash})
         basemodelname = parse_checkpoint_name_without_extension(modelname)
+
+        if easy_remix:
+            def clean_prompt(prompt: str) -> str:
+                # Strip loras
+                prompt = re.sub(metadata_extractor.LORA, "", prompt)
+                # Shorten 'embedding:path/to/my_embedding' -> 'my_embedding'
+                # Note: Possible inaccurate embedding name if the filename has been renamed from the default
+                prompt = re.sub(metadata_extractor.EMBEDDING, lambda match: Path(match.group(1)).stem, prompt)
+                # Remove prompt control edits. e.g., 'STYLE(A1111, mean)', 'SHIFT(1)`, etc.`
+                prompt = re.sub(r'\b[A-Z]+\([^)]*\)', "", prompt)
+                return prompt
+
+            positive = clean_prompt(positive)
+            negative = clean_prompt(negative)
 
         positive_a111_params = positive.strip()
         negative_a111_params = f"\nNegative prompt: {negative.strip()}"
-        a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}{f', Clip skip: {abs(clip_skip)}' if clip_skip != 0 else ''}, Model hash: {modelhash}, Model: {basemodelname}, Hashes: {hashes}, Version: ComfyUI"
+        a111_params = f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, Size: {width}x{height}{f', Clip skip: {abs(clip_skip)}' if clip_skip != 0 else ''}{f', Model hash: {modelhash}' if not download_civitai_data else ''}, Model: {basemodelname}{f', Hashes: {hashes}' if not download_civitai_data else ''}, Version: ComfyUI"
+
+        # Add Civitai resource listing
+        if download_civitai_data and len(civitai_resources) > 0:
+            a111_params += f", Civitai resources: {json.dumps(civitai_resources, separators=(',', ':'))}"
 
         output_path = os.path.join(self.output_dir, path)
 
@@ -304,3 +357,136 @@ class ImageSaver:
             next_suffix = 1
 
         return f"{filename_prefix}_{next_suffix:02d}"
+
+class ImageSaverCivitai(ImageSaver):
+    def __init__(self):
+        super().__init__()
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        input_types = super().INPUT_TYPES()
+        input_types["optional"] |= {
+            "download_civitai_data": ("BOOLEAN", {"default": True, "tooltip": "Download and cache data from civitai.com to save correct metadata. (Disabling this will make this function like a regular Image Saver node.)"}),
+            "easy_remix": ("BOOLEAN", {"default": True, "tooltip": "Strip LoRAs and simplify 'embedding:path' from the prompt to make the Remix option on civitai.com more seamless."}),
+        }
+        input_types["optional"]["additional_hashes"][1]["tooltip"] = "hashes separated by commas, optionally with names and weights. 'Name:HASH', 'HASH:Weight', 'Name:HASH:Weight' (e.g., 'MyLoRA:FF735FF83F98:0.5')"
+        return input_types
+
+    DESCRIPTION = "Save images with civitai-compatible generation metadata by downloading and caching data from civitai.com. Allows LoRA weights to be saved."
+
+    @staticmethod
+    def get_manual_folder() -> Path:
+        return Path(folder_paths.models_dir) / "image-saver"
+
+    @staticmethod
+    def http_get_json(url: str) -> dict | None:
+        try:
+            response = requests.get(
+                url,
+                stream=True,
+                verify=False,
+                headers={},
+                proxies={ "http": None, "https": None },
+                timeout=300
+            )
+        except TimeoutError:
+            print(f"ComfyUI-Image-Saver: HTTP GET Request timed out for {url}")
+            return None
+
+        if not response.ok:
+            print(f"ComfyUI-Image-Saver: HTTP GET Request failed with error code: {response.status_code}: {response.reason}")
+            return None
+
+        try:
+            return response.json()
+        except ValueError as e:
+            print(f"ComfyUI-Image-Saver: HTTP Response JSON error: {e}")
+        return None
+
+    @staticmethod
+    def get_civitai_info(path: Path | str | None, model_hash: str) -> dict | None:
+        # path is None for additional hashes added by the user - caches manually added hash data in the "image-saver" folder
+        if path is None:
+            manual_list = ImageSaverCivitai.get_manual_list()
+            manual_data = manual_list.get(model_hash, None)
+            if manual_data is None:
+                content = ImageSaverCivitai.download_model_info(path, model_hash)
+                if content is None:
+                    return None
+                # dynamically receive filename from the website to save the metadata
+                filename = next((file["name"] for file in content["files"] if file["hashes"]["AutoV2"].lower() == model_hash.lower()), None)
+                if filename is None:
+                    print(f"ComfyUI-Image-Saver: ({model_hash}) No file hash matched in metadata (should be impossible)")
+                    return content
+                # Cache data in a local file, removing the need for repeat http requests
+                manual_list = ImageSaverCivitai.append_manual_list(model_hash, { "filename": filename, "type": content["model"]["type"] })
+                ImageSaverCivitai.save_civitai_info_file(content, ImageSaverCivitai.get_manual_folder() / filename)
+                return content
+            else:
+                path = ImageSaverCivitai.get_manual_folder() / manual_data["filename"]
+
+        try:
+            info_path = Path(path).with_suffix(".civitai.info").absolute()
+            with open(info_path, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return ImageSaverCivitai.download_model_info(path, model_hash)
+        except Exception as e:
+            print(f"ComfyUI-Image-Saver: Civitai info error: {e}")
+        return None
+
+    @staticmethod
+    def get_manual_list() -> dict[str, dict]:
+        folder = ImageSaverCivitai.get_manual_folder()
+        folder.mkdir(parents=True, exist_ok=True)
+        try:
+            manual_path = (folder / "manual-hashes.json").absolute()
+            with open(manual_path, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return {}
+        except Exception as e:
+            print(f"ComfyUI-Image-Saver: Manual list get error: {e}")
+        return {}
+
+    @staticmethod
+    def append_manual_list(key: str, value: dict) -> dict[str, dict]:
+        manual_list = ImageSaverCivitai.get_manual_list() | { key: value }
+        try:
+            with open((ImageSaverCivitai.get_manual_folder() / "manual-hashes.json").absolute(), 'w') as file:
+                file.write(json.dumps(manual_list, indent=4))
+        except Exception as e:
+            print(f"ComfyUI-Image-Saver: Manual list append error: {e}")
+        return manual_list
+
+    @staticmethod
+    def download_model_info(path: Path | str | None, model_hash: str) -> dict | None:
+        print(f"ComfyUI-Image-Saver: Downloading model info. for '{model_hash if path is None else Path(path).stem}'.")
+
+        content = ImageSaverCivitai.http_get_json(f'https://civitai.com/api/v1/model-versions/by-hash/{model_hash}')
+        if content is None:
+            return None
+        model_id = content["modelId"]
+        parent_model = ImageSaverCivitai.http_get_json(f'https://civitai.com/api/v1/models/{model_id}')
+        if not parent_model:
+            parent_model = {}
+
+        content["creator"] = parent_model.get("creator", "{}")
+        model_metadata = content["model"]
+        for metadata in [ "description", "tags", "allowNoCredit", "allowCommercialUse", "allowDerivatives", "allowDifferentLicense" ]:
+            model_metadata[metadata] = parent_model.get(metadata, "")
+
+        if path is not None:
+            ImageSaverCivitai.save_civitai_info_file(content, path)
+        
+        return content
+
+    @staticmethod
+    def save_civitai_info_file(content: dict, path: Path | str) -> bool:
+        try:
+            with open(Path(path).with_suffix(".civitai.info").absolute(), 'w') as info_file:
+                info_file.write(json.dumps(content, indent=4))
+        except Exception as e:
+            print(f"ComfyUI-Image-Saver: Save Civitai info error '{path}': {e}")
+            return False
+        return True
