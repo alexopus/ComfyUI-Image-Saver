@@ -24,11 +24,10 @@ def get_sha256(file_path: str):
         file_size = os.fstat(f.fileno()).st_size
         block_size = 1048576 # 1 MB
 
-        progress_bar = tqdm(None, f"Calculating sha256 '{Path(file_path).stem}'", file_size, unit="B", unit_scale=True, unit_divisor=1024)
-        for byte_block in iter(lambda: f.read(block_size), b""):
-            progress_bar.update(len(byte_block))
-            sha256_hash.update(byte_block)
-        progress_bar.close()
+        with tqdm(None, f"Calculating sha256 '{Path(file_path).stem}'", file_size, unit="B", unit_scale=True, unit_divisor=1024) as progress_bar:
+            for byte_block in iter(lambda: f.read(block_size), b""):
+                progress_bar.update(len(byte_block))
+                sha256_hash.update(byte_block)
 
     try:
         with open(hash_file, "w") as f:
