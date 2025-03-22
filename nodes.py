@@ -281,7 +281,7 @@ class ImageSaver:
                     "0th": {
                         piexif.ImageIFD.Make: "".join(f"{k}:{json.dumps(v)}" for k, v in extra_pnginfo.items()),
                         piexif.ImageIFD.Model: f"prompt:{json.dumps(prompt)}",
-                    }} if embed_workflow else {}) |
+                    }} if embed_workflow and extra_pnginfo is not None and prompt is not None else {}) |
                     {
                     "Exif": {
                         piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode"),
