@@ -486,7 +486,7 @@ class ImageSaver:
     @staticmethod
     def download_model_info(path: Path | str | None, model_hash: str) -> dict | None:
         model_label = model_hash if path is None else f"{Path(path).stem}:{model_hash}"
-        print(f"ComfyUI-Image-Saver: Downloading model info. for '{model_label}'.")
+        print(f"ComfyUI-Image-Saver: Downloading model info for '{model_label}'.")
 
         content = ImageSaver.http_get_json(f'https://civitai.com/api/v1/model-versions/by-hash/{model_hash.upper()}')
         if content is None:
