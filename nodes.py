@@ -306,9 +306,15 @@ class ImageSaver:
 
         positive_a111_params = positive.strip()
         negative_a111_params = f"\nNegative prompt: {negative.strip()}"
-        a111_params = (f"{positive_a111_params}{negative_a111_params}\nSteps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}"
-            f", Size: {width}x{height}{f', Clip skip: {abs(clip_skip)}' if clip_skip != 0 else ''}{f', Model hash: {add_model_hash}' if add_model_hash else ''}"
-            f", Model: {basemodelname}{f', Hashes: {json.dumps(hashes, separators=(',', ':'))}' if hashes else ''}, Version: ComfyUI")
+        clip_skip_str = f", Clip skip: {abs(clip_skip)}" if clip_skip != 0 else ""
+        model_hash_str = f", Model hash: {add_model_hash}" if add_model_hash else ""
+        hashes_str = f", Hashes: {json.dumps(hashes, separators=(',', ':'))}" if hashes else ""
+
+        a111_params = (
+            f"{positive_a111_params}{negative_a111_params}\n"
+            f"Steps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, "
+            f"Size: {width}x{height}{clip_skip_str}{model_hash_str}, Model: {basemodelname}{hashes_str}, Version: ComfyUI"
+        )
 
         # Add Civitai resource listing
         if download_civitai_data and civitai_resources:
@@ -479,7 +485,8 @@ class ImageSaver:
 
     @staticmethod
     def download_model_info(path: Path | str | None, model_hash: str) -> dict | None:
-        print(f"ComfyUI-Image-Saver: Downloading model info. for '{model_hash if path is None else f"{Path(path).stem}:{model_hash}"}'.")
+        model_label = model_hash if path is None else f"{Path(path).stem}:{model_hash}"
+        print(f"ComfyUI-Image-Saver: Downloading model info. for '{model_label}'.")
 
         content = ImageSaver.http_get_json(f'https://civitai.com/api/v1/model-versions/by-hash/{model_hash.upper()}')
         if content is None:
