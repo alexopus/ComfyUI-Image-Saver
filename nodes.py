@@ -6,10 +6,10 @@ import requests
 import piexif
 import piexif.helper
 from PIL import Image
-from PIL.PngImagePlugin import PngInfo
 import numpy as np
 import re
 import folder_paths
+from .saver.saver import save_image
 from .utils import get_sha256
 from .prompt_metadata_extractor import PromptMetadataExtractor
 from nodes import MAX_RESOLUTION
@@ -265,11 +265,11 @@ class ImageSaver:
                     # Optional data - modelName, versionName
                     resource_data["modelName"] = civitai_info["model"]["name"]
                     resource_data["versionName"] = civitai_info["name"]
-                    
+
                     # Weight/strength (for LoRA or embedding)
                     if weight is not None:
                         resource_data["weight"] = weight
-                    
+
                     # Required data - AIR or modelVersionId (unique resource identifier)
                     # https://github.com/civitai/civitai/wiki/AIR-%E2%80%90-Uniform-Resource-Names-for-AI
                     if "air" in civitai_info:
@@ -342,26 +342,7 @@ class ImageSaver:
             filename = f"{current_filename_prefix}.{extension}"
             filepath = os.path.join(output_path, filename)
 
-            if extension == 'png':
-                metadata = PngInfo()
-                metadata.add_text("parameters", a111_params)
-
-                if embed_workflow_in_png:
-                    if prompt is not None:
-                        metadata.add_text("prompt", json.dumps(prompt))
-                    if extra_pnginfo is not None:
-                        for x in extra_pnginfo:
-                            metadata.add_text(x, json.dumps(extra_pnginfo[x]))
-
-                img.save(filepath, pnginfo=metadata, optimize=optimize_png)
-            else: # webp & jpeg
-                img.save(filepath, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
-                exif_bytes = piexif.dump({
-                    "Exif": {
-                        piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(a111_params, encoding="unicode")
-                    },
-                })
-                piexif.insert(exif_bytes, filepath)
+            save_image(img, filepath, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, a111_params, prompt, extra_pnginfo, embed_workflow_in_png)
 
             if save_workflow_as_json:
                 save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
@@ -432,7 +413,7 @@ class ImageSaver:
                     content = ImageSaver.download_model_info(path, model_hash)
                     if content is None:
                         return None
-                    
+
                     # dynamically receive filename from the website to save the metadata
                     file = next((file for file in content["files"] if any(len(value) <= ImageSaver.MAX_HASH_LENGTH and value.upper() == model_hash.upper() for value in file["hashes"].values())), None)
                     if file is None:
@@ -503,7 +484,7 @@ class ImageSaver:
 
         if path is not None:
             ImageSaver.save_civitai_info_file(content, path)
-        
+
         return content
 
     @staticmethod
