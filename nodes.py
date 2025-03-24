@@ -141,7 +141,8 @@ class ImageSaver:
             },
         }
 
-    RETURN_TYPES = ()
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("hashes",)
     FUNCTION = "save_files"
 
     OUTPUT_NODE = True
@@ -330,7 +331,11 @@ class ImageSaver:
         filenames = self.save_images(images, output_path, filename, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow_in_png)
 
         subfolder = os.path.normpath(path)
-        return {"ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)}}
+
+        return {
+            "result": (",".join(f"{Path(name.split(":")[-1]).stem + ":" if name else ""}{hash}{":" + str(weight) if weight is not None and download_civitai_data else ""}" for name, (_, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items()),),
+            "ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)},
+        }
 
     def save_images(self, images, output_path, filename_prefix, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow_in_png) -> list[str]:
         paths = list()
