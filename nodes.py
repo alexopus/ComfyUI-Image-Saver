@@ -143,6 +143,7 @@ class ImageSaver:
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("hashes",)
+    OUTPUT_TOOLTIPS = ("Comma-separated list of the hashes to chain with other Image Saver additional_hashes",)
     FUNCTION = "save_files"
 
     OUTPUT_NODE = True
