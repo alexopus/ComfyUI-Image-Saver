@@ -7,9 +7,10 @@ class CivitaiHashFetcher:
     """
 
     def __init__(self):
-        self.cached_username = None
-        self.cached_model_name = None
-        self.cached_hash = None  # Stores last fetched hash
+        self.last_username = None
+        self.last_model_name = None
+        self.last_version = None
+        self.last_hash = None  # Store the last fetched hash
 
     RETURN_TYPES = ("STRING",)  # The node outputs a string (AutoV3 hash)
     FUNCTION = "get_autov3_hash"
@@ -21,17 +22,21 @@ class CivitaiHashFetcher:
             "required": {
                 "username": ("STRING", {"default": "", "multiline": False}),
                 "model_name": ("STRING", {"default": "", "multiline": False}),
+            },
+            "optional": {
+                "version": ("STRING", {"default": "", "multiline": False, "tooltip": "Specify version keyword to fetch a particular model version (optional)"}),
             }
         }
 
-    def get_autov3_hash(self, username, model_name):
+    def get_autov3_hash(self, username, model_name, version=""):
         """
         Fetches the latest model version from Civitai and extracts its AutoV3 hash.
         Uses caching to avoid redundant API calls.
         """
         # Check if inputs are the same as last time
-        if username == self.cached_username and model_name == self.cached_model_name:
-            return (self.cached_hash,)  # Return cached value
+        if (self.last_username is not None and self.last_model_name is not None and self.last_version is not None and 
+            username == self.last_username and model_name == self.last_model_name and version == self.last_version):
+            return self.last_hash
 
         base_url = "https://civitai.com/api/v1/models"
         params = {
@@ -57,9 +62,17 @@ class CivitaiHashFetcher:
             if not model_versions:
                 return ("No model versions found.",)
 
-            # Assume the first version is the latest
-            latest_version = model_versions[0]
-            version_id = latest_version.get("id")
+            # If a version keyword is provided, search for a model version whose name contains it (case-insensitive).
+            chosen_version = None
+            if version:
+                for v in model_versions:
+                    if version.lower() in v.get("name", "").lower():
+                        chosen_version = v
+                        break
+            # If no version is provided or no match was found, use the first (latest) version.
+            if chosen_version is None:
+                chosen_version = model_versions[0]
+            version_id = chosen_version.get("id")
 
             # Fetch detailed version info
             version_url = f"https://civitai.com/api/v1/model-versions/{version_id}"
@@ -74,8 +87,9 @@ class CivitaiHashFetcher:
                 autov3_hash = file_info.get("hashes", {}).get("AutoV3")
                 if autov3_hash:
                     # Cache the result before returning
-                    self.cached_username = username
-                    self.cached_model_name = model_name
+                    self.last_username = username
+                    self.last_model_name = model_name
+                    self.last_version = version  # Store version to track changes
                     self.cached_hash = autov3_hash
                     return (autov3_hash,)  # Return the first found hash
 
