@@ -167,7 +167,8 @@ class ImageSaver:
         scheduler,
         positive,
         negative,
-        modelname,
+        *,                    # ← add this line
+        modelname="",         # ← now legal default in keyword‑only section
         quality_jpeg_or_webp,
         lossless_webp,
         optimize_png,
@@ -188,11 +189,16 @@ class ImageSaver:
         prompt=None,
         extra_pnginfo=None,
     ):
-        filename = make_filename(filename, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
-        path = make_pathname(path, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
-        
+        safe_modelname = modelname or ""
+        filename = make_filename(filename, width, height, seed_value, safe_modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
+        path = make_pathname(path, width, height, seed_value, safe_modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
+
         # support multiple model names separated by commas
-        modelnames = [mn.strip().replace("\\", "/") for mn in modelname.split(",") if mn.strip()]
+        modelnames = []
+        if modelname:
+            modelnames = []
+            if modelname:
+                modelnames = [mn.strip().replace("\\", "/") for mn in modelname.split(",") if mn.strip()]
         modelhashes = {}
         primary_path = None
         def find_model_file(name):
@@ -340,8 +346,8 @@ class ImageSaver:
             hashes |= {key: value[2] for key, value in embeddings.items()}
             hashes |= {key: value[2] for key, value in loras.items()}
             hashes |= {key: value[2] for key, value in manual_entries.items()}
-            add_model_hash = modelhashes.get(modelnames[0], "")
-        basemodelname = parse_checkpoint_name_without_extension(modelname)
+            # Only pick a model hash if we actually have a modelname
+            add_model_hash = modelhashes.get(modelnames[0], "") if modelnames else ""
 
         if easy_remix:
             def clean_prompt(prompt: str) -> str:
@@ -363,10 +369,13 @@ class ImageSaver:
         model_hash_str = f", Model hash: {add_model_hash}" if add_model_hash else ""
         hashes_str = f", Hashes: {json.dumps(hashes, separators=(',', ':'))}" if hashes else ""
 
+        basemodelname = parse_checkpoint_name_without_extension(safe_modelname)
+        model_str = f", Model: {basemodelname}" if basemodelname else ""
+
         a111_params = (
             f"{positive_a111_params}{negative_a111_params}\n"
             f"Steps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, "
-            f"Size: {width}x{height}{clip_skip_str}{model_hash_str}, Model: {basemodelname}{hashes_str}, Version: ComfyUI"
+            f"Size: {width}x{height}{clip_skip_str}{model_hash_str}{model_str}{hashes_str}, Version: ComfyUI"
         )
 
         # Add Civitai resource listing
