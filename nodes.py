@@ -190,15 +190,53 @@ class ImageSaver:
     ):
         filename = make_filename(filename, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
         path = make_pathname(path, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
-        ckpt_path = folder_paths.get_full_path("checkpoints", modelname)
+        
+        # support multiple model names separated by commas
+        modelnames = [mn.strip().replace("\\", "/") for mn in modelname.split(",") if mn.strip()]
+        modelhashes = {}
+        primary_path = None
+        def find_model_file(name):
+            # Try direct path
+            path = folder_paths.get_full_path("checkpoints", name)
+            if path:
+                return path
+            path = folder_paths.get_full_path("diffusion_models", name)
+            if path:
+                return path
+            # Try basename
+            basename = os.path.basename(name)
+            path = folder_paths.get_full_path("checkpoints", basename)
+            if path:
+                return path
+            path = folder_paths.get_full_path("diffusion_models", basename)
+            if path:
+                return path
+            # Try searching all subfolders
+            checkpoints_folders = folder_paths.get_folder_paths("checkpoints")
+            for folder in checkpoints_folders:
+                for root, dirs, files in os.walk(folder):
+                    for file in files:
+                        if file == basename:
+                            return os.path.join(root, file)
+            return None
 
-        if not ckpt_path:
-            ckpt_path = folder_paths.get_full_path("diffusion_models", modelname)
+        for mn in modelnames:
+            clean_mn = mn.strip().replace("\\", "/")
+            if not (clean_mn.lower().endswith(".safetensors") or clean_mn.lower().endswith(".ckpt")):
+                clean_mn += ".safetensors"
 
-        if ckpt_path:
-            modelhash = get_sha256(ckpt_path)[:10]
-        else:
-            modelhash = ""
+            ckpt_path = find_model_file(clean_mn)
+
+            if ckpt_path:
+                modelhashes[mn] = get_sha256(ckpt_path)[:10]
+                if primary_path is None:
+                    primary_path = ckpt_path
+            else:
+                modelhashes[mn] = ""
+
+        # for backward compatibility, pick the first as “primary”
+        ckpt_path = primary_path
+        modelhash = modelhashes.get(modelnames[0], "") if modelnames else ""
 
         metadata_extractor = PromptMetadataExtractor([positive, negative])
         embeddings = metadata_extractor.get_embeddings()
@@ -208,7 +246,7 @@ class ImageSaver:
         # Process additional_hashes input (a string) by normalizing, removing extra spaces/newlines, and splitting by comma
         manual_entries = {}
         unnamed_count = 0
-        existing_hashes = {modelhash.lower()} | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}  # Get set of parsed hashes
+        existing_hashes = set(mh.lower() for mh in modelhashes.values()) | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}
         additional_hash_split = additional_hashes.replace("\n", ",").split(",") if additional_hashes else []
         for entry in additional_hash_split:
             match = (self.re_manual_hash_weights if download_civitai_data else self.re_manual_hash).search(entry)
@@ -259,7 +297,17 @@ class ImageSaver:
         hashes = {}
         add_model_hash = None
         if download_civitai_data:
-            for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items():
+            # build initial map of every modelname→hash
+            initial_map = {
+                mn: (
+                    folder_paths.get_full_path("checkpoints", mn)
+                    or folder_paths.get_full_path("diffusion_models", mn),
+                    None,
+                    modelhashes.get(mn, "")
+                )
+                for mn in modelnames
+            }
+            for name, (filepath, weight, hash) in (initial_map | loras | embeddings | manual_entries).items():
                 civitai_info = self.get_civitai_info(filepath, hash)
                 if civitai_info is not None:
                     resource_data = {}
@@ -287,9 +335,12 @@ class ImageSaver:
                     else:
                         hashes[name] = hash.upper()
         else:
-            # Convert all hashes to JSON format
-            hashes = {key: value[2] for key, value in embeddings.items()} | {key: value[2] for key, value in loras.items()} | {key: value[2] for key, value in manual_entries.items()} | {"model": modelhash}
-            add_model_hash = modelhash
+            # Convert all hashes to JSON format (including every model)
+            hashes = { mn: mh for mn, mh in modelhashes.items() }
+            hashes |= {key: value[2] for key, value in embeddings.items()}
+            hashes |= {key: value[2] for key, value in loras.items()}
+            hashes |= {key: value[2] for key, value in manual_entries.items()}
+            add_model_hash = modelhashes.get(modelnames[0], "")
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
         if easy_remix:
@@ -333,8 +384,23 @@ class ImageSaver:
 
         subfolder = os.path.normpath(path)
 
+        # build the same combined map for the result string
+        initial_map = {
+            mn: (
+                folder_paths.get_full_path("checkpoints", mn)
+                or folder_paths.get_full_path("diffusion_models", mn),
+                None,
+                modelhashes.get(mn, "")
+            )
+            for mn in modelnames
+        }
+        combined = initial_map | loras | embeddings | manual_entries
+        result_hashes = ",".join(
+            f"{Path(name.split(':')[-1]).stem + ':' if name else ''}{hash}{':' + str(weight) if weight is not None and download_civitai_data else ''}"
+            for name, (_, weight, hash) in combined.items()
+        )
         return {
-            "result": (",".join(f"{Path(name.split(':')[-1]).stem + ':' if name else ''}{hash}{':' + str(weight) if weight is not None and download_civitai_data else ''}" for name, (_, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items()),),
+            "result": (result_hashes,),
             "ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)},
         }
 
