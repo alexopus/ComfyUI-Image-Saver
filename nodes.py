@@ -362,8 +362,9 @@ class ImageSaver:
             hashes |= {key: value[2] for key, value in embeddings.items()}
             hashes |= {key: value[2] for key, value in loras.items()}
             hashes |= {key: value[2] for key, value in manual_entries.items()}
-            # Only pick a model hash if we actually have a modelname
-            add_model_hash = modelhashes.get(modelnames[0], "") if modelnames else ""
+            # For compatibility, if only one model, set "model" key
+            if modelnames and len(modelnames) == 1:
+                hashes["model"] = modelhashes.get(modelnames[0], "")
 
         if easy_remix:
             def clean_prompt(prompt: str) -> str:
