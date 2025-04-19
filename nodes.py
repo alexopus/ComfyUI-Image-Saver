@@ -421,10 +421,16 @@ class ImageSaver:
             for mn in modelnames
         }
         combined = initial_map | loras | embeddings | manual_entries
+
         result_hashes = ",".join(
-            f"{Path(name.split(':')[-1]).stem + ':' if name else ''}{hash}{':' + str(weight) if weight is not None and download_civitai_data else ''}"
+            (
+                f"{Path(name).stem if name else ''}"
+                f"{':' if name else ''}{hash}"
+                f"{':' + str(weight) if weight is not None and download_civitai_data else ''}"
+            )
             for name, (_, weight, hash) in combined.items()
         )
+
         return {
             "result": (result_hashes,),
             "ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)},
