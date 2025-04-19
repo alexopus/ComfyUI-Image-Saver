@@ -167,8 +167,6 @@ class ImageSaver:
         scheduler,
         positive,
         negative,
-        *,                    # ← add this line
-        modelname="",         # ← now legal default in keyword‑only section
         quality_jpeg_or_webp,
         lossless_webp,
         optimize_png,
@@ -181,6 +179,7 @@ class ImageSaver:
         time_format,
         denoise,
         clip_skip,
+        modelname="",
         additional_hashes="",
         save_workflow_as_json=False,
         embed_workflow=True,
@@ -201,29 +200,46 @@ class ImageSaver:
                 modelnames = [mn.strip().replace("\\", "/") for mn in modelname.split(",") if mn.strip()]
         modelhashes = {}
         primary_path = None
+
+        # Only scan once
+        checked_basenames = {}
+
         def find_model_file(name):
-            # Try direct path
+            basename = os.path.basename(name)
+
+            # If already cached
+            if basename in checked_basenames:
+                return checked_basenames[basename]
+
+            # Try direct path first
             path = folder_paths.get_full_path("checkpoints", name)
             if path:
+                checked_basenames[basename] = path
                 return path
             path = folder_paths.get_full_path("diffusion_models", name)
             if path:
+                checked_basenames[basename] = path
                 return path
-            # Try basename
-            basename = os.path.basename(name)
+
+            # Try basename direct
             path = folder_paths.get_full_path("checkpoints", basename)
             if path:
+                checked_basenames[basename] = path
                 return path
             path = folder_paths.get_full_path("diffusion_models", basename)
             if path:
+                checked_basenames[basename] = path
                 return path
-            # Try searching all subfolders
-            checkpoints_folders = folder_paths.get_folder_paths("checkpoints")
-            for folder in checkpoints_folders:
-                for root, dirs, files in os.walk(folder):
-                    for file in files:
-                        if file == basename:
-                            return os.path.join(root, file)
+
+            # Scan all folders once
+            for folder in folder_paths.get_folder_paths("checkpoints"):
+                for root, _dirs, files in os.walk(folder):
+                    if basename in files:
+                        fullpath = os.path.join(root, basename)
+                        checked_basenames[basename] = fullpath
+                        return fullpath
+
+            checked_basenames[basename] = None
             return None
 
         for mn in modelnames:
