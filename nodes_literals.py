@@ -1,6 +1,9 @@
 from sys import float_info
 from nodes import MAX_RESOLUTION
 
+import torch
+import comfy.model_management
+
 class SeedGenerator:
     RETURN_TYPES = ("INT",)
     OUTPUT_TOOLTIPS = ("seed (INT)",)
@@ -116,3 +119,42 @@ class CfgLiteral:
 
     def get_float(self, float):
         return (float,)
+
+class SizeLatent:
+    def __init__(self):
+        self.device = comfy.model_management.intermediate_device()
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "width": ("INT", {
+                    "default": 512, "min": 16, "max": MAX_RESOLUTION, "step": 8,
+                    "tooltip": "The width of the latent images in pixels."
+                }),
+                "height": ("INT", {
+                    "default": 512, "min": 16, "max": MAX_RESOLUTION, "step": 8,
+                    "tooltip": "The height of the latent images in pixels."
+                }),
+                "batch_size": ("INT", {
+                    "default": 1, "min": 1, "max": 4096,
+                    "tooltip": "The number of latent images in the batch."
+                })
+            }
+        }
+
+    RETURN_TYPES = ("LATENT", "INT", "INT")
+    RETURN_NAMES = ("latent", "width", "height")
+    OUTPUT_TOOLTIPS = (
+        "The empty latent image batch.",
+        "The width of the latent images in pixels.",
+        "The height of the latent images in pixels."
+    )
+    FUNCTION = "generate"
+
+    CATEGORY = "ImageSaver/utils"
+    DESCRIPTION = "Create a new batch of empty latent images to be denoised via sampling."
+
+    def generate(self, width, height, batch_size=1):
+        latent = torch.zeros([batch_size, 4, height // 8, width // 8], device=self.device)
+        return ({"samples": latent}, width, height)

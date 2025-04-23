@@ -119,3 +119,35 @@ class SamplerToString:
 
     def get_name(self, sampler):
         return (sampler,)
+
+class KSamplerParameters:
+    RETURN_TYPES = ("INT", "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, "STRING", comfy.samplers.KSampler.SCHEDULERS, "STRING")
+    RETURN_NAMES = ("seed", "steps", "cfg", "sampler", "sampler_name", "scheduler", "scheduler_name")
+    OUTPUT_TOOLTIPS = (
+        "seed (INT)",
+        "steps (INT)",
+        "cfg (FLOAT)",
+        "sampler (SAMPLERS)",
+        "sampler name (STRING)",
+        "scheduler (SCHEDULERS)",
+        "scheduler name (STRING)"
+    )
+    FUNCTION = "get_values"
+
+    CATEGORY = "ImageSaver/utils"
+    DESCRIPTION = "Combined node for seed, steps, cfg, sampler, and scheduler."
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "seed as integer number"}),
+                "steps": ("INT", {"default": 20, "min": 1, "max": 1000000, "tooltip": "number of sampling steps"}),
+                "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "tooltip": "CFG as a floating point number"}),
+                "sampler": (comfy.samplers.KSampler.SAMPLERS, {"tooltip": "Sampler type"}),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "Scheduler type"}),
+            }
+        }
+
+    def get_values(self, seed, steps, cfg, sampler, scheduler):
+        return (seed, steps, cfg, sampler, sampler, scheduler, scheduler)
