@@ -204,107 +204,18 @@ class ImageSaver:
         embeddings = metadata_extractor.get_embeddings()
         loras = metadata_extractor.get_loras()
         civitai_sampler_name = self.get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
-
-        # Process additional_hashes input (a string) by normalizing, removing extra spaces/newlines, and splitting by comma
-        manual_entries = {}
-        unnamed_count = 0
-        existing_hashes = {modelhash.lower()} | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}  # Get set of parsed hashes
-        additional_hash_split = additional_hashes.replace("\n", ",").split(",") if additional_hashes else []
-        for entry in additional_hash_split:
-            match = (self.re_manual_hash_weights if download_civitai_data else self.re_manual_hash).search(entry)
-            if match is None:
-                print(f"ComfyUI-Image-Saver: Invalid additional hash string: '{entry}'")
-                continue
-
-            groups = tuple(group for group in match.groups() if group)
-
-            # Read weight and remove from groups, if needed
-            weight = None
-            if download_civitai_data and len(groups) > 1:
-                try:
-                    weight = float(groups[-1])
-                    groups = groups[:-1]
-                except (ValueError, TypeError):
-                    pass
-
-            # Read hash, optionally preceded by name
-            name, hash = groups if len(groups) > 1 else (None, groups[0])
-
-            if len(hash) > self.MAX_HASH_LENGTH:
-                print(f"ComfyUI-Image-Saver: Skipping hash. Length exceeds maximum of {self.MAX_HASH_LENGTH} characters: {hash}")
-                continue
-
-            if any(hash.lower() == existing_hash.lower() for _, _, existing_hash in manual_entries.values()):
-                print(f"ComfyUI-Image-Saver: Skipping duplicate hash: {hash}")
-                continue  # Skip duplicates
-
-            if hash.lower() in existing_hashes:
-                print(f"ComfyUI-Image-Saver: Skipping manual hash already present in resources: {hash}")
-                continue
-
-            if name is None:
-                unnamed_count += 1
-                name = f"manual{unnamed_count}"
-            elif name in manual_entries:
-                print(f"ComfyUI-Image-Saver: Duplicate manual hash name '{name}' is being overwritten.")
-
-            manual_entries[name] = (None, weight, hash)
-
-            if len(manual_entries) > 29:
-                print("ComfyUI-Image-Saver: Reached maximum limit of 30 manual hashes. Skipping the rest.")
-                break
-
-        # Download or load cache of Civitai data, save specially-formatted data to metadata
-        civitai_resources = []
-        hashes = {}
-        add_model_hash = None
-        if download_civitai_data:
-            for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items():
-                civitai_info = self.get_civitai_info(filepath, hash)
-                if civitai_info is not None:
-                    resource_data = {}
-
-                    # Optional data - modelName, versionName
-                    resource_data["modelName"] = civitai_info["model"]["name"]
-                    resource_data["versionName"] = civitai_info["name"]
-
-                    # Weight/strength (for LoRA or embedding)
-                    if weight is not None:
-                        resource_data["weight"] = weight
-
-                    # Required data - AIR or modelVersionId (unique resource identifier)
-                    # https://github.com/civitai/civitai/wiki/AIR-%E2%80%90-Uniform-Resource-Names-for-AI
-                    if "air" in civitai_info:
-                        resource_data["air"] = civitai_info["air"]
-                    else:
-                        # Fallback if AIR is not found
-                        resource_data["modelVersionId"] = civitai_info["id"]
-                    civitai_resources.append(resource_data)
-                else:
-                    # Fallback in case the data wasn't loaded to add to the "Hashes" section
-                    if name == modelname:
-                        add_model_hash = hash.upper()
-                    else:
-                        hashes[name] = hash.upper()
-        else:
-            # Convert all hashes to JSON format
-            hashes = {key: value[2] for key, value in embeddings.items()} | {key: value[2] for key, value in loras.items()} | {key: value[2] for key, value in manual_entries.items()} | {"model": modelhash}
-            add_model_hash = modelhash
         basemodelname = parse_checkpoint_name_without_extension(modelname)
 
-        if easy_remix:
-            def clean_prompt(prompt: str) -> str:
-                # Strip loras
-                prompt = re.sub(metadata_extractor.LORA, "", prompt)
-                # Shorten 'embedding:path/to/my_embedding' -> 'my_embedding'
-                # Note: Possible inaccurate embedding name if the filename has been renamed from the default
-                prompt = re.sub(metadata_extractor.EMBEDDING, lambda match: Path(match.group(1)).stem, prompt)
-                # Remove prompt control edits. e.g., 'STYLE(A1111, mean)', 'SHIFT(1)`, etc.`
-                prompt = re.sub(r'\b[A-Z]+\([^)]*\)', "", prompt)
-                return prompt
+        # Get existing hashes from model, loras, and embeddings
+        existing_hashes = {modelhash.lower()} | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}
+        # Parse manual hashes
+        manual_entries = ImageSaver.parse_manual_hashes(additional_hashes, existing_hashes, download_civitai_data)
+        # Get Civitai metadata
+        civitai_resources, hashes, add_model_hash = ImageSaver.get_civitai_metadata(modelname, ckpt_path, modelhash, loras, embeddings, manual_entries, download_civitai_data)
 
-            positive = clean_prompt(positive)
-            negative = clean_prompt(negative)
+        if easy_remix:
+            positive = ImageSaver.clean_prompt(positive)
+            negative = ImageSaver.clean_prompt(negative)
 
         positive_a111_params = positive.strip()
         negative_a111_params = f"\nNegative prompt: {negative.strip()}"
@@ -355,6 +266,113 @@ class ImageSaver:
 
             paths.append(filename)
         return paths
+
+    @staticmethod
+    def parse_manual_hashes(additional_hashes, existing_hashes, download_civitai_data):
+        """Process additional_hashes input (a string) by normalizing, removing extra spaces/newlines, and splitting by comma"""
+        manual_entries = {}
+        unnamed_count = 0
+
+        additional_hash_split = additional_hashes.replace("\n", ",").split(",") if additional_hashes else []
+        for entry in additional_hash_split:
+            match = (ImageSaver.re_manual_hash_weights if download_civitai_data else ImageSaver.re_manual_hash).search(entry)
+            if match is None:
+                print(f"ComfyUI-Image-Saver: Invalid additional hash string: '{entry}'")
+                continue
+
+            groups = tuple(group for group in match.groups() if group)
+
+            # Read weight and remove from groups, if needed
+            weight = None
+            if download_civitai_data and len(groups) > 1:
+                try:
+                    weight = float(groups[-1])
+                    groups = groups[:-1]
+                except (ValueError, TypeError):
+                    pass
+
+            # Read hash, optionally preceded by name
+            name, hash = groups if len(groups) > 1 else (None, groups[0])
+
+            if len(hash) > ImageSaver.MAX_HASH_LENGTH:
+                print(f"ComfyUI-Image-Saver: Skipping hash. Length exceeds maximum of {ImageSaver.MAX_HASH_LENGTH} characters: {hash}")
+                continue
+
+            if any(hash.lower() == existing_hash.lower() for _, _, existing_hash in manual_entries.values()):
+                print(f"ComfyUI-Image-Saver: Skipping duplicate hash: {hash}")
+                continue  # Skip duplicates
+
+            if hash.lower() in existing_hashes:
+                print(f"ComfyUI-Image-Saver: Skipping manual hash already present in resources: {hash}")
+                continue
+
+            if name is None:
+                unnamed_count += 1
+                name = f"manual{unnamed_count}"
+            elif name in manual_entries:
+                print(f"ComfyUI-Image-Saver: Duplicate manual hash name '{name}' is being overwritten.")
+
+            manual_entries[name] = (None, weight, hash)
+
+            if len(manual_entries) > 29:
+                print("ComfyUI-Image-Saver: Reached maximum limit of 30 manual hashes. Skipping the rest.")
+                break
+
+        return manual_entries
+
+    @staticmethod
+    def get_civitai_metadata(modelname, ckpt_path, modelhash, loras, embeddings, manual_entries, download_civitai_data):
+        """Download or load cache of Civitai data, save specially-formatted data to metadata"""
+        civitai_resources = []
+        hashes = {}
+        add_model_hash = None
+
+        if download_civitai_data:
+            for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items():
+                civitai_info = ImageSaver.get_civitai_info(filepath, hash)
+                if civitai_info is not None:
+                    resource_data = {}
+
+                    # Optional data - modelName, versionName
+                    resource_data["modelName"] = civitai_info["model"]["name"]
+                    resource_data["versionName"] = civitai_info["name"]
+
+                    # Weight/strength (for LoRA or embedding)
+                    if weight is not None:
+                        resource_data["weight"] = weight
+
+                    # Required data - AIR or modelVersionId (unique resource identifier)
+                    # https://github.com/civitai/civitai/wiki/AIR-%E2%80%90-Uniform-Resource-Names-for-AI
+                    if "air" in civitai_info:
+                        resource_data["air"] = civitai_info["air"]
+                    else:
+                        # Fallback if AIR is not found
+                        resource_data["modelVersionId"] = civitai_info["id"]
+                    civitai_resources.append(resource_data)
+                else:
+                    # Fallback in case the data wasn't loaded to add to the "Hashes" section
+                    if name == modelname:
+                        add_model_hash = hash.upper()
+                    else:
+                        hashes[name] = hash.upper()
+        else:
+            # Convert all hashes to JSON format
+            hashes = {key: value[2] for key, value in embeddings.items()} | {key: value[2] for key, value in loras.items()} | {key: value[2] for key, value in manual_entries.items()} | {"model": modelhash}
+            add_model_hash = modelhash
+
+        return civitai_resources, hashes, add_model_hash
+
+    @staticmethod
+    def clean_prompt(prompt: str, metadata_extractor: PromptMetadataExtractor) -> str:
+        """Clean prompts for easier remixing by removing LoRAs and simplifying embeddings."""
+        # Strip loras
+        prompt = re.sub(metadata_extractor.LORA, "", prompt)
+        # Shorten 'embedding:path/to/my_embedding' -> 'my_embedding'
+        # Note: Possible inaccurate embedding name if the filename has been renamed from the default
+        prompt = re.sub(metadata_extractor.EMBEDDING, lambda match: Path(match.group(1)).stem, prompt)
+        # Remove prompt control edits. e.g., 'STYLE(A1111, mean)', 'SHIFT(1)`, etc.`
+        prompt = re.sub(r'\b[A-Z]+\([^)]*\)', "", prompt)
+        return prompt
 
     def get_unique_filename(self, output_path, filename_prefix, extension):
         existing_files = [f for f in os.listdir(output_path) if f.startswith(filename_prefix) and f.endswith(extension)]
