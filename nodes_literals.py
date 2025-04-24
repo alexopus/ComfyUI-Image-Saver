@@ -13,12 +13,13 @@ class SeedGenerator:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "seed as integer number"}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "control_after_generate": True, "tooltip": "The random seed used for creating the noise."}),
+                "increment": ("INT", {"default": 0, "min": -0xffffffffffffffff, "max": 0xffffffffffffffff, "tooltip": "number to add to the final seed value"}),
             }
         }
 
-    def get_seed(self, seed):
-        return (seed,)
+    def get_seed(self, seed, increment):
+        return (seed + increment,)
 
 class StringLiteral:
     RETURN_TYPES = ("STRING",)
