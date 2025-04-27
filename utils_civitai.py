@@ -41,7 +41,7 @@ CIVITAI_SAMPLER_MAP = {
     'lcm': 'LCM',
 }
 
-def get_civitai_sampler_name(self, sampler_name, scheduler):
+def get_civitai_sampler_name(sampler_name, scheduler):
     # based on: https://github.com/civitai/civitai/blob/main/src/server/common/constants.ts#L122
     if sampler_name in CIVITAI_SAMPLER_MAP:
         civitai_name = CIVITAI_SAMPLER_MAP[sampler_name]
