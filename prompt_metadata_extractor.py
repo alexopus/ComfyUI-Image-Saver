@@ -2,7 +2,8 @@ import re
 from typing import List
 from comfy.sd1_clip import escape_important, unescape_important, token_weights
 
-from .utils import civitai_embedding_key_name, civitai_lora_key_name, full_embedding_path_for, full_lora_path_for, get_sha256
+from .utils import full_embedding_path_for, full_lora_path_for, get_sha256
+from .utils_civitai import civitai_embedding_key_name, civitai_lora_key_name
 
 """
 Extracts Embeddings and Lora's from the given prompts

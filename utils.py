@@ -1,6 +1,7 @@
-import os
-from pathlib import Path
 import hashlib
+import os
+import requests
+from pathlib import Path
 from tqdm import tqdm
 import folder_paths
 
@@ -37,19 +38,6 @@ def get_sha256(file_path: str):
         print(f"ComfyUI-Image-Saver: Error writing hash to {hash_file}: {e}")
 
     return sha256_hash.hexdigest()
-
-"""
-Represent the given embedding name as key as detected by civitAI
-"""
-def civitai_embedding_key_name(embedding: str):
-    return f'embed:{embedding}'
-
-"""
-Represent the given lora name as key as detected by civitAI
-NB: this should also work fine for Lycoris
-"""
-def civitai_lora_key_name(lora: str):
-    return f'LORA:{lora}'
 
 """
 Based on a embedding name, eg: EasyNegative, finds the path as known in comfy, including extension
@@ -104,3 +92,20 @@ def __list_checkpoints():
 
 def __list_diffusion_models():
     return folder_paths.get_filename_list("diffusion_models")
+
+def http_get_json(url: str) -> dict | None:
+    try:
+        response = requests.get(url, stream=True, headers={}, proxies={ "http": None, "https": None }, timeout=300)
+    except TimeoutError:
+        print(f"ComfyUI-Image-Saver: HTTP GET Request timed out for {url}")
+        return None
+
+    if not response.ok:
+        print(f"ComfyUI-Image-Saver: HTTP GET Request failed with error code: {response.status_code}: {response.reason}")
+        return None
+
+    try:
+        return response.json()
+    except ValueError as e:
+        print(f"ComfyUI-Image-Saver: HTTP Response JSON error: {e}")
+    return None
