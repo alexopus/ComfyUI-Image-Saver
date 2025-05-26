@@ -156,22 +156,11 @@ class InputParameters:
         }
 
     def get_values(self, seed, steps, cfg, sampler, scheduler, denoise, string_prefix, include_seed):
-        # Clean the prefix by stripping leading/trailing whitespace and commas
-        clean_prefix = string_prefix.strip(' ,')
-        
-        # Build parameter list
-        params = []
-        if include_seed:
-            params.append(f"Seed: {seed}")
-        params.extend([
-            f"Steps: {steps}",
-            f"CFG: {cfg}",
-            f"Sampler: {sampler}",
-            f"Scheduler: {scheduler}",
-            f"Denoise: {denoise:.2f}"
-        ])
-        
-        # Join with the clean prefix
-        stringOut = clean_prefix.join(params)
-        
+        initialPrefix = re.sub(
+            r'^(?:[,\s]+(?=[A-Za-z])|[,\s]+$)',
+            '',
+            string_prefix
+        )
+        stringOut = (initialPrefix + ((f"Seed: {seed}" + string_prefix) if include_seed else "") + string_prefix.join((f"Steps: {steps}", f"CFG: {cfg}", f"Sampler: {sampler}", f"Scheduler: {scheduler}", f"Denoise: {denoise:.2f}")))
+
         return (seed, steps, cfg, sampler, sampler, scheduler, scheduler, denoise, stringOut)
