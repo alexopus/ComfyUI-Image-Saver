@@ -156,11 +156,28 @@ class InputParameters:
         }
 
     def get_values(self, seed, steps, cfg, sampler, scheduler, denoise, string_prefix, include_seed):
-        initialPrefix = re.sub(
-            r'^(?:[,\s]+(?=[A-Za-z])|[,\s]+$)',
-            '',
-            string_prefix
-        )
-        stringOut = (initialPrefix + ((f"Seed: {seed}" + string_prefix) if include_seed else "") + string_prefix.join((f"Steps: {steps}", f"CFG: {cfg}", f"Sampler: {sampler}", f"Scheduler: {scheduler}", f"Denoise: {denoise:.2f}")))
+        prefix = string_prefix or ""
 
-        return (seed, steps, cfg, sampler, sampler, scheduler, scheduler, denoise, stringOut)
+        # Strip leading commas/spaces (when followed by a letter) or trailing commas/spaces
+        clean_prefix = re.sub(r'^(?:[,\s]+(?=[A-Za-z])|[,\s]+$)', '', prefix)
+
+        # Build the core components
+        components = [
+            f"Steps: {steps}",
+            f"CFG: {cfg}",
+            f"Sampler: {sampler}",
+            f"Scheduler: {scheduler}",
+            f"Denoise: {denoise:.2f}",
+        ]
+
+        # Start with cleaned prefix
+        summary = clean_prefix
+
+        # Include seed if requested
+        if include_seed:
+            summary += f"Seed: {seed}" + prefix
+
+        # Append joined components
+        summary += prefix.join(components)
+
+        return (seed, steps, cfg, sampler, sampler, scheduler, scheduler, denoise, summary)
