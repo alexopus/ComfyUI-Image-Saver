@@ -1,4 +1,5 @@
 import comfy.sd
+import re
 
 class SamplerSelector:
     RETURN_TYPES = (comfy.samplers.KSampler.SAMPLERS, "STRING")
@@ -121,8 +122,8 @@ class SamplerToString:
         return (sampler,)
 
 class InputParameters:
-    RETURN_TYPES = ("INT", "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, "STRING", comfy.samplers.KSampler.SCHEDULERS, "STRING", "FLOAT")
-    RETURN_NAMES = ("seed", "steps", "cfg", "sampler", "sampler_name", "scheduler", "scheduler_name", "denoise")
+    RETURN_TYPES = ("INT", "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, "STRING", comfy.samplers.KSampler.SCHEDULERS, "STRING", "FLOAT", "STRING")
+    RETURN_NAMES = ("seed", "steps", "cfg", "sampler", "sampler_name", "scheduler", "scheduler_name", "denoise", "parameters_string")
     OUTPUT_TOOLTIPS = (
         "seed (INT)",
         "steps (INT)",
@@ -132,6 +133,7 @@ class InputParameters:
         "scheduler (SCHEDULERS)",
         "scheduler name (STRING)",
         "denoise (FLOAT)",
+        "parameters string (STRING)"
     )
     FUNCTION = "get_values"
 
@@ -148,8 +150,26 @@ class InputParameters:
                 "sampler": (comfy.samplers.KSampler.SAMPLERS, {"tooltip": "The algorithm used when sampling, this can affect the quality, speed, and style of the generated output."}),
                 "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "The scheduler controls how noise is gradually removed to form the image."}),
                 "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
+                "string_prefix": ("STRING", {"multiline": False, "default": ", ", "tooltip": "Both concatenates and prefixes all items in the string."}),
+                "include_seed": ("BOOLEAN", {"default": True, "tooltip": "Chooses whether or not to include the seed in the string output."}),
             }
         }
 
-    def get_values(self, seed, steps, cfg, sampler, scheduler, denoise):
-        return (seed, steps, cfg, sampler, sampler, scheduler, scheduler, denoise)
+    def get_values(self, seed, steps, cfg, sampler, scheduler, denoise, string_prefix, include_seed):
+        prefix = string_prefix or ""
+        clean_prefix = re.sub(r'^(?:[,\s]+(?=[A-Za-z])|[,\s]+$)', '', prefix)
+
+        components = []
+        if include_seed:
+            components.append(f"Seed: {seed}")
+        components.extend([
+            f"Steps: {steps}",
+            f"CFG: {cfg}",
+            f"Sampler: {sampler}",
+            f"Scheduler: {scheduler}",
+            f"Denoise: {denoise:.2f}",
+        ])
+
+        summary = clean_prefix + prefix.join(components)
+
+        return (seed, steps, cfg, sampler, sampler, scheduler, scheduler, denoise, summary)
