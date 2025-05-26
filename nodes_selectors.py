@@ -1,5 +1,6 @@
 import comfy.sd
-from .nodes import re
+-import .nodes import re
++import re
 
 class SamplerSelector:
     RETURN_TYPES = (comfy.samplers.KSampler.SAMPLERS, "STRING")
