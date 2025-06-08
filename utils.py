@@ -1,6 +1,7 @@
 import hashlib
 import os
 import requests
+from typing import Optional, Any
 from pathlib import Path
 from tqdm import tqdm
 import folder_paths
@@ -9,7 +10,7 @@ import folder_paths
 Given the file path, finds a matching sha256 file, or creates one
 based on the headers in the source file
 """
-def get_sha256(file_path: str):
+def get_sha256(file_path: str) -> str:
     file_no_ext = os.path.splitext(file_path)[0]
     hash_file = file_no_ext + ".sha256"
 
@@ -42,7 +43,7 @@ def get_sha256(file_path: str):
 """
 Based on a embedding name, eg: EasyNegative, finds the path as known in comfy, including extension
 """
-def full_embedding_path_for(embedding: str):
+def full_embedding_path_for(embedding: str) -> Optional[str]:
     matching_embedding = next((x for x in __list_embeddings() if x.startswith(embedding)), None)
     if matching_embedding == None:
         return None
@@ -51,7 +52,7 @@ def full_embedding_path_for(embedding: str):
 """
 Based on a lora name, e.g., 'epi_noise_offset2', finds the path as known in comfy, including extension.
 """
-def full_lora_path_for(lora: str):
+def full_lora_path_for(lora: str) -> Optional[str]:
     last_dot_position = lora.rfind('.')
     extension = lora[last_dot_position:] if last_dot_position != -1 else ""
     if extension not in folder_paths.supported_pt_extensions:
@@ -64,13 +65,13 @@ def full_lora_path_for(lora: str):
         return None
     return folder_paths.get_full_path("loras", matching_lora)
 
-def __list_loras():
+def __list_loras() -> list[str]:
     return folder_paths.get_filename_list("loras")
 
-def __list_embeddings():
+def __list_embeddings() -> list[str]:
     return folder_paths.get_filename_list("embeddings")
 
-def full_checkpoint_path_for(model_name: str):
+def full_checkpoint_path_for(model_name: str) -> Optional[str]:
     last_dot_position = model_name.rfind('.')
     extension = model_name[last_dot_position:] if last_dot_position != -1 else ""
     if extension not in folder_paths.supported_pt_extensions:
@@ -87,13 +88,13 @@ def full_checkpoint_path_for(model_name: str):
     print(f'Could not find full path to checkpoint "{model_name}"')
     return None
 
-def __list_checkpoints():
+def __list_checkpoints() -> list[str]:
     return folder_paths.get_filename_list("checkpoints")
 
-def __list_diffusion_models():
+def __list_diffusion_models() -> list[str]:
     return folder_paths.get_filename_list("diffusion_models")
 
-def http_get_json(url: str) -> dict | None:
+def http_get_json(url: str) ->  dict[str, Any] | None:
     try:
         response = requests.get(url, stream=True, headers={}, timeout=300)
     except TimeoutError:

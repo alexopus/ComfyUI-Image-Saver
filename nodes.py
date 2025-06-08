@@ -2,11 +2,13 @@ import os
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 import json
 import numpy as np
 import re
 
 from PIL import Image
+import torch
 
 import folder_paths
 from nodes import MAX_RESOLUTION
@@ -16,13 +18,13 @@ from .utils import get_sha256, full_checkpoint_path_for
 from .utils_civitai import get_civitai_sampler_name, get_civitai_metadata, MAX_HASH_LENGTH
 from .prompt_metadata_extractor import PromptMetadataExtractor
 
-def parse_checkpoint_name(ckpt_name):
+def parse_checkpoint_name(ckpt_name: str) -> str:
     return os.path.basename(ckpt_name)
 
-def parse_checkpoint_name_without_extension(ckpt_name):
+def parse_checkpoint_name_without_extension(ckpt_name: str) -> str:
     return os.path.splitext(parse_checkpoint_name(ckpt_name))[0]
 
-def get_timestamp(time_format):
+def get_timestamp(time_format: str) -> str:
     now = datetime.now()
     try:
         timestamp = now.strftime(time_format)
@@ -31,7 +33,7 @@ def get_timestamp(time_format):
 
     return timestamp
 
-def save_json(image_info, filename):
+def save_json(image_info: object, filename: str) -> None:
     try:
         workflow = (image_info or {}).get('workflow')
         if workflow is None:
@@ -42,7 +44,7 @@ def save_json(image_info, filename):
     except Exception as e:
         print(f'Failed to save workflow as json due to: {e}, proceeding with the remainder of saving execution')
 
-def make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
+def make_pathname(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler: str, denoise: float, clip_skip: int) -> str:
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
     filename = filename.replace("%model", parse_checkpoint_name(modelname))
@@ -59,7 +61,7 @@ def make_pathname(filename, width, height, seed, modelname, counter, time_format
     filename = filename.replace("%clip_skip", str(clip_skip))
     return filename
 
-def make_filename(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip):
+def make_filename(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler: str, denoise: float, clip_skip: int) -> str:
     filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
     return get_timestamp(time_format) if filename == "" else filename
 
@@ -81,7 +83,7 @@ class Metadata:
 
 class ImageSaverMetadata:
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls) -> dict[str, Any]:
         return {
             "optional": {
                 "modelname":             ("STRING",  {"default": '', "multiline": False,                           "tooltip": "model name (can be multiple, separated by commas)"}),
@@ -111,21 +113,21 @@ class ImageSaverMetadata:
 
     def get_metadata(
         self,
-        modelname,
-        positive,
-        negative,
-        width,
-        height,
-        seed_value,
-        steps,
-        cfg,
-        sampler_name,
-        scheduler,
-        denoise,
-        clip_skip,
-        additional_hashes="",
-        download_civitai_data=True,
-        easy_remix=True,
+        modelname: str,
+        positive: str,
+        negative: str,
+        width: int,
+        height: int,
+        seed_value: int,
+        steps: int,
+        cfg: float,
+        sampler_name: str,
+        scheduler: str,
+        denoise: float,
+        clip_skip: int,
+        additional_hashes: str = "",
+        download_civitai_data: bool = True,
+        easy_remix: bool = True,
     ):
         modelname, additional_hashes = ImageSaver.get_multiple_models(modelname, additional_hashes)
         metadata = Metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler, denoise, clip_skip, additional_hashes)
@@ -133,7 +135,7 @@ class ImageSaverMetadata:
 
 class ImageSaverSimple:
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls) -> dict[str, Any]:
         return {
             "required": {
                 "images":                ("IMAGE",    {                                                             "tooltip": "image(s) to save"}),
@@ -169,7 +171,7 @@ class ImageSaverSimple:
 
 class ImageSaver:
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls) -> dict[str, Any]:
         return {
             "required": {
                 "images":                ("IMAGE",   {                                                             "tooltip": "image(s) to save"}),
@@ -223,7 +225,7 @@ class ImageSaver:
     re_manual_hash_weights = re.compile(r'^\s*([^:]+?)(?:\s*:\s*([^\s:][^:]*?))?(?:\s*:\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+)))?\s*$')
 
     @staticmethod
-    def get_multiple_models(modelname, additional_hashes):
+    def get_multiple_models(modelname: str, additional_hashes: str) -> tuple[str, str]:
         model_names = [m.strip() for m in modelname.split(',')]
         modelname = model_names[0] # Use the first model as the primary one
 
@@ -240,35 +242,35 @@ class ImageSaver:
 
     def save_files(
         self,
-        images,
-        seed_value,
-        steps,
-        cfg,
-        sampler_name,
-        scheduler,
-        positive,
-        negative,
-        modelname,
-        quality_jpeg_or_webp,
-        lossless_webp,
-        optimize_png,
-        width,
-        height,
-        counter,
-        filename,
-        path,
-        extension,
-        time_format,
-        denoise,
-        clip_skip,
-        additional_hashes="",
-        save_workflow_as_json=False,
-        embed_workflow=True,
-        download_civitai_data=True,
-        easy_remix=True,
-        prompt=None,
-        extra_pnginfo=None,
-    ):
+        images: list[torch.Tensor],
+        seed_value: int,
+        steps: int,
+        cfg: float,
+        sampler_name: str,
+        scheduler: str,
+        positive: str,
+        negative: str,
+        modelname: str,
+        quality_jpeg_or_webp: int,
+        lossless_webp: bool,
+        optimize_png: bool,
+        width: int,
+        height: int,
+        counter: int,
+        filename: str,
+        path: str,
+        extension: str,
+        time_format: str,
+        denoise: float,
+        clip_skip: int,
+        additional_hashes: str = "",
+        save_workflow_as_json: bool = False,
+        embed_workflow: bool = True,
+        download_civitai_data: bool = True,
+        easy_remix: bool = True,
+        prompt: dict[str, Any] | None = None,
+        extra_pnginfo: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         modelname, additional_hashes = ImageSaver.get_multiple_models(modelname, additional_hashes)
         filename = make_filename(filename, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
         path = make_pathname(path, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
@@ -331,8 +333,8 @@ class ImageSaver:
         }
 
     @staticmethod
-    def save_images(images, output_path, filename_prefix, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow) -> list[str]:
-        paths = list()
+    def save_images(images: list[torch.Tensor], output_path: str, filename_prefix: str, a111_params: str, extension: str, quality_jpeg_or_webp: int, lossless_webp: bool, optimize_png: bool, prompt: dict[str, Any] | None, extra_pnginfo: dict[str, Any] | None, save_workflow_as_json: bool, embed_workflow: bool) -> list[str]:
+        paths: list[str] = list()
         for image in images:
             i = 255. * image.cpu().numpy()
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
@@ -350,9 +352,9 @@ class ImageSaver:
         return paths
 
     @staticmethod
-    def parse_manual_hashes(additional_hashes, existing_hashes, download_civitai_data):
+    def parse_manual_hashes(additional_hashes: str, existing_hashes: set[str], download_civitai_data: bool) -> dict[str, tuple[str | None, float | None, str]]:
         """Process additional_hashes input (a string) by normalizing, removing extra spaces/newlines, and splitting by comma"""
-        manual_entries = {}
+        manual_entries: dict[str, tuple[str | None, float | None, str]] = {}
         unnamed_count = 0
 
         additional_hash_split = additional_hashes.replace("\n", ",").split(",") if additional_hashes else []
@@ -415,7 +417,7 @@ class ImageSaver:
         return prompt
 
     @staticmethod
-    def get_unique_filename(output_path, filename_prefix, extension):
+    def get_unique_filename(output_path: str, filename_prefix: str, extension: str) -> str:
         existing_files = [f for f in os.listdir(output_path) if f.startswith(filename_prefix) and f.endswith(extension)]
 
         if not existing_files:

@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import List, Dict, Tuple, Any
 
 import folder_paths
 
@@ -10,14 +11,14 @@ MAX_HASH_LENGTH = 16 # skip larger unshortened hashes, such as full sha256 or bl
 """
 Represent the given embedding name as key as detected by civitAI
 """
-def civitai_embedding_key_name(embedding: str):
+def civitai_embedding_key_name(embedding: str) -> str:
     return f'embed:{embedding}'
 
 """
 Represent the given lora name as key as detected by civitAI
 NB: this should also work fine for Lycoris
 """
-def civitai_lora_key_name(lora: str):
+def civitai_lora_key_name(lora: str) -> str:
     return f'LORA:{lora}'
 
 CIVITAI_SAMPLER_MAP = {
@@ -41,7 +42,7 @@ CIVITAI_SAMPLER_MAP = {
     'lcm': 'LCM',
 }
 
-def get_civitai_sampler_name(sampler_name, scheduler):
+def get_civitai_sampler_name(sampler_name: str, scheduler: str) -> str:
     # based on: https://github.com/civitai/civitai/blob/main/src/server/common/constants.ts#L122
     if sampler_name in CIVITAI_SAMPLER_MAP:
         civitai_name = CIVITAI_SAMPLER_MAP[sampler_name]
@@ -58,9 +59,16 @@ def get_civitai_sampler_name(sampler_name, scheduler):
         else:
             return sampler_name
 
-def get_civitai_metadata(modelname, ckpt_path, modelhash, loras, embeddings, manual_entries, download_civitai_data):
+def get_civitai_metadata(
+        modelname: str,
+        ckpt_path: str,
+        modelhash: str,
+        loras: Dict[str, Tuple[str, float, str]],
+        embeddings: Dict[str, Tuple[str, float, str]],
+        manual_entries: Dict[str, tuple[str | None, float | None, str]],
+        download_civitai_data: bool) -> Tuple[List[Dict[str, str | float]], Dict[str, str], str | None]:
     """Download or load cache of Civitai data, save specially-formatted data to metadata"""
-    civitai_resources = []
+    civitai_resources: List[Dict[str, str | float]] = []
     hashes = {}
     add_model_hash = None
 
@@ -68,7 +76,7 @@ def get_civitai_metadata(modelname, ckpt_path, modelhash, loras, embeddings, man
         for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items():
             civitai_info = get_civitai_info(filepath, hash)
             if civitai_info is not None:
-                resource_data = {}
+                resource_data: Dict[str, str | float] = {}
 
                 # Optional data - modelName, versionName
                 resource_data["modelName"] = civitai_info["model"]["name"]
@@ -99,7 +107,7 @@ def get_civitai_metadata(modelname, ckpt_path, modelhash, loras, embeddings, man
 
     return civitai_resources, hashes, add_model_hash
 
-def get_civitai_info(path: Path | str | None, model_hash: str) -> dict | None:
+def get_civitai_info(path: Path | str | None, model_hash: str) -> dict[str, Any] | None:
     try:
         if not model_hash:
             print("ComfyUI-Image-Saver: Error: Missing hash.")
@@ -140,7 +148,7 @@ def get_civitai_info(path: Path | str | None, model_hash: str) -> dict | None:
         print(f"ComfyUI-Image-Saver: Civitai info error: {e}")
     return None
 
-def download_model_info(path: Path | str | None, model_hash: str) -> dict | None:
+def download_model_info(path: Path | str | None, model_hash: str) -> dict[str, object] | None:
     model_label = model_hash if path is None else f"{Path(path).stem}:{model_hash}"
     print(f"ComfyUI-Image-Saver: Downloading model info for '{model_label}'.")
 
@@ -162,7 +170,7 @@ def download_model_info(path: Path | str | None, model_hash: str) -> dict | None
 
     return content
 
-def save_civitai_info_file(content: dict, path: Path | str) -> bool:
+def save_civitai_info_file(content: dict[str, object], path: Path | str) -> bool:
     try:
         with open(Path(path).with_suffix(".civitai.info").absolute(), 'w') as info_file:
             info_file.write(json.dumps(content, indent=4))
@@ -174,7 +182,7 @@ def save_civitai_info_file(content: dict, path: Path | str) -> bool:
 def get_manual_folder() -> Path:
     return Path(folder_paths.models_dir) / "image-saver"
 
-def get_manual_list() -> dict[str, dict]:
+def get_manual_list() -> dict[str, dict[str, Any]]:
     folder = get_manual_folder()
     folder.mkdir(parents=True, exist_ok=True)
     try:
@@ -187,7 +195,7 @@ def get_manual_list() -> dict[str, dict]:
         print(f"ComfyUI-Image-Saver: Manual list get error: {e}")
     return {}
 
-def append_manual_list(key: str, value: dict) -> dict[str, dict]:
+def append_manual_list(key: str, value: dict[str, Any]) -> dict[str, dict[str, Any]]:
     manual_list = get_manual_list() | { key: value }
     try:
         with open((get_manual_folder() / "manual-hashes.json").absolute(), 'w') as file:

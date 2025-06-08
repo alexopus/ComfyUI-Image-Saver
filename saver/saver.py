@@ -1,10 +1,12 @@
+from typing import Any
 from PIL.PngImagePlugin import PngInfo
+from PIL.Image import Image
 
 import json
 import piexif
 import piexif.helper
 
-def save_image(image, filepath, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, a111_params, prompt, extra_pnginfo, embed_workflow):
+def save_image(image: Image, filepath: str, extension: str, quality_jpeg_or_webp: int, lossless_webp: bool, optimize_png: bool, a111_params: str, prompt: dict[str, Any] | None, extra_pnginfo: dict[str, Any] | None, embed_workflow: bool) -> None:
     if extension == 'png':
         metadata = PngInfo()
         metadata.add_text("parameters", a111_params)
