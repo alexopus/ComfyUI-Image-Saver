@@ -33,7 +33,7 @@ def get_timestamp(time_format: str) -> str:
 
     return timestamp
 
-def save_json(image_info: object, filename: str) -> None:
+def save_json(image_info: dict[str, Any], filename: str) -> None:
     try:
         workflow = (image_info or {}).get('workflow')
         if workflow is None:
@@ -243,29 +243,29 @@ class ImageSaver:
     def save_files(
         self,
         images: list[torch.Tensor],
-        seed_value: int,
+        filename: str,
+        path: str,
+        extension: str,
         steps: int,
         cfg: float,
+        modelname: str,
         sampler_name: str,
         scheduler: str,
         positive: str,
         negative: str,
-        modelname: str,
-        quality_jpeg_or_webp: int,
-        lossless_webp: bool,
-        optimize_png: bool,
+        seed_value: int,
         width: int,
         height: int,
+        lossless_webp: bool,
+        quality_jpeg_or_webp: int,
+        optimize_png: bool,
         counter: int,
-        filename: str,
-        path: str,
-        extension: str,
-        time_format: str,
         denoise: float,
         clip_skip: int,
-        additional_hashes: str = "",
+        time_format: str,
         save_workflow_as_json: bool = False,
         embed_workflow: bool = True,
+        additional_hashes: str = "",
         download_civitai_data: bool = True,
         easy_remix: bool = True,
         prompt: dict[str, Any] | None = None,
