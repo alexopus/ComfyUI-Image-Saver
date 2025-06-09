@@ -71,7 +71,10 @@ def __list_loras() -> list[str]:
 def __list_embeddings() -> list[str]:
     return folder_paths.get_filename_list("embeddings")
 
-def full_checkpoint_path_for(model_name: str) -> Optional[str]:
+def full_checkpoint_path_for(model_name: str) -> str:
+    if not model_name:
+        return ''
+
     last_dot_position = model_name.rfind('.')
     extension = model_name[last_dot_position:] if last_dot_position != -1 else ""
     if extension not in folder_paths.supported_pt_extensions:
@@ -86,7 +89,7 @@ def full_checkpoint_path_for(model_name: str) -> Optional[str]:
         return folder_paths.get_full_path("diffusion_models", matching_model)
 
     print(f'Could not find full path to checkpoint "{model_name}"')
-    return None
+    return ''
 
 def __list_checkpoints() -> list[str]:
     return folder_paths.get_filename_list("checkpoints")

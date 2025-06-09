@@ -33,7 +33,7 @@ def get_timestamp(time_format: str) -> str:
 
     return timestamp
 
-def save_json(image_info: dict[str, Any], filename: str) -> None:
+def save_json(image_info: dict[str, Any] | None, filename: str) -> None:
     try:
         workflow = (image_info or {}).get('workflow')
         if workflow is None:
@@ -44,7 +44,7 @@ def save_json(image_info: dict[str, Any], filename: str) -> None:
     except Exception as e:
         print(f'Failed to save workflow as json due to: {e}, proceeding with the remainder of saving execution')
 
-def make_pathname(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler: str, denoise: float, clip_skip: int) -> str:
+def make_pathname(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int) -> str:
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
     filename = filename.replace("%model", parse_checkpoint_name(modelname))
@@ -55,14 +55,14 @@ def make_pathname(filename: str, width: int, height: int, seed: int, modelname: 
     filename = filename.replace("%sampler_name", sampler_name)
     filename = filename.replace("%steps", str(steps))
     filename = filename.replace("%cfg", str(cfg))
-    filename = filename.replace("%scheduler", scheduler)
+    filename = filename.replace("%scheduler_name", scheduler_name)
     filename = filename.replace("%basemodelname", parse_checkpoint_name_without_extension(modelname))
     filename = filename.replace("%denoise", str(denoise))
     filename = filename.replace("%clip_skip", str(clip_skip))
     return filename
 
-def make_filename(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler: str, denoise: float, clip_skip: int) -> str:
-    filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
+def make_filename(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int) -> str:
+    filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler_name, denoise, clip_skip)
     return get_timestamp(time_format) if filename == "" else filename
 
 @dataclass
@@ -76,10 +76,13 @@ class Metadata:
     steps: int
     cfg: float
     sampler_name: str
-    scheduler: str
+    scheduler_name: str
     denoise: float
     clip_skip: int
     additional_hashes: str
+    ckpt_path: str
+    a111_params: str
+    final_hashes: str
 
 class ImageSaverMetadata:
     @classmethod
@@ -95,7 +98,7 @@ class ImageSaverMetadata:
                 "steps":                 ("INT",     {"default": 20, "min": 1, "max": 10000,                       "tooltip": "number of steps"}),
                 "cfg":                   ("FLOAT",   {"default": 7.0, "min": 0.0, "max": 100.0,                    "tooltip": "CFG value"}),
                 "sampler_name":          ("STRING",  {"default": '', "multiline": False,                           "tooltip": "sampler name (as string)"}),
-                "scheduler":             ("STRING",  {"default": 'normal', "multiline": False,                     "tooltip": "scheduler name (as string)"}),
+                "scheduler_name":        ("STRING",  {"default": 'normal', "multiline": False,                     "tooltip": "scheduler name (as string)"}),
                 "denoise":               ("FLOAT",   {"default": 1.0, "min": 0.0, "max": 1.0,                      "tooltip": "denoise value"}),
                 "clip_skip":             ("INT",     {"default": 0, "min": -24, "max": 24,                         "tooltip": "skip last CLIP layers (positive or negative value, 0 for no skip)"}),
                 "additional_hashes":     ("STRING",  {"default": "", "multiline": False,                           "tooltip": "hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:FF735FF83F98')\nWith download_civitai_data set to true, weights can be added as well. (e.g., 'HASH:Weight', 'Name:HASH:Weight')"}),
@@ -104,34 +107,81 @@ class ImageSaverMetadata:
             },
         }
 
-    RETURN_TYPES = ("METADATA",)
-    RETURN_NAMES = ("metadata",)
-    OUTPUT_TOOLTIPS = ("metadata for Image Saver Simple",)
+    RETURN_TYPES = ("METADATA","STRING","STRING")
+    RETURN_NAMES = ("metadata","hashes","a1111_params")
+    OUTPUT_TOOLTIPS = ("metadata for Image Saver Simple","Comma-separated list of the hashes to chain with other Image Saver additional_hashes","Written parameters to the image metadata")
     FUNCTION = "get_metadata"
     CATEGORY = "ImageSaver"
     DESCRIPTION = "Prepare metadata for Image Saver Simple"
 
     def get_metadata(
         self,
-        modelname: str,
-        positive: str,
-        negative: str,
-        width: int,
-        height: int,
-        seed_value: int,
-        steps: int,
-        cfg: float,
-        sampler_name: str,
-        scheduler: str,
-        denoise: float,
-        clip_skip: int,
+        modelname: str = "",
+        positive: str = "unknown",
+        negative: str = "unknown",
+        width: int = 512,
+        height: int = 512,
+        seed_value: int = 0,
+        steps: int = 20,
+        cfg: float = 7.0,
+        sampler_name: str = "",
+        scheduler_name: str = "",
+        denoise: float = 1.0,
+        clip_skip: int = 0,
         additional_hashes: str = "",
         download_civitai_data: bool = True,
         easy_remix: bool = True,
-    ):
+    ) -> tuple[Metadata, str, str]:
+        metadata = ImageSaverMetadata.make_metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, additional_hashes, download_civitai_data, easy_remix)
+        return (metadata, metadata.final_hashes, metadata.a111_params)
+
+    @staticmethod
+    def make_metadata(modelname: str, positive: str, negative: str, width: int, height: int, seed_value: int, steps: int, cfg: float, sampler_name: str, scheduler_name: str, denoise: float, clip_skip: int, additional_hashes: str, download_civitai_data: bool, easy_remix: bool) -> Metadata:
         modelname, additional_hashes = ImageSaver.get_multiple_models(modelname, additional_hashes)
-        metadata = Metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler, denoise, clip_skip, additional_hashes)
-        return (metadata,)
+
+        ckpt_path = full_checkpoint_path_for(modelname)
+        if ckpt_path:
+            modelhash = get_sha256(ckpt_path)[:10]
+        else:
+            modelhash = ""
+
+        metadata_extractor = PromptMetadataExtractor([positive, negative])
+        embeddings = metadata_extractor.get_embeddings()
+        loras = metadata_extractor.get_loras()
+        civitai_sampler_name = get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler_name)
+        basemodelname = parse_checkpoint_name_without_extension(modelname)
+
+        # Get existing hashes from model, loras, and embeddings
+        existing_hashes = {modelhash.lower()} | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}
+        # Parse manual hashes
+        manual_entries = ImageSaver.parse_manual_hashes(additional_hashes, existing_hashes, download_civitai_data)
+        # Get Civitai metadata
+        civitai_resources, hashes, add_model_hash = get_civitai_metadata(modelname, ckpt_path, modelhash, loras, embeddings, manual_entries, download_civitai_data)
+
+        if easy_remix:
+            positive = ImageSaver.clean_prompt(positive, metadata_extractor)
+            negative = ImageSaver.clean_prompt(negative, metadata_extractor)
+
+        positive_a111_params = positive.strip()
+        negative_a111_params = f"\nNegative prompt: {negative.strip()}"
+        clip_skip_str = f", Clip skip: {abs(clip_skip)}" if clip_skip != 0 else ""
+        model_hash_str = f", Model hash: {add_model_hash}" if add_model_hash else ""
+        hashes_str = f", Hashes: {json.dumps(hashes, separators=(',', ':'))}" if hashes else ""
+
+        a111_params = (
+            f"{positive_a111_params}{negative_a111_params}\n"
+            f"Steps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, "
+            f"Size: {width}x{height}{clip_skip_str}{model_hash_str}, Model: {basemodelname}{hashes_str}, Version: ComfyUI"
+        )
+
+        # Add Civitai resource listing
+        if download_civitai_data and civitai_resources:
+            a111_params += f", Civitai resources: {json.dumps(civitai_resources, separators=(',', ':'))}"
+
+        final_hashes = ",".join(f"{Path(name.split(':')[-1]).stem + ':' if name else ''}{hash}{':' + str(weight) if weight is not None and download_civitai_data else ''}" for name, (_, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items())
+
+        metadata = Metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, additional_hashes, ckpt_path, a111_params, final_hashes)
+        return metadata
 
 class ImageSaverSimple:
     @classmethod
@@ -139,7 +189,7 @@ class ImageSaverSimple:
         return {
             "required": {
                 "images":                ("IMAGE",    {                                                             "tooltip": "image(s) to save"}),
-                "filename":              ("STRING",   {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %width, %height, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler, %basemodelname, %denoise, %clip_skip)"}),
+                "filename":              ("STRING",   {"default": '%time_%basemodelname_%seed', "multiline": False, "tooltip": "filename (available variables: %date, %time, %model, %width, %height, %seed, %counter, %sampler_name, %steps, %cfg, %scheduler_name, %basemodelname, %denoise, %clip_skip)"}),
                 "path":                  ("STRING",   {"default": '', "multiline": False,                           "tooltip": "path to save the images (under Comfy's save directory)"}),
                 "extension":             (['png', 'jpeg', 'jpg', 'webp'], {                                         "tooltip": "file extension/type to save image as"}),
                 "lossless_webp":         ("BOOLEAN",  {"default": True,                                             "tooltip": "if True, saved WEBP files will be lossless"}),
@@ -162,12 +212,40 @@ class ImageSaverSimple:
     RETURN_TYPES = ("STRING","STRING")
     RETURN_NAMES = ("hashes","a1111_params")
     OUTPUT_TOOLTIPS = ("Comma-separated list of the hashes to chain with other Image Saver additional_hashes","Written parameters to the image metadata")
-    FUNCTION = "save_files"
+    FUNCTION = "save_images"
 
     OUTPUT_NODE = True
 
     CATEGORY = "ImageSaver"
     DESCRIPTION = "Save images with civitai-compatible generation metadata"
+
+    def save_images(self,
+        images: list[torch.Tensor],
+        filename: str,
+        path: str,
+        extension: str,
+        lossless_webp: bool,
+        quality_jpeg_or_webp: int,
+        optimize_png: bool,
+        embed_workflow: bool = True,
+        save_workflow_as_json: bool = False,
+        metadata: Metadata | None = None,
+        counter: int = 0,
+        time_format: str = "%Y-%m-%d-%H%M%S",
+        prompt: dict[str, Any] | None = None,
+        extra_pnginfo: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        if metadata is None:
+            metadata = Metadata('', '', '', 512, 512, 0, 20, 7.0, '', 'normal', 1.0, 0, '', '', '', '')
+
+        filenames = ImageSaver.save_images(images, filename, extension, path, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow, counter, time_format, metadata)
+
+        subfolder = os.path.normpath(path)
+
+        return {
+            "result": (metadata.final_hashes, metadata.a111_params),
+            "ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)},
+        }
 
 class ImageSaver:
     @classmethod
@@ -184,7 +262,7 @@ class ImageSaver:
                 "cfg":                   ("FLOAT",   {"default": 7.0, "min": 0.0, "max": 100.0,                    "tooltip": "CFG value"}),
                 "modelname":             ("STRING",  {"default": '', "multiline": False,                           "tooltip": "model name (can be multiple, separated by commas)"}),
                 "sampler_name":          ("STRING",  {"default": '', "multiline": False,                           "tooltip": "sampler name (as string)"}),
-                "scheduler":             ("STRING",  {"default": 'normal', "multiline": False,                     "tooltip": "scheduler name (as string)"}),
+                "scheduler_name":        ("STRING",  {"default": 'normal', "multiline": False,                     "tooltip": "scheduler name (as string)"}),
                 "positive":              ("STRING",  {"default": 'unknown', "multiline": True,                     "tooltip": "positive prompt"}),
                 "negative":              ("STRING",  {"default": 'unknown', "multiline": True,                     "tooltip": "negative prompt"}),
                 "seed_value":            ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff,           "tooltip": "seed"}),
@@ -219,6 +297,92 @@ class ImageSaver:
     CATEGORY = "ImageSaver"
     DESCRIPTION = "Save images with civitai-compatible generation metadata"
 
+    def save_files(
+        self,
+        images: list[torch.Tensor],
+        filename: str,
+        path: str,
+        extension: str,
+        steps: int = 20,
+        cfg: float = 7.0,
+        modelname: str = "",
+        sampler_name: str = "",
+        scheduler_name: str = "normal",
+        positive: str = "unknown",
+        negative: str = "unknown",
+        seed_value: int = 0,
+        width: int = 512,
+        height: int = 512,
+        lossless_webp: bool = True,
+        quality_jpeg_or_webp: int = 100,
+        optimize_png: bool = False,
+        counter: int = 0,
+        denoise: float = 1.0,
+        clip_skip: int = 0,
+        time_format: str = "%Y-%m-%d-%H%M%S",
+        save_workflow_as_json: bool = False,
+        embed_workflow: bool = True,
+        additional_hashes: str = "",
+        download_civitai_data: bool = True,
+        easy_remix: bool = True,
+        prompt: dict[str, Any] | None = None,
+        extra_pnginfo: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        metadata = ImageSaverMetadata.make_metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, additional_hashes, download_civitai_data, easy_remix)
+
+        filenames = ImageSaver.save_images(images, filename, extension, path, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow, counter, time_format, metadata)
+
+        subfolder = os.path.normpath(path)
+
+        return {
+            "result": (metadata.final_hashes, metadata.a111_params),
+            "ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)},
+        }
+
+    @staticmethod
+    def save_images(
+        images: list[torch.Tensor],
+        filename_pattern: str,
+        extension: str,
+        path_pattern: str,
+        quality_jpeg_or_webp: int,
+        lossless_webp: bool,
+        optimize_png: bool,
+        prompt: dict[str, Any] | None,
+        extra_pnginfo: dict[str, Any] | None,
+        save_workflow_as_json: bool,
+        embed_workflow: bool,
+        counter: int,
+        time_format: str,
+        metadata: Metadata
+    ) -> list[str]:
+        filename_prefix = make_filename(filename_pattern, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip)
+        path = make_pathname(path_pattern, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip)
+
+        output_path = os.path.join(folder_paths.output_directory, path)
+
+        if output_path.strip() != '':
+            if not os.path.exists(output_path.strip()):
+                print(f'The path `{output_path.strip()}` specified doesn\'t exist! Creating directory.')
+                os.makedirs(output_path, exist_ok=True)
+
+        result_paths: list[str] = list()
+        for image in images:
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+
+            current_filename_prefix = ImageSaver.get_unique_filename(output_path, filename_prefix, extension)
+            final_filename = f"{current_filename_prefix}.{extension}"
+            filepath = os.path.join(output_path, final_filename)
+
+            save_image(img, filepath, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, metadata.a111_params, prompt, extra_pnginfo, embed_workflow)
+
+            if save_workflow_as_json:
+                save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
+
+            result_paths.append(final_filename)
+        return result_paths
+
     # Match 'anything' or 'anything:anything' with trimmed white space
     re_manual_hash = re.compile(r'^\s*([^:]+?)(?:\s*:\s*([^\s:][^:]*?))?\s*$')
     # Match 'anything', 'anything:anything' or 'anything:anything:number' with trimmed white space
@@ -239,117 +403,6 @@ class ImageSaver:
                     additional_hashes += ","
                 additional_hashes += f"{additional_model}:{additional_modelhash}"
         return modelname, additional_hashes
-
-    def save_files(
-        self,
-        images: list[torch.Tensor],
-        filename: str,
-        path: str,
-        extension: str,
-        steps: int,
-        cfg: float,
-        modelname: str,
-        sampler_name: str,
-        scheduler: str,
-        positive: str,
-        negative: str,
-        seed_value: int,
-        width: int,
-        height: int,
-        lossless_webp: bool,
-        quality_jpeg_or_webp: int,
-        optimize_png: bool,
-        counter: int,
-        denoise: float,
-        clip_skip: int,
-        time_format: str,
-        save_workflow_as_json: bool = False,
-        embed_workflow: bool = True,
-        additional_hashes: str = "",
-        download_civitai_data: bool = True,
-        easy_remix: bool = True,
-        prompt: dict[str, Any] | None = None,
-        extra_pnginfo: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        modelname, additional_hashes = ImageSaver.get_multiple_models(modelname, additional_hashes)
-        filename = make_filename(filename, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
-        path = make_pathname(path, width, height, seed_value, modelname, counter, time_format, sampler_name, steps, cfg, scheduler, denoise, clip_skip)
-
-        ckpt_path = full_checkpoint_path_for(modelname)
-        if ckpt_path:
-            modelhash = get_sha256(ckpt_path)[:10]
-        else:
-            modelhash = ""
-
-        metadata_extractor = PromptMetadataExtractor([positive, negative])
-        embeddings = metadata_extractor.get_embeddings()
-        loras = metadata_extractor.get_loras()
-        civitai_sampler_name = get_civitai_sampler_name(sampler_name.replace('_gpu', ''), scheduler)
-        basemodelname = parse_checkpoint_name_without_extension(modelname)
-
-        # Get existing hashes from model, loras, and embeddings
-        existing_hashes = {modelhash.lower()} | {t[2].lower() for t in loras.values()} | {t[2].lower() for t in embeddings.values()}
-        # Parse manual hashes
-        manual_entries = ImageSaver.parse_manual_hashes(additional_hashes, existing_hashes, download_civitai_data)
-        # Get Civitai metadata
-        civitai_resources, hashes, add_model_hash = get_civitai_metadata(modelname, ckpt_path, modelhash, loras, embeddings, manual_entries, download_civitai_data)
-
-        if easy_remix:
-            positive = ImageSaver.clean_prompt(positive, metadata_extractor)
-            negative = ImageSaver.clean_prompt(negative, metadata_extractor)
-
-        positive_a111_params = positive.strip()
-        negative_a111_params = f"\nNegative prompt: {negative.strip()}"
-        clip_skip_str = f", Clip skip: {abs(clip_skip)}" if clip_skip != 0 else ""
-        model_hash_str = f", Model hash: {add_model_hash}" if add_model_hash else ""
-        hashes_str = f", Hashes: {json.dumps(hashes, separators=(',', ':'))}" if hashes else ""
-
-        a111_params = (
-            f"{positive_a111_params}{negative_a111_params}\n"
-            f"Steps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, "
-            f"Size: {width}x{height}{clip_skip_str}{model_hash_str}, Model: {basemodelname}{hashes_str}, Version: ComfyUI"
-        )
-
-        # Add Civitai resource listing
-        if download_civitai_data and civitai_resources:
-            a111_params += f", Civitai resources: {json.dumps(civitai_resources, separators=(',', ':'))}"
-
-        output_path = os.path.join(folder_paths.output_directory, path)
-
-        if output_path.strip() != '':
-            if not os.path.exists(output_path.strip()):
-                print(f'The path `{output_path.strip()}` specified doesn\'t exist! Creating directory.')
-                os.makedirs(output_path, exist_ok=True)
-
-        filenames = ImageSaver.save_images(images, output_path, filename, a111_params, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow)
-
-        subfolder = os.path.normpath(path)
-
-        final_hashes = ",".join(f"{Path(name.split(':')[-1]).stem + ':' if name else ''}{hash}{':' + str(weight) if weight is not None and download_civitai_data else ''}" for name, (_, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items())
-
-        return {
-            "result": (final_hashes, a111_params),
-            "ui": {"images": map(lambda filename: {"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'}, filenames)},
-        }
-
-    @staticmethod
-    def save_images(images: list[torch.Tensor], output_path: str, filename_prefix: str, a111_params: str, extension: str, quality_jpeg_or_webp: int, lossless_webp: bool, optimize_png: bool, prompt: dict[str, Any] | None, extra_pnginfo: dict[str, Any] | None, save_workflow_as_json: bool, embed_workflow: bool) -> list[str]:
-        paths: list[str] = list()
-        for image in images:
-            i = 255. * image.cpu().numpy()
-            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-
-            current_filename_prefix = ImageSaver.get_unique_filename(output_path, filename_prefix, extension)
-            filename = f"{current_filename_prefix}.{extension}"
-            filepath = os.path.join(output_path, filename)
-
-            save_image(img, filepath, extension, quality_jpeg_or_webp, lossless_webp, optimize_png, a111_params, prompt, extra_pnginfo, embed_workflow)
-
-            if save_workflow_as_json:
-                save_json(extra_pnginfo, os.path.join(output_path, current_filename_prefix))
-
-            paths.append(filename)
-        return paths
 
     @staticmethod
     def parse_manual_hashes(additional_hashes: str, existing_hashes: set[str], download_civitai_data: bool) -> dict[str, tuple[str | None, float | None, str]]:
@@ -423,7 +476,7 @@ class ImageSaver:
         if not existing_files:
             return f"{filename_prefix}"
 
-        suffixes = []
+        suffixes: list[int] = []
         for f in existing_files:
             name, _ = os.path.splitext(f)
             parts = name.split('_')

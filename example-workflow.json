@@ -1,20 +1,460 @@
 {
-  "last_node_id": 30,
-  "last_link_id": 82,
+  "id": "e4602d36-6fc0-42ed-b90b-c3ee838a55a8",
+  "revision": 0,
+  "last_node_id": 54,
+  "last_link_id": 134,
   "nodes": [
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [
+        1110,
+        -140
+      ],
+      "size": [
+        140,
+        50
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 7
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 45
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            107
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 24,
+      "type": "CLIPTextEncode",
+      "pos": [
+        630,
+        -120
+      ],
+      "size": [
+        210.26666259765625,
+        88
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 44
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 34
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        630,
+        10
+      ],
+      "size": [
+        210.26666259765625,
+        88
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 43
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 35
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 22,
+      "type": "String Literal (Image Saver)",
+      "pos": [
+        310,
+        -150
+      ],
+      "size": [
+        300,
+        90
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            34,
+            111
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "String Literal (Image Saver)"
+      },
+      "widgets_values": [
+        "beautiful scenery nature glass bottle landscape, purple galaxy bottle"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 23,
+      "type": "String Literal (Image Saver)",
+      "pos": [
+        310,
+        -20
+      ],
+      "size": [
+        300,
+        90
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            35,
+            112
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "String Literal (Image Saver)"
+      },
+      "widgets_values": [
+        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 25,
+      "type": "Checkpoint Loader with Name (Image Saver)",
+      "pos": [
+        270,
+        110
+      ],
+      "size": [
+        344.3999938964844,
+        118
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": [
+            42
+          ]
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "slot_index": 1,
+          "links": [
+            43,
+            44
+          ]
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "slot_index": 2,
+          "links": [
+            45
+          ]
+        },
+        {
+          "name": "model_name",
+          "type": "STRING",
+          "slot_index": 3,
+          "links": [
+            110
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "Checkpoint Loader with Name (Image Saver)"
+      },
+      "widgets_values": [
+        "1.5/theAllysMixIII_v10.safetensors"
+      ]
+    },
+    {
+      "id": 53,
+      "type": "Input Parameters (Image Saver)",
+      "pos": [
+        350,
+        270
+      ],
+      "size": [
+        260,
+        342
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "seed",
+          "type": "INT",
+          "links": [
+            121,
+            122
+          ]
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "links": [
+            123,
+            124
+          ]
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "links": [
+            125,
+            126
+          ]
+        },
+        {
+          "name": "sampler",
+          "type": "COMBO",
+          "links": [
+            134
+          ]
+        },
+        {
+          "name": "sampler_name",
+          "type": "STRING",
+          "links": [
+            128
+          ]
+        },
+        {
+          "name": "scheduler",
+          "type": "COMBO",
+          "links": [
+            133
+          ]
+        },
+        {
+          "name": "scheduler_name",
+          "type": "STRING",
+          "links": [
+            130
+          ]
+        },
+        {
+          "name": "denoise",
+          "type": "FLOAT",
+          "links": [
+            131,
+            132
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "Input Parameters (Image Saver)"
+      },
+      "widgets_values": [
+        582528133228867,
+        "randomize",
+        20,
+        7,
+        "euler",
+        "normal",
+        1
+      ]
+    },
+    {
+      "id": 12,
+      "type": "Width/Height Literal (Image Saver)",
+      "pos": [
+        320,
+        650
+      ],
+      "size": [
+        290,
+        60
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "size",
+          "type": "INT",
+          "slot_index": 0,
+          "links": [
+            20,
+            113
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "Width/Height Literal (Image Saver)"
+      },
+      "widgets_values": [
+        512
+      ]
+    },
+    {
+      "id": 13,
+      "type": "Width/Height Literal (Image Saver)",
+      "pos": [
+        320,
+        750
+      ],
+      "size": [
+        290,
+        60
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "size",
+          "type": "INT",
+          "slot_index": 0,
+          "links": [
+            21,
+            114
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "Width/Height Literal (Image Saver)"
+      },
+      "widgets_values": [
+        512
+      ]
+    },
     {
       "id": 3,
       "type": "KSampler",
-      "pos": {
-        "0": 810,
-        "1": -140
-      },
-      "size": {
-        "0": 210,
-        "1": 230
-      },
+      "pos": [
+        880,
+        -140
+      ],
+      "size": [
+        220,
+        262
+      ],
       "flags": {},
-      "order": 14,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -38,69 +478,71 @@
           "link": 2
         },
         {
-          "name": "sampler_name",
-          "type": "COMBO",
-          "link": 10,
-          "widget": {
-            "name": "sampler_name"
-          }
-        },
-        {
-          "name": "scheduler",
-          "type": "COMBO",
-          "link": 57,
-          "widget": {
-            "name": "scheduler"
-          }
-        },
-        {
           "name": "seed",
           "type": "INT",
-          "link": 18,
           "widget": {
             "name": "seed"
-          }
+          },
+          "link": 121
         },
         {
           "name": "steps",
           "type": "INT",
-          "link": 25,
           "widget": {
             "name": "steps"
-          }
+          },
+          "link": 123
         },
         {
           "name": "cfg",
           "type": "FLOAT",
-          "link": 28,
           "widget": {
             "name": "cfg"
-          }
+          },
+          "link": 125
+        },
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": 134
+        },
+        {
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": 133
         },
         {
           "name": "denoise",
           "type": "FLOAT",
-          "link": 31,
           "widget": {
             "name": "denoise"
-          }
+          },
+          "link": 132
         }
       ],
       "outputs": [
         {
           "name": "LATENT",
           "type": "LATENT",
+          "slot_index": 0,
           "links": [
             7
-          ],
-          "slot_index": 0
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        680957322507703,
+        453912465950566,
         "randomize",
         20,
         8,
@@ -110,257 +552,207 @@
       ]
     },
     {
-      "id": 7,
-      "type": "CLIPTextEncode",
-      "pos": {
-        "0": 520,
-        "1": -40
-      },
-      "size": {
-        "0": 210,
-        "1": 54
-      },
+      "id": 35,
+      "type": "Image Saver Metadata",
+      "pos": [
+        880,
+        160
+      ],
+      "size": [
+        222,
+        494
+      ],
       "flags": {},
-      "order": 12,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 43
-        },
-        {
-          "name": "text",
+          "name": "modelname",
+          "shape": 7,
           "type": "STRING",
-          "link": 35,
           "widget": {
-            "name": "text"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            6
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
-      ],
-      "color": "#322",
-      "bgcolor": "#533"
-    },
-    {
-      "id": 24,
-      "type": "CLIPTextEncode",
-      "pos": {
-        "0": 520,
-        "1": -170
-      },
-      "size": {
-        "0": 210,
-        "1": 54
-      },
-      "flags": {},
-      "order": 13,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 44
+            "name": "modelname"
+          },
+          "link": 110
         },
         {
-          "name": "text",
+          "name": "positive",
+          "shape": 7,
           "type": "STRING",
-          "link": 34,
           "widget": {
-            "name": "text"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            36
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
-      "id": 8,
-      "type": "VAEDecode",
-      "pos": {
-        "0": 1030,
-        "1": -140
-      },
-      "size": {
-        "0": 140,
-        "1": 50
-      },
-      "flags": {},
-      "order": 15,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "samples",
-          "type": "LATENT",
-          "link": 7
+            "name": "positive"
+          },
+          "link": 111
         },
         {
-          "name": "vae",
-          "type": "VAE",
-          "link": 45
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            72
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "VAEDecode"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 22,
-      "type": "String Literal (Image Saver)",
-      "pos": {
-        "0": 200,
-        "1": -150
-      },
-      "size": {
-        "0": 300,
-        "1": 90
-      },
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "STRING",
+          "name": "negative",
+          "shape": 7,
           "type": "STRING",
+          "widget": {
+            "name": "negative"
+          },
+          "link": 112
+        },
+        {
+          "name": "width",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 113
+        },
+        {
+          "name": "height",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 114
+        },
+        {
+          "name": "seed_value",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "seed_value"
+          },
+          "link": 122
+        },
+        {
+          "name": "steps",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": 124
+        },
+        {
+          "name": "cfg",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": 126
+        },
+        {
+          "name": "sampler_name",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": 128
+        },
+        {
+          "name": "scheduler_name",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "scheduler_name"
+          },
+          "link": 130
+        },
+        {
+          "name": "denoise",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": 131
+        }
+      ],
+      "outputs": [
+        {
+          "name": "metadata",
+          "type": "METADATA",
           "links": [
-            34,
-            73
-          ],
-          "slot_index": 0,
-          "shape": 3
+            92
+          ]
+        },
+        {
+          "name": "hashes",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "a1111_params",
+          "type": "STRING",
+          "links": []
         }
       ],
       "properties": {
-        "Node name for S&R": "String Literal (Image Saver)"
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "Image Saver Metadata"
       },
       "widgets_values": [
-        "beautiful scenery nature glass bottle landscape, purple galaxy bottle"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
-      "id": 23,
-      "type": "String Literal (Image Saver)",
-      "pos": {
-        "0": 200,
-        "1": -20
-      },
-      "size": {
-        "0": 300,
-        "1": 90
-      },
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            35,
-            74
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "String Literal (Image Saver)"
-      },
-      "widgets_values": [
-        "(worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4"
-      ],
-      "color": "#322",
-      "bgcolor": "#533"
+        "",
+        "unknown",
+        "unknown",
+        512,
+        512,
+        0,
+        20,
+        7,
+        "",
+        "normal",
+        1,
+        0,
+        "",
+        false,
+        false
+      ]
     },
     {
       "id": 5,
       "type": "EmptyLatentImage",
-      "pos": {
-        "0": 620,
-        "1": 660
-      },
-      "size": {
-        "0": 210,
-        "1": 80
-      },
+      "pos": [
+        620,
+        670
+      ],
+      "size": [
+        210,
+        106
+      ],
       "flags": {},
-      "order": 11,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
           "name": "width",
           "type": "INT",
-          "link": 20,
           "widget": {
             "name": "width"
-          }
+          },
+          "link": 20
         },
         {
           "name": "height",
           "type": "INT",
-          "link": 21,
           "widget": {
             "name": "height"
-          }
+          },
+          "link": 21
         }
       ],
       "outputs": [
         {
           "name": "LATENT",
           "type": "LATENT",
+          "slot_index": 0,
           "links": [
             2
-          ],
-          "slot_index": 0
+          ]
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.40",
         "Node name for S&R": "EmptyLatentImage"
       },
       "widgets_values": [
@@ -370,491 +762,60 @@
       ]
     },
     {
-      "id": 21,
-      "type": "Float Literal (Image Saver)",
-      "pos": {
-        "0": 350,
-        "1": 920
-      },
-      "size": {
-        "0": 230,
-        "1": 60
-      },
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "FLOAT",
-          "type": "FLOAT",
-          "links": [
-            31,
-            81
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
+      "id": 34,
+      "type": "Image Saver Simple",
+      "pos": [
+        1260,
+        -140
       ],
-      "properties": {
-        "Node name for S&R": "Float Literal (Image Saver)"
-      },
-      "widgets_values": [
-        1
-      ]
-    },
-    {
-      "id": 19,
-      "type": "Int Literal (Image Saver)",
-      "pos": {
-        "0": 370,
-        "1": 820
-      },
-      "size": {
-        "0": 210,
-        "1": 60
-      },
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "INT",
-          "type": "INT",
-          "links": [
-            25,
-            75
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Int Literal (Image Saver)"
-      },
-      "widgets_values": [
-        30
-      ]
-    },
-    {
-      "id": 13,
-      "type": "Width/Height Literal (Image Saver)",
-      "pos": {
-        "0": 290,
-        "1": 720
-      },
-      "size": {
-        "0": 290,
-        "1": 60
-      },
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "size",
-          "type": "INT",
-          "links": [
-            21,
-            80
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Width/Height Literal (Image Saver)"
-      },
-      "widgets_values": [
-        512
-      ]
-    },
-    {
-      "id": 12,
-      "type": "Width/Height Literal (Image Saver)",
-      "pos": {
-        "0": 290,
-        "1": 620
-      },
-      "size": {
-        "0": 290,
-        "1": 60
-      },
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "size",
-          "type": "INT",
-          "links": [
-            20,
-            79
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Width/Height Literal (Image Saver)"
-      },
-      "widgets_values": [
-        512
-      ]
-    },
-    {
-      "id": 20,
-      "type": "Float Literal (Image Saver)",
-      "pos": {
-        "0": 350,
-        "1": 520
-      },
-      "size": {
-        "0": 230,
-        "1": 60
-      },
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "FLOAT",
-          "type": "FLOAT",
-          "links": [
-            28,
-            76
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Float Literal (Image Saver)"
-      },
-      "widgets_values": [
-        7
-      ]
-    },
-    {
-      "id": 18,
-      "type": "Seed Generator (Image Saver)",
-      "pos": {
-        "0": 340,
-        "1": 400
-      },
-      "size": {
-        "0": 240,
-        "1": 82
-      },
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "INT",
-          "type": "INT",
-          "links": [
-            18,
-            78
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Seed Generator (Image Saver)"
-      },
-      "widgets_values": [
-        42,
-        "fixed"
-      ]
-    },
-    {
-      "id": 27,
-      "type": "Scheduler Selector (Comfy) (Image Saver)",
-      "pos": {
-        "0": 240,
-        "1": 280
-      },
-      "size": {
-        "0": 340,
-        "1": 80
-      },
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "scheduler",
-          "type": "COMBO",
-          "links": [
-            57
-          ],
-          "slot_index": 0,
-          "shape": 3
-        },
-        {
-          "name": "scheduler_name",
-          "type": "STRING",
-          "links": [
-            77
-          ],
-          "slot_index": 1,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Scheduler Selector (Comfy) (Image Saver)"
-      },
-      "widgets_values": [
-        "normal"
-      ]
-    },
-    {
-      "id": 16,
-      "type": "Sampler Selector (Image Saver)",
-      "pos": {
-        "0": 330,
-        "1": 160
-      },
-      "size": {
-        "0": 252,
-        "1": 78
-      },
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "sampler",
-          "type": "COMBO",
-          "links": [
-            10
-          ],
-          "slot_index": 0,
-          "shape": 3
-        },
-        {
-          "name": "sampler_name",
-          "type": "STRING",
-          "links": [
-            82
-          ],
-          "slot_index": 1,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Sampler Selector (Image Saver)"
-      },
-      "widgets_values": [
-        "dpmpp_2m_sde"
-      ]
-    },
-    {
-      "id": 25,
-      "type": "Checkpoint Loader with Name (Image Saver)",
-      "pos": {
-        "0": -40,
-        "1": 110
-      },
-      "size": {
-        "0": 344.3999938964844,
-        "1": 118
-      },
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            42
-          ],
-          "slot_index": 0,
-          "shape": 3
-        },
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            43,
-            44
-          ],
-          "slot_index": 1,
-          "shape": 3
-        },
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            45
-          ],
-          "slot_index": 2,
-          "shape": 3
-        },
-        {
-          "name": "model_name",
-          "type": "STRING",
-          "links": [],
-          "slot_index": 3,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Checkpoint Loader with Name (Image Saver)"
-      },
-      "widgets_values": [
-        "1.5/theAllysMixIII_v10.safetensors"
-      ]
-    },
-    {
-      "id": 30,
-      "type": "Image Saver",
-      "pos": {
-        "0": 1250,
-        "1": 190
-      },
       "size": [
-        310,
-        734
+        260,
+        520
       ],
       "flags": {},
-      "order": 16,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 72
+          "link": 107
         },
         {
-          "name": "positive",
-          "type": "STRING",
-          "link": 73,
-          "widget": {
-            "name": "positive"
-          },
-          "shape": 7
-        },
-        {
-          "name": "negative",
-          "type": "STRING",
-          "link": 74,
-          "widget": {
-            "name": "negative"
-          },
-          "shape": 7
-        },
-        {
-          "name": "steps",
-          "type": "INT",
-          "link": 75,
-          "widget": {
-            "name": "steps"
-          },
-          "shape": 7
-        },
-        {
-          "name": "cfg",
-          "type": "FLOAT",
-          "link": 76,
-          "widget": {
-            "name": "cfg"
-          },
-          "shape": 7
-        },
-        {
-          "name": "scheduler",
-          "type": "STRING",
-          "link": 77,
-          "widget": {
-            "name": "scheduler"
-          },
-          "shape": 7
-        },
-        {
-          "name": "seed_value",
-          "type": "INT",
-          "link": 78,
-          "widget": {
-            "name": "seed_value"
-          },
-          "shape": 7
-        },
-        {
-          "name": "width",
-          "type": "INT",
-          "link": 79,
-          "widget": {
-            "name": "width"
-          },
-          "shape": 7
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "link": 80,
-          "widget": {
-            "name": "height"
-          },
-          "shape": 7
-        },
-        {
-          "name": "denoise",
-          "type": "FLOAT",
-          "link": 81,
-          "widget": {
-            "name": "denoise"
-          },
-          "shape": 7
-        },
-        {
-          "name": "sampler_name",
-          "type": "STRING",
-          "link": 82,
-          "widget": {
-            "name": "sampler_name"
-          },
-          "shape": 7
+          "name": "metadata",
+          "shape": 7,
+          "type": "METADATA",
+          "link": 92
         }
       ],
-      "outputs": [],
+      "outputs": [
+        {
+          "name": "hashes",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "a1111_params",
+          "type": "STRING",
+          "links": []
+        }
+      ],
       "properties": {
-        "Node name for S&R": "Image Saver"
+        "cnr_id": "comfyui-image-saver",
+        "ver": "90bd72c89ab37942d0269a40344cd142562c0851",
+        "Node name for S&R": "Image Saver Simple"
       },
       "widgets_values": [
-        "%time_%basemodelname_%seed",
+        "%time_%seed",
         "",
-        "png",
-        20,
-        7,
-        "",
-        "",
-        "normal",
-        "unknown",
-        "unknown",
-        0,
-        512,
-        512,
+        "jpg",
         true,
         100,
         false,
-        0,
-        1,
-        0,
-        "%Y-%m-%d-%H%M%S",
         false,
-        true
+        false,
+        0,
+        "%Y-%m-%d-%H%M%S"
       ]
     }
   ],
@@ -884,22 +845,6 @@
       "LATENT"
     ],
     [
-      10,
-      16,
-      0,
-      3,
-      4,
-      "COMBO"
-    ],
-    [
-      18,
-      18,
-      0,
-      3,
-      6,
-      "INT"
-    ],
-    [
       20,
       12,
       0,
@@ -914,30 +859,6 @@
       5,
       1,
       "INT"
-    ],
-    [
-      25,
-      19,
-      0,
-      3,
-      7,
-      "INT"
-    ],
-    [
-      28,
-      20,
-      0,
-      3,
-      8,
-      "FLOAT"
-    ],
-    [
-      31,
-      21,
-      0,
-      3,
-      9,
-      "FLOAT"
     ],
     [
       34,
@@ -996,100 +917,156 @@
       "VAE"
     ],
     [
-      57,
-      27,
+      92,
+      35,
       0,
-      3,
-      5,
-      "COMBO"
+      34,
+      1,
+      "METADATA"
     ],
     [
-      72,
+      107,
       8,
       0,
-      30,
+      34,
       0,
       "IMAGE"
     ],
     [
-      73,
+      110,
+      25,
+      3,
+      35,
+      0,
+      "STRING"
+    ],
+    [
+      111,
       22,
       0,
-      30,
+      35,
       1,
       "STRING"
     ],
     [
-      74,
+      112,
       23,
       0,
-      30,
+      35,
       2,
       "STRING"
     ],
     [
-      75,
-      19,
+      113,
+      12,
       0,
-      30,
+      35,
       3,
       "INT"
     ],
     [
-      76,
-      20,
+      114,
+      13,
       0,
-      30,
+      35,
       4,
-      "FLOAT"
+      "INT"
     ],
     [
-      77,
-      27,
-      1,
-      30,
-      5,
-      "STRING"
-    ],
-    [
-      78,
-      18,
+      121,
+      53,
       0,
-      30,
+      3,
+      4,
+      "INT"
+    ],
+    [
+      122,
+      53,
+      0,
+      35,
+      5,
+      "INT"
+    ],
+    [
+      123,
+      53,
+      1,
+      3,
+      5,
+      "INT"
+    ],
+    [
+      124,
+      53,
+      1,
+      35,
       6,
       "INT"
     ],
     [
-      79,
-      12,
-      0,
-      30,
+      125,
+      53,
+      2,
+      3,
+      6,
+      "FLOAT"
+    ],
+    [
+      126,
+      53,
+      2,
+      35,
       7,
-      "INT"
+      "FLOAT"
     ],
     [
-      80,
-      13,
-      0,
-      30,
+      128,
+      53,
+      4,
+      35,
       8,
-      "INT"
+      "STRING"
     ],
     [
-      81,
-      21,
-      0,
-      30,
+      130,
+      53,
+      6,
+      35,
+      9,
+      "STRING"
+    ],
+    [
+      131,
+      53,
+      7,
+      35,
+      10,
+      "FLOAT"
+    ],
+    [
+      132,
+      53,
+      7,
+      3,
       9,
       "FLOAT"
     ],
     [
-      82,
-      16,
-      1,
-      30,
-      10,
-      "STRING"
+      133,
+      53,
+      5,
+      3,
+      8,
+      "COMBO"
+    ],
+    [
+      134,
+      53,
+      3,
+      3,
+      7,
+      "COMBO"
     ]
   ],
   "groups": [],
@@ -1101,7 +1078,8 @@
         739.0102049088814,
         603.3338883928535
       ]
-    }
+    },
+    "frontendVersion": "1.21.7"
   },
   "version": 0.4
 }

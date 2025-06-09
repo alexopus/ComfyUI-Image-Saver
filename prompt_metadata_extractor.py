@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple
 from comfy.sd1_clip import escape_important, unescape_important, token_weights
 
 from .utils import full_embedding_path_for, full_lora_path_for, get_sha256

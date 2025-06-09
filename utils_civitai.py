@@ -61,7 +61,7 @@ def get_civitai_sampler_name(sampler_name: str, scheduler: str) -> str:
 
 def get_civitai_metadata(
         modelname: str,
-        ckpt_path: str | None,
+        ckpt_path: str,
         modelhash: str,
         loras: Dict[str, Tuple[str, float, str]],
         embeddings: Dict[str, Tuple[str, float, str]],
@@ -73,7 +73,7 @@ def get_civitai_metadata(
     add_model_hash = None
 
     if download_civitai_data:
-        for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path if ckpt_path is not None else '', None, modelhash ) } | loras | embeddings | manual_entries).items():
+        for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items():
             civitai_info = get_civitai_info(filepath, hash)
             if civitai_info is not None:
                 resource_data: Dict[str, str | float] = {}

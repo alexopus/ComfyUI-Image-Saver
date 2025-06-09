@@ -111,7 +111,7 @@ class CfgLiteral:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "float": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "tooltip": "CFG as a floating point number"}),
+                "float": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "tooltip": "CFG as a floating point number"}),
             }
         }
 
