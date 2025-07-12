@@ -15,7 +15,6 @@ NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Sampler Selector (Image Saver)": SamplerSelector,
     "Scheduler Selector (Image Saver)": SchedulerSelector,
     "Scheduler Selector (inspire) (Image Saver)": SchedulerSelectorInspire,
-    "Scheduler Selector (Image Saver)": SchedulerSelector,
     "Input Parameters (Image Saver)": InputParameters,
     "Seed Generator (Image Saver)": SeedGenerator,
     "String Literal (Image Saver)": StringLiteral,
