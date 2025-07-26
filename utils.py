@@ -5,6 +5,17 @@ from typing import Optional, Any
 from pathlib import Path
 from tqdm import tqdm
 import folder_paths
+import re
+
+def sanitize_filename(filename: str) -> str:
+    """Remove characters that are unsafe for filenames."""
+    # Remove characters that are generally unsafe across file systems
+    unsafe_chars = r'[<>:"/\\|?*\x00-\x1f]'
+    sanitized = re.sub(unsafe_chars, '', filename)
+
+    # Remove trailing periods and spaces (problematic on Windows)
+    sanitized = sanitized.rstrip('. ')
+    return sanitized
 
 """
 Given the file path, finds a matching sha256 file, or creates one
