@@ -14,7 +14,7 @@ import folder_paths
 from nodes import MAX_RESOLUTION
 
 from .saver.saver import save_image
-from .utils import get_sha256, full_checkpoint_path_for
+from .utils import sanitize_filename, get_sha256, full_checkpoint_path_for
 from .utils_civitai import get_civitai_sampler_name, get_civitai_metadata, MAX_HASH_LENGTH
 from .prompt_metadata_extractor import PromptMetadataExtractor
 
@@ -44,7 +44,7 @@ def save_json(image_info: dict[str, Any] | None, filename: str) -> None:
     except Exception as e:
         print(f'Failed to save workflow as json due to: {e}, proceeding with the remainder of saving execution')
 
-def make_pathname(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int) -> str:
+def make_pathname(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int, custom: str) -> str:
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
     filename = filename.replace("%model", parse_checkpoint_name(modelname))
@@ -59,10 +59,12 @@ def make_pathname(filename: str, width: int, height: int, seed: int, modelname: 
     filename = filename.replace("%basemodelname", parse_checkpoint_name_without_extension(modelname))
     filename = filename.replace("%denoise", str(denoise))
     filename = filename.replace("%clip_skip", str(clip_skip))
+    filename = filename.replace("%custom", custom)
+    filename = sanitize_filename(filename)
     return filename
 
-def make_filename(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int) -> str:
-    filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler_name, denoise, clip_skip)
+def make_filename(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int, custom: str) -> str:
+    filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler_name, denoise, clip_skip, custom)
     return get_timestamp(time_format) if filename == "" else filename
 
 @dataclass
@@ -79,6 +81,7 @@ class Metadata:
     scheduler_name: str
     denoise: float
     clip_skip: int
+    custom: str
     additional_hashes: str
     ckpt_path: str
     a111_params: str
@@ -104,6 +107,7 @@ class ImageSaverMetadata:
                 "additional_hashes":     ("STRING",  {"default": "", "multiline": False,                           "tooltip": "hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:FF735FF83F98')\nWith download_civitai_data set to true, weights can be added as well. (e.g., 'HASH:Weight', 'Name:HASH:Weight')"}),
                 "download_civitai_data": ("BOOLEAN", {"default": True,                                             "tooltip": "Download and cache data from civitai.com to save correct metadata. Allows LoRA weights to be saved to the metadata."}),
                 "easy_remix":            ("BOOLEAN", {"default": True,                                             "tooltip": "Strip LoRAs and simplify 'embedding:path' from the prompt to make the Remix option on civitai.com more seamless."}),
+                "custom":                ("STRING",  {"default": "", "multiline": False,                           "tooltip": "custom string to add to the metadata, isnerted into the a111 string between clip skip and model hash"}),
             },
         }
 
@@ -128,15 +132,16 @@ class ImageSaverMetadata:
         scheduler_name: str = "",
         denoise: float = 1.0,
         clip_skip: int = 0,
+        custom: str = "",
         additional_hashes: str = "",
         download_civitai_data: bool = True,
         easy_remix: bool = True,
     ) -> tuple[Metadata, str, str]:
-        metadata = ImageSaverMetadata.make_metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, additional_hashes, download_civitai_data, easy_remix)
+        metadata = ImageSaverMetadata.make_metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, custom, additional_hashes, download_civitai_data, easy_remix)
         return (metadata, metadata.final_hashes, metadata.a111_params)
 
     @staticmethod
-    def make_metadata(modelname: str, positive: str, negative: str, width: int, height: int, seed_value: int, steps: int, cfg: float, sampler_name: str, scheduler_name: str, denoise: float, clip_skip: int, additional_hashes: str, download_civitai_data: bool, easy_remix: bool) -> Metadata:
+    def make_metadata(modelname: str, positive: str, negative: str, width: int, height: int, seed_value: int, steps: int, cfg: float, sampler_name: str, scheduler_name: str, denoise: float, clip_skip: int, custom: str, additional_hashes: str, download_civitai_data: bool, easy_remix: bool) -> Metadata:
         modelname, additional_hashes = ImageSaver.get_multiple_models(modelname, additional_hashes)
 
         ckpt_path = full_checkpoint_path_for(modelname)
@@ -165,13 +170,14 @@ class ImageSaverMetadata:
         positive_a111_params = positive.strip()
         negative_a111_params = f"\nNegative prompt: {negative.strip()}"
         clip_skip_str = f", Clip skip: {abs(clip_skip)}" if clip_skip != 0 else ""
+        custom_str = f", {custom}" if custom else ""
         model_hash_str = f", Model hash: {add_model_hash}" if add_model_hash else ""
         hashes_str = f", Hashes: {json.dumps(hashes, separators=(',', ':'))}" if hashes else ""
 
         a111_params = (
             f"{positive_a111_params}{negative_a111_params}\n"
             f"Steps: {steps}, Sampler: {civitai_sampler_name}, CFG scale: {cfg}, Seed: {seed_value}, "
-            f"Size: {width}x{height}{clip_skip_str}{model_hash_str}, Model: {basemodelname}{hashes_str}, Version: ComfyUI"
+            f"Size: {width}x{height}{clip_skip_str}{custom_str}{model_hash_str}, Model: {basemodelname}{hashes_str}, Version: ComfyUI"
         )
 
         # Add Civitai resource listing
@@ -180,7 +186,7 @@ class ImageSaverMetadata:
 
         final_hashes = ",".join(f"{Path(name.split(':')[-1]).stem + ':' if name else ''}{hash}{':' + str(weight) if weight is not None and download_civitai_data else ''}" for name, (_, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items())
 
-        metadata = Metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, additional_hashes, ckpt_path, a111_params, final_hashes)
+        metadata = Metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, custom, additional_hashes, ckpt_path, a111_params, final_hashes)
         return metadata
 
 class ImageSaverSimple:
@@ -240,7 +246,7 @@ class ImageSaverSimple:
         if metadata is None:
             metadata = Metadata('', '', '', 512, 512, 0, 20, 7.0, '', 'normal', 1.0, 0, '', '', '', '')
 
-        path = make_pathname(path, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip)
+        path = make_pathname(path, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip, metadata.custom)
 
         filenames = ImageSaver.save_images(images, filename, extension, path, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow, counter, time_format, metadata)
 
@@ -289,6 +295,7 @@ class ImageSaver:
                 "download_civitai_data": ("BOOLEAN", {"default": True,                                             "tooltip": "Download and cache data from civitai.com to save correct metadata. Allows LoRA weights to be saved to the metadata."}),
                 "easy_remix":            ("BOOLEAN", {"default": True,                                             "tooltip": "Strip LoRAs and simplify 'embedding:path' from the prompt to make the Remix option on civitai.com more seamless."}),
                 "show_preview":          ("BOOLEAN", {"default": True,                                             "tooltip": "if True, displays saved images in the UI preview"}),
+                "custom":                ("STRING",  {"default": "", "multiline": False,                           "tooltip": "custom string to add to the metadata, isnerted into the a111 string between clip skip and model hash"}),
             },
             "hidden": {
                 "prompt": "PROMPT",
@@ -335,12 +342,13 @@ class ImageSaver:
         download_civitai_data: bool = True,
         easy_remix: bool = True,
         show_preview: bool = True,
+        custom: str = "",
         prompt: dict[str, Any] | None = None,
         extra_pnginfo: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        metadata = ImageSaverMetadata.make_metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, additional_hashes, download_civitai_data, easy_remix)
+        metadata = ImageSaverMetadata.make_metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, custom, additional_hashes, download_civitai_data, easy_remix)
 
-        path = make_pathname(path, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip)
+        path = make_pathname(path, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip, metadata.custom)
 
         filenames = ImageSaver.save_images(images, filename, extension, path, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow, counter, time_format, metadata)
 
@@ -372,7 +380,7 @@ class ImageSaver:
         time_format: str,
         metadata: Metadata
     ) -> list[str]:
-        filename_prefix = make_filename(filename_pattern, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip)
+        filename_prefix = make_filename(filename_pattern, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip, metadata.custom)
 
         output_path = os.path.join(folder_paths.output_directory, path)
 
