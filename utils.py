@@ -100,7 +100,7 @@ def __list_diffusion_models() -> list[str]:
 def http_get_json(url: str) ->  dict[str, Any] | None:
     try:
         response = requests.get(url, stream=True, headers={}, timeout=300)
-    except TimeoutError:
+    except requests.exceptions.Timeout:
         print(f"ComfyUI-Image-Saver: HTTP GET Request timed out for {url}")
         return None
     except requests.exceptions.ConnectionError as e:
