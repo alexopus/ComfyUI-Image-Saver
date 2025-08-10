@@ -1,3 +1,9 @@
+# v1.15.0
+
+- Allow custom info to be added to metadata, inserted into the a111 string between clip skip and model hash
+- Sanitize filenames
+- Fixed timeout exception to prevent network timeout crashes
+
 # v1.14.2
 
 - Update list of schedulers

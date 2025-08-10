@@ -107,7 +107,7 @@ class ImageSaverMetadata:
                 "additional_hashes":     ("STRING",  {"default": "", "multiline": False,                           "tooltip": "hashes separated by commas, optionally with names. 'Name:HASH' (e.g., 'MyLoRA:FF735FF83F98')\nWith download_civitai_data set to true, weights can be added as well. (e.g., 'HASH:Weight', 'Name:HASH:Weight')"}),
                 "download_civitai_data": ("BOOLEAN", {"default": True,                                             "tooltip": "Download and cache data from civitai.com to save correct metadata. Allows LoRA weights to be saved to the metadata."}),
                 "easy_remix":            ("BOOLEAN", {"default": True,                                             "tooltip": "Strip LoRAs and simplify 'embedding:path' from the prompt to make the Remix option on civitai.com more seamless."}),
-                "custom":                ("STRING",  {"default": "", "multiline": False,                           "tooltip": "custom string to add to the metadata, isnerted into the a111 string between clip skip and model hash"}),
+                "custom":                ("STRING",  {"default": "", "multiline": False,                           "tooltip": "custom string to add to the metadata, inserted into the a111 string between clip skip and model hash"}),
             },
         }
 
@@ -295,7 +295,7 @@ class ImageSaver:
                 "download_civitai_data": ("BOOLEAN", {"default": True,                                             "tooltip": "Download and cache data from civitai.com to save correct metadata. Allows LoRA weights to be saved to the metadata."}),
                 "easy_remix":            ("BOOLEAN", {"default": True,                                             "tooltip": "Strip LoRAs and simplify 'embedding:path' from the prompt to make the Remix option on civitai.com more seamless."}),
                 "show_preview":          ("BOOLEAN", {"default": True,                                             "tooltip": "if True, displays saved images in the UI preview"}),
-                "custom":                ("STRING",  {"default": "", "multiline": False,                           "tooltip": "custom string to add to the metadata, isnerted into the a111 string between clip skip and model hash"}),
+                "custom":                ("STRING",  {"default": "", "multiline": False,                           "tooltip": "custom string to add to the metadata, inserted into the a111 string between clip skip and model hash"}),
             },
             "hidden": {
                 "prompt": "PROMPT",
