@@ -1,3 +1,8 @@
+# v1.15.1
+
+- Bugfix: Add missing parameter
+- Bugfix: Don't sanitize slashes in filenames
+
 # v1.15.0
 
 - Allow custom info to be added to metadata, inserted into the a111 string between clip skip and model hash
