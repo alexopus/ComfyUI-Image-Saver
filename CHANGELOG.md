@@ -1,3 +1,7 @@
+# v1.15.2
+
+- Bugfix: sanitize filename only, without the path
+
 # v1.15.1
 
 - Bugfix: Add missing parameter
