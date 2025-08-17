@@ -60,8 +60,10 @@ def make_pathname(filename: str, width: int, height: int, seed: int, modelname: 
     filename = filename.replace("%denoise", str(denoise))
     filename = filename.replace("%clip_skip", str(clip_skip))
     filename = filename.replace("%custom", custom)
-    filename = sanitize_filename(filename)
-    return filename
+
+    directory, basename = os.path.split(filename)
+    sanitized_basename = sanitize_filename(basename)
+    return os.path.join(directory, sanitized_basename)
 
 def make_filename(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int, custom: str) -> str:
     filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler_name, denoise, clip_skip, custom)
