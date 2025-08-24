@@ -198,7 +198,7 @@ class ImageSaverMetadata:
         all_resources = { modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries
 
         hash_parts = []
-        for name, (_, weight, hash) in all_resources.items():
+        for name, (_, weight, hash_value) in (all_resources.items() if isinstance(all_resources, dict) else all_resources):
             # Format: "name:hash" or "name:hash:weight" depending on download_civitai_data
             if name:
                 # Extract clean name (only remove actual model file extensions, preserve dots in model names)
@@ -216,8 +216,12 @@ class ImageSaverMetadata:
             else:
                 name_part = ""
 
+            # Skip entries without a valid hash
+            if not hash_value:
+                continue
+
             weight_part = f":{weight}" if weight is not None and download_civitai_data else ""
-            hash_parts.append(f"{name_part}{hash}{weight_part}")
+            hash_parts.append(f"{name_part}{hash_value}{weight_part}")
 
         final_hashes = ",".join(hash_parts)
 
