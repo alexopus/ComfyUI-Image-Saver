@@ -82,7 +82,8 @@ def full_checkpoint_path_for(model_name: str) -> str:
 
     last_dot_position = model_name.rfind('.')
     extension = model_name[last_dot_position:] if last_dot_position != -1 else ""
-    if extension not in folder_paths.supported_pt_extensions | {".gguf"}:
+    supported_extensions = set(folder_paths.supported_pt_extensions) | {".gguf"}
+    if extension.lower() not in supported_extensions:
         model_name += ".safetensors"
 
     matching_checkpoint = next((x for x in folder_paths.get_filename_list("checkpoints") if x.endswith(model_name)), None)
