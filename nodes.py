@@ -22,7 +22,15 @@ def parse_checkpoint_name(ckpt_name: str) -> str:
     return os.path.basename(ckpt_name)
 
 def parse_checkpoint_name_without_extension(ckpt_name: str) -> str:
-    return os.path.splitext(parse_checkpoint_name(ckpt_name))[0]
+    filename = parse_checkpoint_name(ckpt_name)
+    name_without_ext, ext = os.path.splitext(filename)
+    supported_extensions = folder_paths.supported_pt_extensions | {".gguf"}
+
+    # Only remove extension if it's a known model file extension
+    if ext.lower() in supported_extensions:
+        return name_without_ext
+    else:
+        return filename # Keep full name if extension isn't recognized
 
 def get_timestamp(time_format: str) -> str:
     now = datetime.now()
@@ -186,7 +194,32 @@ class ImageSaverMetadata:
         if download_civitai_data and civitai_resources:
             a111_params += f", Civitai resources: {json.dumps(civitai_resources, separators=(',', ':'))}"
 
-        final_hashes = ",".join(f"{Path(name.split(':')[-1]).stem + ':' if name else ''}{hash}{':' + str(weight) if weight is not None and download_civitai_data else ''}" for name, (_, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items())
+        # Combine all resources (model, loras, embeddings, manual entries) for final hash string
+        all_resources = { modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries
+
+        hash_parts = []
+        for name, (_, weight, hash) in all_resources.items():
+            # Format: "name:hash" or "name:hash:weight" depending on download_civitai_data
+            if name:
+                # Extract clean name (only remove actual model file extensions, preserve dots in model names)
+                filename = name.split(':')[-1]
+                name_without_ext, ext = os.path.splitext(filename)
+                supported_extensions = folder_paths.supported_pt_extensions | {".gguf"}
+
+                # Only remove extension if it's a known model file extension
+                if ext.lower() in supported_extensions:
+                    clean_name = name_without_ext
+                else:
+                    clean_name = filename  # Keep full name if extension isn't recognized
+
+                name_part = f"{clean_name}:"
+            else:
+                name_part = ""
+
+            weight_part = f":{weight}" if weight is not None and download_civitai_data else ""
+            hash_parts.append(f"{name_part}{hash}{weight_part}")
+
+        final_hashes = ",".join(hash_parts)
 
         metadata = Metadata(modelname, positive, negative, width, height, seed_value, steps, cfg, sampler_name, scheduler_name, denoise, clip_skip, custom, additional_hashes, ckpt_path, a111_params, final_hashes)
         return metadata

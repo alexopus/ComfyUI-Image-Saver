@@ -55,7 +55,7 @@ def get_sha256(file_path: str) -> str:
 Based on a embedding name, eg: EasyNegative, finds the path as known in comfy, including extension
 """
 def full_embedding_path_for(embedding: str) -> Optional[str]:
-    matching_embedding = next((x for x in __list_embeddings() if x.startswith(embedding)), None)
+    matching_embedding = next((x for x in folder_paths.get_filename_list("embeddings") if x.startswith(embedding)), None)
     if matching_embedding == None:
         return None
     return folder_paths.get_full_path("embeddings", matching_embedding)
@@ -70,17 +70,11 @@ def full_lora_path_for(lora: str) -> Optional[str]:
         lora += ".safetensors"
 
     # Find the matching lora path
-    matching_lora = next((x for x in __list_loras() if x.endswith(lora)), None)
+    matching_lora = next((x for x in folder_paths.get_filename_list("loras") if x.endswith(lora)), None)
     if matching_lora is None:
         print(f'ComfyUI-Image-Saver: could not find full path to lora "{lora}"')
         return None
     return folder_paths.get_full_path("loras", matching_lora)
-
-def __list_loras() -> list[str]:
-    return folder_paths.get_filename_list("loras")
-
-def __list_embeddings() -> list[str]:
-    return folder_paths.get_filename_list("embeddings")
 
 def full_checkpoint_path_for(model_name: str) -> str:
     if not model_name:
@@ -88,25 +82,29 @@ def full_checkpoint_path_for(model_name: str) -> str:
 
     last_dot_position = model_name.rfind('.')
     extension = model_name[last_dot_position:] if last_dot_position != -1 else ""
-    if extension not in folder_paths.supported_pt_extensions:
+    if extension not in folder_paths.supported_pt_extensions | {".gguf"}:
         model_name += ".safetensors"
 
-    matching_checkpoint = next((x for x in __list_checkpoints() if x.endswith(model_name)), None)
+    matching_checkpoint = next((x for x in folder_paths.get_filename_list("checkpoints") if x.endswith(model_name)), None)
     if matching_checkpoint:
         return folder_paths.get_full_path("checkpoints", matching_checkpoint)
 
-    matching_model = next((x for x in __list_diffusion_models() if x.endswith(model_name)), None)
+    matching_model = next((x for x in folder_paths.get_filename_list("diffusion_models") if x.endswith(model_name)), None)
     if matching_model:
         return folder_paths.get_full_path("diffusion_models", matching_model)
 
+    # Handle GGUF files in diffusion_models directories since they're not in supported_pt_extensions
+    if model_name.endswith('.gguf'):
+        diffusion_model_paths = folder_paths.folder_names_and_paths.get("diffusion_models", [[], set()])[0]
+        for path in diffusion_model_paths:
+            if os.path.exists(path):
+                for root, dirs, files in os.walk(path):
+                    for file in files:
+                        if file.endswith(model_name):
+                            return os.path.join(root, file)
+
     print(f'Could not find full path to checkpoint "{model_name}"')
     return ''
-
-def __list_checkpoints() -> list[str]:
-    return folder_paths.get_filename_list("checkpoints")
-
-def __list_diffusion_models() -> list[str]:
-    return folder_paths.get_filename_list("diffusion_models")
 
 def http_get_json(url: str) ->  dict[str, Any] | None:
     try:
