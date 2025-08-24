@@ -142,7 +142,7 @@ class ConditioningConcatOptional:
 
         out = []
         if len(conditioning_from) > 1:
-            logging.warning("Warning: ConditioningConcat conditioning_from contains more than 1 cond, only the first one will actually be applied to conditioning_to.")
+            print("Warning: ConditioningConcat conditioning_from contains more than 1 cond, only the first one will actually be applied to conditioning_to.")
 
         cond_from = conditioning_from[0][0]
         for i in range(len(conditioning_to)):
