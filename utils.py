@@ -55,7 +55,10 @@ def get_sha256(file_path: str) -> str:
 Based on a embedding name, eg: EasyNegative, finds the path as known in comfy, including extension
 """
 def full_embedding_path_for(embedding: str) -> Optional[str]:
+    # first try full path match, then fallback to just name match
     matching_embedding = next((x for x in folder_paths.get_filename_list("embeddings") if Path(x).with_suffix('') == Path(embedding)), None)
+    matching_embedding = (matching_embedding if matching_embedding is not None else
+        next((x for x in folder_paths.get_filename_list("embeddings") if Path(x).stem == Path(embedding).stem), None))
     if matching_embedding == None:
         return None
     return folder_paths.get_full_path("embeddings", matching_embedding)
@@ -87,10 +90,14 @@ def full_checkpoint_path_for(model_name: str) -> str:
         model_name += ".safetensors"
 
     matching_checkpoint = next((x for x in folder_paths.get_filename_list("checkpoints") if Path(x) == Path(model_name)), None)
+    matching_checkpoint = (matching_checkpoint if matching_checkpoint is not None else
+        next((x for x in folder_paths.get_filename_list("checkpoints") if Path(x).name == Path(model_name).name), None))
     if matching_checkpoint:
         return folder_paths.get_full_path("checkpoints", matching_checkpoint)
 
     matching_model = next((x for x in folder_paths.get_filename_list("diffusion_models") if Path(x) == Path(model_name)), None)
+    matching_model = (matching_model if matching_model is not None else
+        next((x for x in folder_paths.get_filename_list("diffusion_models") if Path(x).name == Path(model_name).name), None))
     if matching_model:
         return folder_paths.get_full_path("diffusion_models", matching_model)
 
