@@ -42,7 +42,8 @@ class CivitaiHashFetcher:
         params = {
             "username": username,
             "query": model_name,
-            "limit": 1  # Get the most relevant model
+            "limit": 20,  # Fetch more results due to API ranking issues
+            "nsfw": "true"  # Include NSFW models in search results
         }
 
         try:
@@ -53,11 +54,46 @@ class CivitaiHashFetcher:
 
             data = response.json()
             items = data.get("items", [])
+
+            # If no results with query, try without query (fallback for API search issues)
+            if not items and params.get("query"):
+                print(f"ComfyUI-Image-Saver: No results with query, trying without query parameter...")
+                params_no_query = {
+                    "username": username,
+                    "limit": 100,
+                    "nsfw": "true"
+                }
+                response = requests.get(base_url, params=params_no_query)
+                if response.status_code == 200:
+                    data = response.json()
+                    items = data.get("items", [])
+
             if not items:
                 return (f"No models found for user '{username}' with name '{model_name}'",)
 
-            # Take the first model from the search results
-            model = items[0]
+            # Find best matching model (prefer exact/partial matches)
+            model_name_lower = model_name.lower()
+            best_match = None
+
+            # Try exact match first
+            for item in items:
+                if item.get("name", "").lower() == model_name_lower:
+                    best_match = item
+                    break
+
+            # If no exact match, try partial match
+            if not best_match:
+                for item in items:
+                    item_name_lower = item.get("name", "").lower()
+                    if model_name_lower in item_name_lower or item_name_lower.startswith(model_name_lower):
+                        best_match = item
+                        break
+
+            # Fall back to first result if no good match
+            if not best_match:
+                best_match = items[0]
+
+            model = best_match
             model_versions = model.get("modelVersions", [])
             if not model_versions:
                 return ("No model versions found.",)
