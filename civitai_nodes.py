@@ -48,7 +48,7 @@ class CivitaiHashFetcher:
 
         try:
             # Fetch models by username and model name
-            response = requests.get(base_url, params=params)
+            response = requests.get(base_url, params=params, timeout=10)
             if response.status_code != 200:
                 return (f"Error: API request failed with status {response.status_code}",)
 
@@ -57,13 +57,13 @@ class CivitaiHashFetcher:
 
             # If no results with query, try without query (fallback for API search issues)
             if not items and params.get("query"):
-                print(f"ComfyUI-Image-Saver: No results with query, trying without query parameter...")
+                print("ComfyUI-Image-Saver: No results with query, trying without query parameter...")
                 params_no_query = {
                     "username": username,
                     "limit": 100,
                     "nsfw": "true"
                 }
-                response = requests.get(base_url, params=params_no_query)
+                response = requests.get(base_url, params=params_no_query, timeout=10)
                 if response.status_code == 200:
                     data = response.json()
                     items = data.get("items", [])
@@ -112,7 +112,7 @@ class CivitaiHashFetcher:
 
             # Fetch detailed version info
             version_url = f"https://civitai.com/api/v1/model-versions/{version_id}"
-            version_response = requests.get(version_url)
+            version_response = requests.get(version_url, timeout=10)
             if version_response.status_code != 200:
                 return (f"Error: Version API request failed with status {version_response.status_code}",)
 
