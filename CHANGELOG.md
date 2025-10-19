@@ -1,3 +1,13 @@
+# v1.16.0
+
+- Improved Civitai Hash Fetcher search reliability with smart matching and fallbacks
+- Added NSFW model search support
+- Fixed Civitai Hash Fetcher caching bug
+- Refactored file matching with multi-level fallback strategy
+- Added GGUF model format support
+- Case-insensitive extension check for checkpoints
+- Skip resources with missing hashes
+
 # v1.15.2
 
 - Bugfix: sanitize filename only, without the path
