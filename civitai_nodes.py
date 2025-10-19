@@ -126,7 +126,7 @@ class CivitaiHashFetcher:
                     self.last_username = username
                     self.last_model_name = model_name
                     self.last_version = version  # Store version to track changes
-                    self.cached_hash = autov3_hash
+                    self.last_hash = autov3_hash
                     return (autov3_hash,)  # Return the first found hash
 
             return ("No AutoV3 hash found in version files.",)
