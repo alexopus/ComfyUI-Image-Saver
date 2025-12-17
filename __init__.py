@@ -3,7 +3,7 @@ from typing import Any
 from .nodes import ImageSaver, ImageSaverSimple, ImageSaverMetadata
 from .nodes_literals import SeedGenerator, StringLiteral, SizeLiteral, IntLiteral, FloatLiteral, CfgLiteral, ConditioningConcatOptional
 from .nodes_loaders import CheckpointLoaderWithName, UNETLoaderWithName
-from .nodes_selectors import InputParameters, AnyToString
+from .nodes_selectors import InputParameters, AnyToString, WorkflowInputValue
 from .civitai_nodes import CivitaiHashFetcher
 
 NODE_CLASS_MAPPINGS: dict[str, Any] = {
@@ -14,6 +14,7 @@ NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Image Saver Metadata": ImageSaverMetadata,
     "Input Parameters (Image Saver)": InputParameters,
     "Any to String (Image Saver)": AnyToString,
+    "Workflow Input Value (Image Saver)": WorkflowInputValue,
     "Seed Generator (Image Saver)": SeedGenerator,
     "String Literal (Image Saver)": StringLiteral,
     "Width/Height Literal (Image Saver)": SizeLiteral,
