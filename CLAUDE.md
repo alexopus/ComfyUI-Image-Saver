@@ -63,7 +63,23 @@ pip install -r requirements.txt
 - **Hash Calculation**: SHA256 hashing with file caching (`.sha256` files)
 - **Resource Detection**: Automatic LoRA, embedding, and model hash extraction
 - **Civitai Integration**: Downloads resource metadata for proper attribution
-- **Filename Templating**: Supports variables like `%time`, `%seed`, `%model`, etc.
+- **Filename Templating**: Supports variables like `%date`, `%time`, `%seed`, `%model`, `%width`, `%height`, `%counter`, `%sampler_name`, `%steps`, `%cfg`, `%scheduler_name`, `%basemodelname`, `%denoise`, `%clip_skip`, `%custom`
+
+### Advanced Features
+
+- **Multiple Model Support**: ModelName parameter accepts comma-separated model names. Primary model hash is used in metadata, additional models are added to `additional_hashes`
+- **Easy Remix Mode**: When enabled, automatically cleans prompts by removing LoRA tags and simplifying embeddings for better Civitai remix compatibility
+- **Custom Metadata Field**: Arbitrary string can be inserted into A1111 parameters via the `custom` parameter
+- **Manual Hash Management**: User-added resource hashes stored in `/models/image-saver/manual-hashes.json` for resources not found via Civitai API
+- **File Path Matching**: Three-level fallback strategy for finding resources:
+  1. Exact path match
+  2. Filename stem match (without extension)
+  3. Base name match (case-insensitive)
+- **Civitai Hash Fetcher Node**: Dedicated node (`CivitaiHashFetcher`) for looking up model hashes directly from Civitai by username and model name
+- **Caching Strategy**:
+  - `.sha256` files: SHA256 hashes cached alongside model files
+  - `.civitai.info` files: Civitai metadata cached to reduce API calls
+  - Internal cache: CivitaiHashFetcher maintains runtime cache to avoid redundant lookups
 
 ### Data Flow
 
@@ -90,7 +106,8 @@ ComfyUI-Image-Saver/
 ├── nodes_*.py               # Specialized node types
 ├── civitai_nodes.py         # Civitai functionality
 └── js/                      # Frontend JavaScript
-    └── lib/exif-reader.js   # EXIF reading utilities
+    ├── read_exif_workflow.js  # ComfyUI extension for reading EXIF workflows from dropped images
+    └── lib/exif-reader.js   # EXIF reading utilities (ExifReader v4.26.2)
 ```
 
 ## Testing

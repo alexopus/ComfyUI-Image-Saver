@@ -139,7 +139,7 @@ class ImageSaverMetadata:
         steps: int = 20,
         cfg: float = 7.0,
         sampler_name: str = "",
-        scheduler_name: str = "",
+        scheduler_name: str = "normal",
         denoise: float = 1.0,
         clip_skip: int = 0,
         custom: str = "",
