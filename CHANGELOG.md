@@ -1,3 +1,7 @@
+# v1.18.0
+
+- Add WorkflowInputValue node to retrieve input values from nodes in workflow.
+
 # v1.17.0
 
 - BREAKING CHANGE: sampler/scheduler loaders are removed. Instead AnyToString node is added to help convert sampler/scheduler types to string, which works with native loaders. Besides loader nodes removal, Input Parameters has to be recreated and reconnected with the saver node(s). Check example workflow for reference.
