@@ -1,3 +1,7 @@
+# v1.17.0
+
+- BREAKING CHANGE: sampler/scheduler loaders are removed. Instead AnyToString node is added to help convert sampler/scheduler types to string, which works with native loaders. Besides loader nodes removal, Input Parameters has to be recreated and reconnected with the saver node(s). Check example workflow for reference.
+
 # v1.16.0
 
 - Improved Civitai Hash Fetcher search reliability with smart matching and fallbacks
