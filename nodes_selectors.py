@@ -1,6 +1,8 @@
 from typing import Any
 import comfy
 
+INSPIRE_SCHEDULERS = comfy.samplers.KSampler.SCHEDULERS + ['AYS SDXL', 'AYS SD1', 'AYS SVD', "GITS[coeff=1.2]", 'OSS FLUX', 'OSS Wan', 'OSS Chroma']
+EFF_SCHEDULERS = comfy.samplers.KSampler.SCHEDULERS + ['AYS SD1', 'AYS SDXL', 'AYS SVD', 'GITS']
 
 class AnyToString:
     """Converts any input type to a string. Useful for connecting sampler/scheduler outputs from various custom nodes."""
@@ -78,6 +80,87 @@ class WorkflowInputValue:
 
         value = inputs[input_name]
         return (value,)
+
+
+class SamplerSelector:
+    RETURN_TYPES = (comfy.samplers.KSampler.SAMPLERS, "STRING")
+    RETURN_NAMES = ("sampler",                        "sampler_name")
+    OUTPUT_TOOLTIPS = ("sampler (SAMPLERS)", "sampler name (STRING)")
+    FUNCTION = "get_names"
+
+    CATEGORY = 'ImageSaver/utils'
+    DESCRIPTION = 'Provides one of the available ComfyUI samplers'
+
+    @classmethod
+    def INPUT_TYPES(cls) -> dict[str, Any]:
+        return {
+            "required": {
+                "sampler_name": (comfy.samplers.KSampler.SAMPLERS, {"tooltip": "sampler (Comfy's standard)"}),
+            }
+        }
+
+    def get_names(self, sampler_name: str) -> tuple[str, str]:
+        return (sampler_name, sampler_name)
+
+class SchedulerSelector:
+    RETURN_TYPES = (comfy.samplers.KSampler.SCHEDULERS, "STRING")
+    RETURN_NAMES = ("scheduler",                        "scheduler_name")
+    OUTPUT_TOOLTIPS = ("scheduler (SCHEDULERS)", "scheduler name (STRING)")
+    FUNCTION = "get_names"
+
+    CATEGORY = 'ImageSaver/utils'
+    DESCRIPTION = 'Provides one of the standard KSampler schedulers'
+
+    @classmethod
+    def INPUT_TYPES(cls) -> dict[str, Any]:
+        return {
+            "required": {
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "scheduler (Comfy's standard)"}),
+            }
+        }
+
+    def get_names(self, scheduler: str) -> tuple[str, str]:
+        return (scheduler, scheduler)
+
+class SchedulerSelectorInspire:
+    RETURN_TYPES = (INSPIRE_SCHEDULERS, "STRING")
+    RETURN_NAMES = ("scheduler", "scheduler_name")
+    OUTPUT_TOOLTIPS = ("scheduler (ComfyUI + Inspire Pack Schedulers)", "scheduler name (STRING)")
+    FUNCTION = "get_names"
+
+    CATEGORY = 'ImageSaver/utils'
+    DESCRIPTION = 'Provides one of the KSampler (inspire) schedulers'
+
+    @classmethod
+    def INPUT_TYPES(cls) -> dict[str, Any]:
+        return {
+            "required": {
+                "scheduler": (INSPIRE_SCHEDULERS, {"tooltip": "scheduler (Comfy's standard + extras)"}),
+            }
+        }
+
+    def get_names(self, scheduler: str) -> tuple[str, str]:
+        return (scheduler, scheduler)
+
+class SchedulerSelectorEfficiency:
+    RETURN_TYPES = (EFF_SCHEDULERS, "STRING")
+    RETURN_NAMES = ("scheduler", "scheduler_name")
+    OUTPUT_TOOLTIPS = ("scheduler (ComfyUI + Efficiency Pack Schedulers)", "scheduler name (STRING)")
+    FUNCTION = "get_names"
+
+    CATEGORY = 'ImageSaver/utils'
+    DESCRIPTION = 'Provides one of the KSampler (Eff.) schedulers'
+
+    @classmethod
+    def INPUT_TYPES(cls) -> dict[str, Any]:
+        return {
+            "required": {
+                "scheduler": (EFF_SCHEDULERS, {"tooltip": "scheduler (Comfy's standard + Efficiency nodes)"}),
+            }
+        }
+
+    def get_names(self, scheduler: str) -> tuple[str, str]:
+        return (scheduler, scheduler)
 
 
 class InputParameters:
