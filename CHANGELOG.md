@@ -1,3 +1,7 @@
+# v1.19.0
+
+- Bring sampler/scheduler selectors back.
+
 # v1.18.0
 
 - Add WorkflowInputValue node to retrieve input values from nodes in workflow.
