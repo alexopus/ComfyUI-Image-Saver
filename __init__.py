@@ -1,7 +1,7 @@
 from typing import Any
 
 from .nodes import ImageSaver, ImageSaverSimple, ImageSaverMetadata
-from .nodes_literals import SeedGenerator, StringLiteral, SizeLiteral, IntLiteral, FloatLiteral, CfgLiteral, ConditioningConcatOptional
+from .nodes_literals import SeedGenerator, StringLiteral, SizeLiteral, IntLiteral, FloatLiteral, CfgLiteral, ConditioningConcatOptional, RandomShapeGenerator
 from .nodes_loaders import CheckpointLoaderWithName, UNETLoaderWithName
 from .nodes_selectors import SamplerSelector, SchedulerSelector, SchedulerSelectorInspire, SchedulerSelectorEfficiency, InputParameters, AnyToString, WorkflowInputValue
 from .civitai_nodes import CivitaiHashFetcher
@@ -26,6 +26,7 @@ NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Int Literal (Image Saver)": IntLiteral,
     "Float Literal (Image Saver)": FloatLiteral,
     "Conditioning Concat Optional (Image Saver)": ConditioningConcatOptional,
+    "RandomShapeGenerator": RandomShapeGenerator,
     "Civitai Hash Fetcher (Image Saver)": CivitaiHashFetcher,
 }
 
