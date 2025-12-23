@@ -1,3 +1,7 @@
+# v1.20.0
+
+- Add RandomShapeGenerator
+
 # v1.19.0
 
 - Bring sampler/scheduler selectors back.
