@@ -1,3 +1,9 @@
+# v1.22.0
+
+- Change `steps` minimum to zero so Civitai skips it.
+- Add random tag picker node
+- Cleaner naming for batch saves bugfix
+
 # v1.21.0
 
 - Cleaner naming for batch saves.
