@@ -1,6 +1,7 @@
 from typing import Any
 
 from .nodes import ImageSaver, ImageSaverSimple, ImageSaverMetadata
+from .nodes_pipe import MakeImageSaverPipe, EditImageSaverPipe, ReadImageSaverPipe, ImageSaverFromPipe, MakeImageSaverSimpleConfig, MakeImageSaverMetadataConfig
 from .nodes_literals import SeedGenerator, StringLiteral, SizeLiteral, IntLiteral, FloatLiteral, CfgLiteral, ConditioningConcatOptional, RandomShapeGenerator
 from .nodes_loaders import CheckpointLoaderWithName, UNETLoaderWithName
 from .nodes_selectors import SamplerSelector, SchedulerSelector, SchedulerSelectorInspire, SchedulerSelectorEfficiency, InputParameters, AnyToString, WorkflowInputValue
@@ -13,6 +14,12 @@ NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Image Saver": ImageSaver,
     "Image Saver Simple": ImageSaverSimple,
     "Image Saver Metadata": ImageSaverMetadata,
+    "Make Image Saver Simple Config": MakeImageSaverSimpleConfig,
+    "Make Image Saver Metadata Config": MakeImageSaverMetadataConfig,
+    "Make Image Saver Pipe": MakeImageSaverPipe,
+    "Edit Image Saver Pipe": EditImageSaverPipe,
+    "Read Image Saver Pipe": ReadImageSaverPipe,
+    "Image Saver (From Pipe)": ImageSaverFromPipe,
     "Sampler Selector (Image Saver)": SamplerSelector,
     "Scheduler Selector (Image Saver)": SchedulerSelector,
     "Scheduler Selector (inspire) (Image Saver)": SchedulerSelectorInspire,
