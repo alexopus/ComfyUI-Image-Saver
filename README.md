@@ -38,6 +38,7 @@ You can use following placeholders:
 - `%basemodelname` *– name of model (without file extension)*
 - `%seed`
 - `%counter`
+- `%counter<padding>` *– zero-padded counter (e.g. `%counter<03>` with counter 1 becomes `001`)*
 - `%sampler_name`
 - `%scheduler`
 - `%steps`
