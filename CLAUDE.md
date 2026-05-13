@@ -38,6 +38,7 @@ pip install -r requirements.txt
    - `ImageSaverSimple`: Simplified version for basic usage
    - `ImageSaverMetadata`: Metadata-only node for separation of concerns
    - `Metadata` dataclass: Structured metadata container
+   - **Pipe Architecture Nodes**: `MakeImageSaverPipe`, `EditImageSaverPipe`, `ReadImageSaverPipe`, and `ImageSaverFromPipe` for deferred, chainable metadata execution.
 
 3. **Core Saver Logic (`saver/saver.py`)**
    - `save_image()`: Handles different image formats (PNG, JPEG, WebP)
@@ -63,7 +64,7 @@ pip install -r requirements.txt
 - **Hash Calculation**: SHA256 hashing with file caching (`.sha256` files)
 - **Resource Detection**: Automatic LoRA, embedding, and model hash extraction
 - **Civitai Integration**: Downloads resource metadata for proper attribution
-- **Filename Templating**: Supports variables like `%date`, `%time`, `%seed`, `%model`, `%width`, `%height`, `%counter`, `%sampler_name`, `%steps`, `%cfg`, `%scheduler_name`, `%basemodelname`, `%denoise`, `%clip_skip`, `%custom`
+- **Filename Templating**: Supports variables like `%date`, `%time`, `%seed`, `%model`, `%width`, `%height`, `%counter` (including zero-padded format via `%counter<padding>`), `%sampler_name`, `%steps`, `%cfg`, `%scheduler_name`, `%basemodelname`, `%denoise`, `%clip_skip`, `%custom`
 
 ### Advanced Features
 
