@@ -37,7 +37,7 @@ You can use following placeholders:
 - `%model` *– full name of model file*
 - `%basemodelname` *– name of model (without file extension)*
 - `%seed`
-- `%counter`
+- `%counter` *(supports zero-padded formatting, e.g., `%counter<03>` for `001`, `002`)*
 - `%sampler_name`
 - `%scheduler`
 - `%steps`
@@ -72,3 +72,26 @@ Example:
 | `%a` | Weekday (short) | Thu |
 | `%F` | YYYY-MM-DD | 2023-11-16 |
 | `%T` | HH:MM:SS | 13:13:31 |
+
+## New Pipe Architecture
+
+To solve the issue of cluttered wires in complex workflows with many image generations, a new **Pipe** architecture has been introduced. 
+
+The pipe system bundles all metadata and image saver settings into a single connection, allowing you to pass them cleanly across your workflow.
+
+![Image Saver Pipe Workflow](images/image_saver_pipe.png)
+
+### Key Features
+* **Single Wire:** Carries all information in just one pipe, drastically reducing wire clutter.
+* **Chainable:** All pipe nodes are fully chainable.
+* **Lazy Evaluation:** Metadata compilation (e.g. hashing) only occurs when the final image is actually saved, saving execution time.
+* **Non-destructive Editing:** The `Edit Image Saver Pipe` node allows you to branch and modify settings. All string fields support the `[original]` placeholder to easily append or prepend text to existing values. *For more complicated operations, you can extract values using the `Read Image Saver Pipe` node, manipulate them with string nodes, and feed them back into an `Edit Image Saver Pipe`.*
+* **Combo Types for Wiring:** `sampler` and `scheduler` inputs use combo types, making them easier to wire to other nodes.
+
+### ⚠️ Important Note on Mixing Legacy and Pipe Nodes
+
+While the new pipe architecture uses the exact same underlying logic as the classic nodes, **they are not directly compatible with each other** (you cannot wire a legacy node into a pipe node).
+
+Additionally, **it is highly recommended NOT to mix legacy nodes and pipe nodes in the same workflow.** 
+Legacy nodes evaluate and trigger side-effects (like `download_civitai` or `easy_remix`) immediately, whereas pipe nodes defer these actions until the final `Image Saver (From Pipe)` node runs. Mixing them can lead to unpredictable metadata generation and side-effect interactions.
+
