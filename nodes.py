@@ -61,6 +61,23 @@ def apply_custom_time_format(filename: str) -> str:
 
     return re.sub(pattern, replace_format, filename)
 
+def apply_custom_counter_format(filename: str, counter: int) -> str:
+    """
+    Replace %counter<padding> patterns with formatted counter.
+    Example: %counter<03> with counter=1 becomes 001
+    """
+    pattern = r'%counter<([0-9]+)>'
+    def replace_format(match):
+        padding_str = match.group(1)
+        try:
+            # Create format string like "{:03d}"
+            fmt = "{:0" + padding_str + "d}"
+            return fmt.format(counter)
+        except:
+            return match.group(0)
+
+    return re.sub(pattern, replace_format, filename)
+
 def save_json(image_info: dict[str, Any] | None, filename: str) -> None:
     try:
         workflow = (image_info or {}).get('workflow')
@@ -73,8 +90,9 @@ def save_json(image_info: dict[str, Any] | None, filename: str) -> None:
         print(f'Failed to save workflow as json due to: {e}, proceeding with the remainder of saving execution')
 
 def make_pathname(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int, custom: str) -> str:
-    # Process custom time_format patterns first
+    # Process custom format patterns first
     filename = apply_custom_time_format(filename)
+    filename = apply_custom_counter_format(filename, counter)
     filename = filename.replace("%date", get_timestamp("%Y-%m-%d"))
     filename = filename.replace("%time", get_timestamp(time_format))
     filename = filename.replace("%model", parse_checkpoint_name(modelname))
