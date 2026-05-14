@@ -12,7 +12,7 @@ import torch
 
 import folder_paths
 from nodes import MAX_RESOLUTION
-import comfy
+import comfy.samplers
 
 from .saver.saver import save_image
 from .utils import sanitize_filename, get_sha256, full_checkpoint_path_for
@@ -37,7 +37,7 @@ def get_timestamp(time_format: str) -> str:
     now = datetime.now()
     try:
         timestamp = now.strftime(time_format)
-    except:
+    except Exception:
         timestamp = now.strftime("%Y-%m-%d-%H%M%S")
 
     return timestamp
@@ -55,7 +55,7 @@ def apply_custom_time_format(filename: str) -> str:
         format_str = match.group(1)
         try:
             return now.strftime(format_str)
-        except:
+        except Exception:
             # If format is invalid, return original
             return match.group(0)
 
@@ -73,7 +73,7 @@ def apply_custom_counter_format(filename: str, counter: int) -> str:
             # Create format string like "{:03d}"
             fmt = "{:0" + padding_str + "d}"
             return fmt.format(counter)
-        except:
+        except Exception:
             return match.group(0)
 
     return re.sub(pattern, replace_format, filename)
@@ -604,6 +604,7 @@ class ImageSaver:
         return f"{filename_prefix}_{base_suffix + batch_index:02d}"
 
 class MakeImageSaverPipe:
+    """Bundles metadata and Image Saver settings into a single Pipe connection."""
     @classmethod
     def INPUT_TYPES(cls) -> dict[str, Any]:
         return {
@@ -674,9 +675,7 @@ class MakeImageSaverPipe:
             "embed_workflow": kwargs.get("embed_workflow") if kwargs.get("embed_workflow") is not None else True,
             "save_workflow_as_json": kwargs.get("save_workflow_as_json") if kwargs.get("save_workflow_as_json") is not None else False,
             "counter": kwargs.get("counter") if kwargs.get("counter") is not None else 0,
-            "time_format": kwargs.get("time_format") if kwargs.get("time_format") is not None else "%Y-%m-%d-%H%M%S",
-            "download_civitai_data": kwargs.get("download_civitai_data") if kwargs.get("download_civitai_data") is not None else True,
-            "easy_remix": kwargs.get("easy_remix") if kwargs.get("easy_remix") is not None else True
+            "time_format": kwargs.get("time_format") if kwargs.get("time_format") is not None else "%Y-%m-%d-%H%M%S"
         }
         return ({"metadata_config": metadata_config, "saver_config": saver_config},)
 
@@ -738,37 +737,48 @@ class EditImageSaverPipe:
         metadata_config["modelname"] = apply_string_edit(kwargs.get("modelname"), metadata_config["modelname"])
         metadata_config["positive"] = apply_string_edit(kwargs.get("positive"), metadata_config["positive"])
         metadata_config["negative"] = apply_string_edit(kwargs.get("negative"), metadata_config["negative"])
-        if kwargs.get("width") is not None: metadata_config["width"] = kwargs.get("width")
-        if kwargs.get("height") is not None: metadata_config["height"] = kwargs.get("height")
-        if kwargs.get("seed") is not None: metadata_config["seed_value"] = kwargs.get("seed")
-        if kwargs.get("steps") is not None: metadata_config["steps"] = kwargs.get("steps")
-        if kwargs.get("cfg") is not None: metadata_config["cfg"] = kwargs.get("cfg")
+        if kwargs.get("width") is not None:
+            metadata_config["width"] = kwargs.get("width")
+        if kwargs.get("height") is not None:
+            metadata_config["height"] = kwargs.get("height")
+        if kwargs.get("seed") is not None:
+            metadata_config["seed_value"] = kwargs.get("seed")
+        if kwargs.get("steps") is not None:
+            metadata_config["steps"] = kwargs.get("steps")
+        if kwargs.get("cfg") is not None:
+            metadata_config["cfg"] = kwargs.get("cfg")
         metadata_config["sampler_name"] = apply_string_edit(kwargs.get("sampler_name"), metadata_config["sampler_name"])
         metadata_config["scheduler_name"] = apply_string_edit(kwargs.get("scheduler"), metadata_config["scheduler_name"])
-        if kwargs.get("denoise") is not None: metadata_config["denoise"] = kwargs.get("denoise")
-        if kwargs.get("clip_skip") is not None: metadata_config["clip_skip"] = kwargs.get("clip_skip")
+        if kwargs.get("denoise") is not None:
+            metadata_config["denoise"] = kwargs.get("denoise")
+        if kwargs.get("clip_skip") is not None:
+            metadata_config["clip_skip"] = kwargs.get("clip_skip")
         metadata_config["custom"] = apply_string_edit(kwargs.get("custom"), metadata_config["custom"])
         
-        # Handle additional_hashes leak properly
-        original_additional_hashes = metadata_config["additional_hashes"]
-        if kwargs.get("modelname") is not None and "[original]" not in kwargs.get("modelname", "") and kwargs.get("additional_hashes") is None:
-            original_additional_hashes = ""
-            
-        metadata_config["additional_hashes"] = apply_string_edit(kwargs.get("additional_hashes"), original_additional_hashes)
+        metadata_config["additional_hashes"] = apply_string_edit(kwargs.get("additional_hashes"), metadata_config.get("additional_hashes", ""))
         
-        if kwargs.get("download_civitai_data") is not None: metadata_config["download_civitai_data"] = kwargs.get("download_civitai_data")
-        if kwargs.get("easy_remix") is not None: metadata_config["easy_remix"] = kwargs.get("easy_remix")
+        if kwargs.get("download_civitai_data") is not None:
+            metadata_config["download_civitai_data"] = kwargs.get("download_civitai_data")
+        if kwargs.get("easy_remix") is not None:
+            metadata_config["easy_remix"] = kwargs.get("easy_remix")
 
         # Override Saver fields if provided
         saver_config["filename"] = apply_string_edit(kwargs.get("filename"), saver_config.get("filename"))
         saver_config["path"] = apply_string_edit(kwargs.get("path"), saver_config.get("path"))
-        saver_config["extension"] = apply_string_edit(kwargs.get("extension"), saver_config.get("extension"))
-        if kwargs.get("lossless_webp") is not None: saver_config["lossless_webp"] = kwargs.get("lossless_webp")
-        if kwargs.get("quality_jpeg_or_webp") is not None: saver_config["quality_jpeg_or_webp"] = kwargs.get("quality_jpeg_or_webp")
-        if kwargs.get("optimize_png") is not None: saver_config["optimize_png"] = kwargs.get("optimize_png")
-        if kwargs.get("embed_workflow") is not None: saver_config["embed_workflow"] = kwargs.get("embed_workflow")
-        if kwargs.get("save_workflow_as_json") is not None: saver_config["save_workflow_as_json"] = kwargs.get("save_workflow_as_json")
-        if kwargs.get("counter") is not None: saver_config["counter"] = kwargs.get("counter")
+        if kwargs.get("extension") is not None:
+            saver_config["extension"] = kwargs.get("extension")
+        if kwargs.get("lossless_webp") is not None:
+            saver_config["lossless_webp"] = kwargs.get("lossless_webp")
+        if kwargs.get("quality_jpeg_or_webp") is not None:
+            saver_config["quality_jpeg_or_webp"] = kwargs.get("quality_jpeg_or_webp")
+        if kwargs.get("optimize_png") is not None:
+            saver_config["optimize_png"] = kwargs.get("optimize_png")
+        if kwargs.get("embed_workflow") is not None:
+            saver_config["embed_workflow"] = kwargs.get("embed_workflow")
+        if kwargs.get("save_workflow_as_json") is not None:
+            saver_config["save_workflow_as_json"] = kwargs.get("save_workflow_as_json")
+        if kwargs.get("counter") is not None:
+            saver_config["counter"] = kwargs.get("counter")
         saver_config["time_format"] = apply_string_edit(kwargs.get("time_format"), saver_config.get("time_format"))
         
         return ({"metadata_config": metadata_config, "saver_config": saver_config},)
@@ -816,6 +826,7 @@ class ReadImageSaverPipe:
         )
 
 class ImageSaverFromPipe:
+    """Save images using settings and metadata unpacked from an Image Saver Pipe."""
     @classmethod
     def INPUT_TYPES(cls) -> dict[str, Any]:
         return {
