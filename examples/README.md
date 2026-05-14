@@ -1,5 +1,9 @@
 # Examples
 
+## [`example-workflow.json`](./example-workflow.json)
+
+This is the standard example workflow demonstrating the basic usage of the image saver node to save images along with their generation metadata (including hashes for Civitai).
+
 ## [`image_saver_pipe_workflow.json`](./image_saver_pipe_workflow.json)
 
 This workflow demonstrates how to leverage a "Pipe" architecture to efficiently construct and manage multiple image generation scenarios without the clutter of endless noodle-wiring.
