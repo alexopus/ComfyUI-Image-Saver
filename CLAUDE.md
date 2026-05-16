@@ -33,28 +33,35 @@ pip install -r requirements.txt
    - Maps node class names to implementations
    - Defines `WEB_DIRECTORY` for JavaScript assets
 
-2. **Image Saving System (`nodes.py`)**
+2. **Core Image Saving Nodes (`nodes.py`)**
    - `ImageSaver`: Main node for saving images with full metadata
    - `ImageSaverSimple`: Simplified version for basic usage
    - `ImageSaverMetadata`: Metadata-only node for separation of concerns
    - `Metadata` dataclass: Structured metadata container
 
-3. **Core Saver Logic (`saver/saver.py`)**
+3. **Pipe Integration Nodes (`nodes_pipe.py`)**
+   - `MakeImageSaverSimpleConfig`, `MakeImageSaverMetadataConfig`: Standalone configurations.
+   - `MakeImageSaverPipe`: Bundles configs into a single connection.
+   - `EditImageSaverPipe`, `ReadImageSaverPipe`: Dynamic modification and extraction of pipe data.
+   - `ImageSaverFromPipe`: Resolves the deferred pipe data and performs the save operation.
+
+4. **Core Saver Logic (`saver/saver.py`)**
    - `save_image()`: Handles different image formats (PNG, JPEG, WebP)
    - PNG: Uses `PngInfo` for metadata storage
    - JPEG/WebP: Uses EXIF format via `piexif`
    - Workflow embedding with size limits (65535 bytes for JPEG)
 
-4. **Utility Modules**
+5. **Utility Modules**
    - `utils.py`: File operations, hashing, path resolution
    - `utils_civitai.py`: Civitai API integration and metadata formatting
    - `prompt_metadata_extractor.py`: Extracts LoRAs and embeddings from prompts
 
-5. **Node Types**
+6. **Other Specialized Nodes**
    - `nodes_loaders.py`: Checkpoint and UNet loaders with name tracking
    - `nodes_selectors.py`: Sampler and scheduler selection utilities
    - `nodes_literals.py`: Literal value generators (seed, strings, etc.)
    - `civitai_nodes.py`: Civitai hash fetching functionality
+   - `random_tag_picker.py`: Random prompt tagging utility
 
 ### Key Features
 
@@ -63,7 +70,7 @@ pip install -r requirements.txt
 - **Hash Calculation**: SHA256 hashing with file caching (`.sha256` files)
 - **Resource Detection**: Automatic LoRA, embedding, and model hash extraction
 - **Civitai Integration**: Downloads resource metadata for proper attribution
-- **Filename Templating**: Supports variables like `%date`, `%time`, `%seed`, `%model`, `%width`, `%height`, `%counter`, `%sampler_name`, `%steps`, `%cfg`, `%scheduler_name`, `%basemodelname`, `%denoise`, `%clip_skip`, `%custom`
+- **Filename Templating**: Supports variables like `%date`, `%time`, `%seed`, `%model`, `%width`, `%height`, `%counter` (including zero-padded format via `%counter<padding>`), `%sampler_name`, `%steps`, `%cfg`, `%scheduler_name`, `%basemodelname`, `%denoise`, `%clip_skip`, `%custom`
 
 ### Advanced Features
 

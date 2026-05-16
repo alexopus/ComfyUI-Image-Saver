@@ -1,0 +1,3773 @@
+{
+  "id": "4360fb03-396e-4bf7-9372-23edb1cc60f2",
+  "revision": 0,
+  "last_node_id": 143,
+  "last_link_id": 397,
+  "nodes": [
+    {
+      "id": 3,
+      "type": "ToBasicPipe",
+      "pos": [
+        1000,
+        1230
+      ],
+      "size": [
+        300,
+        170
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 35
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 36
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 37
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 4
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-impact-pack",
+        "ver": "8.28.3",
+        "Node name for S&R": "ToBasicPipe"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "pos": [
+        1000,
+        1430
+      ],
+      "size": [
+        230,
+        120
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 38
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            4,
+            5
+          ]
+        }
+      ],
+      "title": "DUMMY CLIP Text Encode",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 7,
+      "type": "EmptyLatentImage",
+      "pos": [
+        2000,
+        1590
+      ],
+      "size": [
+        230,
+        150
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            173
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1216,
+        832,
+        1
+      ]
+    },
+    {
+      "id": 8,
+      "type": "CLIPTextEncode",
+      "pos": [
+        2000,
+        1550
+      ],
+      "size": [
+        400,
+        170
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 11
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 31
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            171,
+            182
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 9,
+      "type": "CLIPTextEncode",
+      "pos": [
+        2000,
+        1510
+      ],
+      "size": [
+        400,
+        170
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 25
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 30
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            172
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 10,
+      "type": "FromBasicPipe_v2",
+      "pos": [
+        1500,
+        1230
+      ],
+      "size": [
+        300,
+        200
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "links": [
+            392
+          ]
+        },
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            170,
+            180
+          ]
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "links": [
+            11,
+            25,
+            159
+          ]
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "links": [
+            14,
+            157
+          ]
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": null
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-impact-pack",
+        "ver": "8.28.3",
+        "Node name for S&R": "FromBasicPipe_v2"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 11,
+      "type": "VAEDecode",
+      "pos": [
+        2500,
+        1630
+      ],
+      "size": [
+        300,
+        100
+      ],
+      "flags": {},
+      "order": 33,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 179
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            16,
+            345
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "GetImageSize",
+      "pos": [
+        2500.0243162719776,
+        1830.008162373113
+      ],
+      "size": [
+        300,
+        159.8333282470703
+      ],
+      "flags": {},
+      "order": 36,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            288
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            289
+          ]
+        },
+        {
+          "name": "batch_size",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "GetImageSize"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 13,
+      "type": "PreviewAny",
+      "pos": [
+        4000,
+        2030
+      ],
+      "size": [
+        400,
+        370
+      ],
+      "flags": {},
+      "order": 46,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 347
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 14,
+      "type": "PreviewAny",
+      "pos": [
+        4000,
+        1630
+      ],
+      "size": [
+        400,
+        370
+      ],
+      "flags": {},
+      "order": 45,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 346
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 21,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        1500,
+        2430
+      ],
+      "size": [
+        300,
+        170
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            30,
+            292,
+            305
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "worst quality, low quality, lowres, ugly, deformed, mutated, bad anatomy"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        1500,
+        2130
+      ],
+      "size": [
+        300,
+        170
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            31,
+            291
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "very awa, masterpiece, best quality, highres, absurdres, anime screencap, 1girl, solo, close-up, dynamic pose, safe"
+      ]
+    },
+    {
+      "id": 23,
+      "type": "Checkpoint Loader with Name (Image Saver)",
+      "pos": [
+        400,
+        1230
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            35
+          ]
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            36,
+            38
+          ]
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            37
+          ]
+        },
+        {
+          "name": "model_name",
+          "type": "STRING",
+          "links": [
+            338
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "ad4be728b97170d94f02da445ccfe2cffe1f88a3",
+        "Node name for S&R": "Checkpoint Loader with Name (Image Saver)"
+      },
+      "widgets_values": [
+        "hf/sdxl10/models--Laxhar--noobai-XL-1.1/snapshots/814a274af2b8097c0828819d561ec74c7d0c6cea/NoobAI-XL-v1.1.safetensors"
+      ]
+    },
+    {
+      "id": 25,
+      "type": "PrimitiveInt",
+      "pos": [
+        2500,
+        2030
+      ],
+      "size": [
+        300,
+        90
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            287
+          ]
+        }
+      ],
+      "title": "Scene 1 of Scenario 1",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        1,
+        "fixed"
+      ]
+    },
+    {
+      "id": 81,
+      "type": "EmptyLatentImage",
+      "pos": [
+        2000,
+        2890
+      ],
+      "size": [
+        230,
+        150
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            183
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        832,
+        1216,
+        1
+      ]
+    },
+    {
+      "id": 82,
+      "type": "CLIPTextEncode",
+      "pos": [
+        2000,
+        2850
+      ],
+      "size": [
+        400,
+        170
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 159
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 158
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            181
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 84,
+      "type": "VAEDecode",
+      "pos": [
+        2500,
+        2930
+      ],
+      "size": [
+        300,
+        100
+      ],
+      "flags": {},
+      "order": 34,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 189
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 157
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            140,
+            349
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 85,
+      "type": "GetImageSize",
+      "pos": [
+        2500.0243162719776,
+        3130.0138496111117
+      ],
+      "size": [
+        300,
+        159.8333282470703
+      ],
+      "flags": {},
+      "order": 37,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 140
+        }
+      ],
+      "outputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            302
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            303
+          ]
+        },
+        {
+          "name": "batch_size",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "GetImageSize"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 86,
+      "type": "PreviewAny",
+      "pos": [
+        4000,
+        3330
+      ],
+      "size": [
+        400,
+        370
+      ],
+      "flags": {},
+      "order": 50,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 351
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 87,
+      "type": "PreviewAny",
+      "pos": [
+        4000,
+        2930
+      ],
+      "size": [
+        400,
+        370
+      ],
+      "flags": {},
+      "order": 49,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 350
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 90,
+      "type": "PrimitiveInt",
+      "pos": [
+        2500,
+        3330
+      ],
+      "size": [
+        300,
+        90
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            301
+          ]
+        }
+      ],
+      "title": "Scene 2 of Scenario 1",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        2,
+        "fixed"
+      ]
+    },
+    {
+      "id": 93,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        1500,
+        2930
+      ],
+      "size": [
+        300,
+        170
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            158,
+            304
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "very awa, masterpiece, best quality, highres, absurdres, anime screencap, 1girl, solo, from above, full body, dynamic pose, safe"
+      ]
+    },
+    {
+      "id": 95,
+      "type": "KSampler",
+      "pos": [
+        2000,
+        1630
+      ],
+      "size": [
+        300,
+        370
+      ],
+      "flags": {},
+      "order": 29,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 170
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 171
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 172
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 173
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": 339
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": 340
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": 341
+        },
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": 342
+        },
+        {
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": 343
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            179
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        937827181849176,
+        "randomize",
+        20,
+        8,
+        "euler",
+        "simple",
+        1
+      ]
+    },
+    {
+      "id": 96,
+      "type": "KSampler",
+      "pos": [
+        2000,
+        2930
+      ],
+      "size": [
+        300,
+        370
+      ],
+      "flags": {},
+      "order": 30,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 180
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 181
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 182
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 183
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": 352
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": 354
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": 355
+        },
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": 356
+        },
+        {
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": 357
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            189
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        572089059092372,
+        "randomize",
+        20,
+        8,
+        "euler",
+        "simple",
+        1
+      ]
+    },
+    {
+      "id": 108,
+      "type": "Make Image Saver Pipe",
+      "pos": [
+        1000,
+        1530
+      ],
+      "size": [
+        300,
+        100
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "simple_saver_config",
+          "type": "SIMPLE_SAVER_CONFIG",
+          "link": 336
+        },
+        {
+          "name": "metadata_config",
+          "type": "METADATA_CONFIG",
+          "link": 337
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            283
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Make Image Saver Pipe"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 109,
+      "type": "Read Image Saver Pipe",
+      "pos": [
+        1500,
+        1530
+      ],
+      "size": [
+        300,
+        480
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 283
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            286,
+            394
+          ]
+        },
+        {
+          "name": "filename",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "path",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "counter",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "modelname",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "positive",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "negative",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "links": [
+            339,
+            352
+          ]
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "links": [
+            340,
+            354
+          ]
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "links": [
+            341,
+            355
+          ]
+        },
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "links": [
+            342,
+            356
+          ]
+        },
+        {
+          "name": "scheduler_name",
+          "type": "COMBO",
+          "links": [
+            343,
+            357
+          ]
+        },
+        {
+          "name": "denoise",
+          "type": "FLOAT",
+          "links": null
+        },
+        {
+          "name": "clip_skip",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "additional_hashes",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "custom",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Read Image Saver Pipe"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 110,
+      "type": "Edit Image Saver Pipe",
+      "pos": [
+        3000,
+        1830
+      ],
+      "size": [
+        400,
+        670
+      ],
+      "flags": {},
+      "order": 39,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 286
+        },
+        {
+          "name": "counter",
+          "shape": 7,
+          "type": "INT",
+          "link": 287
+        },
+        {
+          "name": "width",
+          "shape": 7,
+          "type": "INT",
+          "link": 288
+        },
+        {
+          "name": "height",
+          "shape": 7,
+          "type": "INT",
+          "link": 289
+        },
+        {
+          "name": "seed",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "steps",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "cfg",
+          "shape": 7,
+          "type": "FLOAT",
+          "link": null
+        },
+        {
+          "name": "sampler_name",
+          "shape": 7,
+          "type": "COMBO",
+          "link": null
+        },
+        {
+          "name": "scheduler_name",
+          "shape": 7,
+          "type": "COMBO",
+          "link": null
+        },
+        {
+          "name": "denoise",
+          "shape": 7,
+          "type": "FLOAT",
+          "link": null
+        },
+        {
+          "name": "clip_skip",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "positive",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "positive"
+          },
+          "link": 291
+        },
+        {
+          "name": "negative",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "negative"
+          },
+          "link": 292
+        },
+        {
+          "name": "custom",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "custom"
+          },
+          "link": 360
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            300,
+            344
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Edit Image Saver Pipe"
+      },
+      "widgets_values": [
+        "[original]_scenario1_%counter<03>",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]"
+      ]
+    },
+    {
+      "id": 112,
+      "type": "Edit Image Saver Pipe",
+      "pos": [
+        3000,
+        2930
+      ],
+      "size": [
+        400,
+        670
+      ],
+      "flags": {},
+      "order": 41,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 300
+        },
+        {
+          "name": "counter",
+          "shape": 7,
+          "type": "INT",
+          "link": 301
+        },
+        {
+          "name": "width",
+          "shape": 7,
+          "type": "INT",
+          "link": 302
+        },
+        {
+          "name": "height",
+          "shape": 7,
+          "type": "INT",
+          "link": 303
+        },
+        {
+          "name": "seed",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "steps",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "cfg",
+          "shape": 7,
+          "type": "FLOAT",
+          "link": null
+        },
+        {
+          "name": "sampler_name",
+          "shape": 7,
+          "type": "COMBO",
+          "link": null
+        },
+        {
+          "name": "scheduler_name",
+          "shape": 7,
+          "type": "COMBO",
+          "link": null
+        },
+        {
+          "name": "denoise",
+          "shape": 7,
+          "type": "FLOAT",
+          "link": null
+        },
+        {
+          "name": "clip_skip",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "positive",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "positive"
+          },
+          "link": 304
+        },
+        {
+          "name": "negative",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "negative"
+          },
+          "link": 305
+        },
+        {
+          "name": "custom",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "custom"
+          },
+          "link": 362
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            348
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Edit Image Saver Pipe"
+      },
+      "widgets_values": [
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]"
+      ]
+    },
+    {
+      "id": 118,
+      "type": "FromBasicPipe_v2",
+      "pos": [
+        7700,
+        1260
+      ],
+      "size": [
+        230,
+        200
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 26,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "link": 396
+        }
+      ],
+      "outputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "links": null
+        },
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": null
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "links": null
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "links": null
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": null
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": null
+        }
+      ],
+      "title": "More subgraphs",
+      "properties": {
+        "cnr_id": "comfyui-impact-pack",
+        "ver": "8.28.3",
+        "Node name for S&R": "FromBasicPipe_v2"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 119,
+      "type": "Read Image Saver Pipe",
+      "pos": [
+        7700,
+        1560
+      ],
+      "size": [
+        230,
+        480
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 31,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 393
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": null
+        },
+        {
+          "name": "filename",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "path",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "counter",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "modelname",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "positive",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "negative",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "links": null
+        },
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "links": null
+        },
+        {
+          "name": "scheduler_name",
+          "type": "COMBO",
+          "links": null
+        },
+        {
+          "name": "denoise",
+          "type": "FLOAT",
+          "links": null
+        },
+        {
+          "name": "clip_skip",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "additional_hashes",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "custom",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "More subgraphs",
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Read Image Saver Pipe"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 120,
+      "type": "Make Image Saver Simple Config",
+      "pos": [
+        410,
+        1530
+      ],
+      "size": [
+        390,
+        400
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "simple_saver_config",
+          "type": "SIMPLE_SAVER_CONFIG",
+          "links": [
+            336
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Make Image Saver Simple Config"
+      },
+      "widgets_values": [
+        "%time_%basemodelname_%seed",
+        "",
+        "png",
+        true,
+        100,
+        true,
+        true,
+        false,
+        0,
+        "%Y-%m-%dT%H%M%S"
+      ]
+    },
+    {
+      "id": 121,
+      "type": "Make Image Saver Metadata Config",
+      "pos": [
+        400,
+        2030
+      ],
+      "size": [
+        400,
+        670
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "modelname",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "modelname"
+          },
+          "link": 338
+        }
+      ],
+      "outputs": [
+        {
+          "name": "metadata_config",
+          "type": "METADATA_CONFIG",
+          "links": [
+            337
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Make Image Saver Metadata Config"
+      },
+      "widgets_values": [
+        "",
+        "unknown",
+        "unknown",
+        512,
+        512,
+        0,
+        "randomize",
+        25,
+        5,
+        "euler_ancestral",
+        "simple",
+        1,
+        0,
+        "",
+        true,
+        true,
+        ""
+      ]
+    },
+    {
+      "id": 122,
+      "type": "Image Saver (From Pipe)",
+      "pos": [
+        3499.9804581954877,
+        1629.994066423507
+      ],
+      "size": [
+        300,
+        379.8333435058594
+      ],
+      "flags": {},
+      "order": 42,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 344
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 345
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            346
+          ]
+        },
+        {
+          "name": "hashes",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "a1111_params",
+          "type": "STRING",
+          "links": [
+            347
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Image Saver (From Pipe)"
+      },
+      "widgets_values": [
+        true
+      ]
+    },
+    {
+      "id": 123,
+      "type": "Image Saver (From Pipe)",
+      "pos": [
+        3499.9804581954877,
+        2929.9998582706776
+      ],
+      "size": [
+        300,
+        379.8333435058594
+      ],
+      "flags": {},
+      "order": 44,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 348
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 349
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            350
+          ]
+        },
+        {
+          "name": "hashes",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "a1111_params",
+          "type": "STRING",
+          "links": [
+            351
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Image Saver (From Pipe)"
+      },
+      "widgets_values": [
+        true
+      ]
+    },
+    {
+      "id": 124,
+      "type": "RegexReplace",
+      "pos": [
+        2500,
+        2230
+      ],
+      "size": [
+        300,
+        300
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            360
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "RegexReplace"
+      },
+      "widgets_values": [
+        "S1_scene1_detailer_prompt: \"{S1_scene1_detailer_prompt}\"",
+        "{S1_scene1_detailer_prompt}",
+        "some prompts",
+        true,
+        false,
+        false,
+        0
+      ]
+    },
+    {
+      "id": 126,
+      "type": "RegexReplace",
+      "pos": [
+        2500,
+        3510
+      ],
+      "size": [
+        300,
+        300
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            362
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "RegexReplace"
+      },
+      "widgets_values": [
+        "S1_scene2_detailer_prompt: \"{S1_scene2_detailer_prompt}\"",
+        "{S1_scene2_detailer_prompt}",
+        "some prompts",
+        true,
+        false,
+        false,
+        0
+      ]
+    },
+    {
+      "id": 127,
+      "type": "EmptyLatentImage",
+      "pos": [
+        5100,
+        1590
+      ],
+      "size": [
+        230,
+        150
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 11,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            376
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1216,
+        832,
+        1
+      ]
+    },
+    {
+      "id": 128,
+      "type": "CLIPTextEncode",
+      "pos": [
+        5100,
+        1550
+      ],
+      "size": [
+        400,
+        170
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 364
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 365
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            374
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 129,
+      "type": "CLIPTextEncode",
+      "pos": [
+        5100,
+        1510
+      ],
+      "size": [
+        400,
+        170
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 366
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 367
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            375
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 130,
+      "type": "FromBasicPipe_v2",
+      "pos": [
+        4600,
+        1230
+      ],
+      "size": [
+        300,
+        200
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "link": 392
+        }
+      ],
+      "outputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "links": [
+            396
+          ]
+        },
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            373
+          ]
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "links": [
+            364,
+            366
+          ]
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "links": [
+            369
+          ]
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": null
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-impact-pack",
+        "ver": "8.28.3",
+        "Node name for S&R": "FromBasicPipe_v2"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 131,
+      "type": "VAEDecode",
+      "pos": [
+        5600,
+        1630
+      ],
+      "size": [
+        300,
+        100
+      ],
+      "flags": {},
+      "order": 35,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 368
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 369
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            370,
+            390
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 132,
+      "type": "GetImageSize",
+      "pos": [
+        5599.985308015065,
+        1830.008162373113
+      ],
+      "size": [
+        300,
+        159.8333282470703
+      ],
+      "flags": {},
+      "order": 38,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 370
+        }
+      ],
+      "outputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            384
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            385
+          ]
+        },
+        {
+          "name": "batch_size",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "GetImageSize"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 133,
+      "type": "PreviewAny",
+      "pos": [
+        7100,
+        2030
+      ],
+      "size": [
+        400,
+        370
+      ],
+      "flags": {},
+      "order": 48,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 371
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 134,
+      "type": "PreviewAny",
+      "pos": [
+        7100,
+        1630
+      ],
+      "size": [
+        400,
+        370
+      ],
+      "flags": {},
+      "order": 47,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 372
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 135,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        4600,
+        2430
+      ],
+      "size": [
+        300,
+        170
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            367,
+            387
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "worst quality, low quality, lowres, ugly, deformed, mutated, bad anatomy"
+      ]
+    },
+    {
+      "id": 136,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        4600,
+        2130
+      ],
+      "size": [
+        300,
+        170
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 13,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            365,
+            386
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "very awa, masterpiece, best quality, highres, absurdres, anime screencap, 2girls, safe, duo focus, side-by-side"
+      ]
+    },
+    {
+      "id": 137,
+      "type": "PrimitiveInt",
+      "pos": [
+        5600,
+        2030
+      ],
+      "size": [
+        300,
+        90
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            383
+          ]
+        }
+      ],
+      "title": "Scene 1 of Scenario 2",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        1,
+        "fixed"
+      ]
+    },
+    {
+      "id": 138,
+      "type": "KSampler",
+      "pos": [
+        5100,
+        1630
+      ],
+      "size": [
+        300,
+        370
+      ],
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 373
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 374
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 375
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 376
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": 377
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": 378
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": 379
+        },
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": 380
+        },
+        {
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": 381
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            368
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.20.1",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        1053791213567163,
+        "randomize",
+        20,
+        8,
+        "euler",
+        "simple",
+        1
+      ]
+    },
+    {
+      "id": 139,
+      "type": "Read Image Saver Pipe",
+      "pos": [
+        4600,
+        1530
+      ],
+      "size": [
+        300,
+        480
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 394
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            382,
+            393
+          ]
+        },
+        {
+          "name": "filename",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "path",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "counter",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "modelname",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "positive",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "negative",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "links": [
+            377
+          ]
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "links": [
+            378
+          ]
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "links": [
+            379
+          ]
+        },
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "links": [
+            380
+          ]
+        },
+        {
+          "name": "scheduler_name",
+          "type": "COMBO",
+          "links": [
+            381
+          ]
+        },
+        {
+          "name": "denoise",
+          "type": "FLOAT",
+          "links": null
+        },
+        {
+          "name": "clip_skip",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "additional_hashes",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "custom",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Read Image Saver Pipe"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 140,
+      "type": "Edit Image Saver Pipe",
+      "pos": [
+        6100,
+        1830
+      ],
+      "size": [
+        400,
+        670
+      ],
+      "flags": {},
+      "order": 40,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 382
+        },
+        {
+          "name": "counter",
+          "shape": 7,
+          "type": "INT",
+          "link": 383
+        },
+        {
+          "name": "width",
+          "shape": 7,
+          "type": "INT",
+          "link": 384
+        },
+        {
+          "name": "height",
+          "shape": 7,
+          "type": "INT",
+          "link": 385
+        },
+        {
+          "name": "seed",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "steps",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "cfg",
+          "shape": 7,
+          "type": "FLOAT",
+          "link": null
+        },
+        {
+          "name": "sampler_name",
+          "shape": 7,
+          "type": "COMBO",
+          "link": null
+        },
+        {
+          "name": "scheduler_name",
+          "shape": 7,
+          "type": "COMBO",
+          "link": null
+        },
+        {
+          "name": "denoise",
+          "shape": 7,
+          "type": "FLOAT",
+          "link": null
+        },
+        {
+          "name": "clip_skip",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "positive",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "positive"
+          },
+          "link": 386
+        },
+        {
+          "name": "negative",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "negative"
+          },
+          "link": 387
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            389
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Edit Image Saver Pipe"
+      },
+      "widgets_values": [
+        "[original]_scenario2_%counter<03>",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]",
+        "[original]"
+      ]
+    },
+    {
+      "id": 141,
+      "type": "Image Saver (From Pipe)",
+      "pos": [
+        6599.998775764592,
+        1629.994066423507
+      ],
+      "size": [
+        300,
+        379.8333435058594
+      ],
+      "flags": {},
+      "order": 43,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "link": 389
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 390
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pipe",
+          "type": "IMAGESAVER_PIPE",
+          "links": [
+            372
+          ]
+        },
+        {
+          "name": "hashes",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "a1111_params",
+          "type": "STRING",
+          "links": [
+            371
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-image-saver",
+        "ver": "3e621c64c77631e7d486f8ba484e1de10f965e15",
+        "Node name for S&R": "Image Saver (From Pipe)"
+      },
+      "widgets_values": [
+        true
+      ]
+    }
+  ],
+  "links": [
+    [
+      4,
+      4,
+      0,
+      3,
+      3,
+      "CONDITIONING"
+    ],
+    [
+      5,
+      4,
+      0,
+      3,
+      4,
+      "CONDITIONING"
+    ],
+    [
+      10,
+      3,
+      0,
+      10,
+      0,
+      "BASIC_PIPE"
+    ],
+    [
+      11,
+      10,
+      2,
+      8,
+      0,
+      "CLIP"
+    ],
+    [
+      14,
+      10,
+      3,
+      11,
+      1,
+      "VAE"
+    ],
+    [
+      16,
+      11,
+      0,
+      12,
+      0,
+      "IMAGE"
+    ],
+    [
+      25,
+      10,
+      2,
+      9,
+      0,
+      "CLIP"
+    ],
+    [
+      30,
+      21,
+      0,
+      9,
+      1,
+      "STRING"
+    ],
+    [
+      31,
+      22,
+      0,
+      8,
+      1,
+      "STRING"
+    ],
+    [
+      35,
+      23,
+      0,
+      3,
+      0,
+      "MODEL"
+    ],
+    [
+      36,
+      23,
+      1,
+      3,
+      1,
+      "CLIP"
+    ],
+    [
+      37,
+      23,
+      2,
+      3,
+      2,
+      "VAE"
+    ],
+    [
+      38,
+      23,
+      1,
+      4,
+      0,
+      "CLIP"
+    ],
+    [
+      140,
+      84,
+      0,
+      85,
+      0,
+      "IMAGE"
+    ],
+    [
+      157,
+      10,
+      3,
+      84,
+      1,
+      "VAE"
+    ],
+    [
+      158,
+      93,
+      0,
+      82,
+      1,
+      "STRING"
+    ],
+    [
+      159,
+      10,
+      2,
+      82,
+      0,
+      "CLIP"
+    ],
+    [
+      170,
+      10,
+      1,
+      95,
+      0,
+      "MODEL"
+    ],
+    [
+      171,
+      8,
+      0,
+      95,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      172,
+      9,
+      0,
+      95,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      173,
+      7,
+      0,
+      95,
+      3,
+      "LATENT"
+    ],
+    [
+      179,
+      95,
+      0,
+      11,
+      0,
+      "LATENT"
+    ],
+    [
+      180,
+      10,
+      1,
+      96,
+      0,
+      "MODEL"
+    ],
+    [
+      181,
+      82,
+      0,
+      96,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      182,
+      8,
+      0,
+      96,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      183,
+      81,
+      0,
+      96,
+      3,
+      "LATENT"
+    ],
+    [
+      189,
+      96,
+      0,
+      84,
+      0,
+      "LATENT"
+    ],
+    [
+      283,
+      108,
+      0,
+      109,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      286,
+      109,
+      0,
+      110,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      287,
+      25,
+      0,
+      110,
+      1,
+      "INT"
+    ],
+    [
+      288,
+      12,
+      0,
+      110,
+      2,
+      "INT"
+    ],
+    [
+      289,
+      12,
+      1,
+      110,
+      3,
+      "INT"
+    ],
+    [
+      291,
+      22,
+      0,
+      110,
+      11,
+      "STRING"
+    ],
+    [
+      292,
+      21,
+      0,
+      110,
+      12,
+      "STRING"
+    ],
+    [
+      300,
+      110,
+      0,
+      112,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      301,
+      90,
+      0,
+      112,
+      1,
+      "INT"
+    ],
+    [
+      302,
+      85,
+      0,
+      112,
+      2,
+      "INT"
+    ],
+    [
+      303,
+      85,
+      1,
+      112,
+      3,
+      "INT"
+    ],
+    [
+      304,
+      93,
+      0,
+      112,
+      11,
+      "STRING"
+    ],
+    [
+      305,
+      21,
+      0,
+      112,
+      12,
+      "STRING"
+    ],
+    [
+      336,
+      120,
+      0,
+      108,
+      0,
+      "SIMPLE_SAVER_CONFIG"
+    ],
+    [
+      337,
+      121,
+      0,
+      108,
+      1,
+      "METADATA_CONFIG"
+    ],
+    [
+      338,
+      23,
+      3,
+      121,
+      0,
+      "STRING"
+    ],
+    [
+      339,
+      109,
+      9,
+      95,
+      4,
+      "INT"
+    ],
+    [
+      340,
+      109,
+      10,
+      95,
+      5,
+      "INT"
+    ],
+    [
+      341,
+      109,
+      11,
+      95,
+      6,
+      "FLOAT"
+    ],
+    [
+      342,
+      109,
+      12,
+      95,
+      7,
+      "COMBO"
+    ],
+    [
+      343,
+      109,
+      13,
+      95,
+      8,
+      "COMBO"
+    ],
+    [
+      344,
+      110,
+      0,
+      122,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      345,
+      11,
+      0,
+      122,
+      1,
+      "IMAGE"
+    ],
+    [
+      346,
+      122,
+      0,
+      14,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      347,
+      122,
+      2,
+      13,
+      0,
+      "STRING"
+    ],
+    [
+      348,
+      112,
+      0,
+      123,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      349,
+      84,
+      0,
+      123,
+      1,
+      "IMAGE"
+    ],
+    [
+      350,
+      123,
+      0,
+      87,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      351,
+      123,
+      2,
+      86,
+      0,
+      "STRING"
+    ],
+    [
+      352,
+      109,
+      9,
+      96,
+      4,
+      "INT"
+    ],
+    [
+      354,
+      109,
+      10,
+      96,
+      5,
+      "INT"
+    ],
+    [
+      355,
+      109,
+      11,
+      96,
+      6,
+      "FLOAT"
+    ],
+    [
+      356,
+      109,
+      12,
+      96,
+      7,
+      "COMBO"
+    ],
+    [
+      357,
+      109,
+      13,
+      96,
+      8,
+      "COMBO"
+    ],
+    [
+      360,
+      124,
+      0,
+      110,
+      13,
+      "STRING"
+    ],
+    [
+      362,
+      126,
+      0,
+      112,
+      13,
+      "STRING"
+    ],
+    [
+      364,
+      130,
+      2,
+      128,
+      0,
+      "CLIP"
+    ],
+    [
+      365,
+      136,
+      0,
+      128,
+      1,
+      "STRING"
+    ],
+    [
+      366,
+      130,
+      2,
+      129,
+      0,
+      "CLIP"
+    ],
+    [
+      367,
+      135,
+      0,
+      129,
+      1,
+      "STRING"
+    ],
+    [
+      368,
+      138,
+      0,
+      131,
+      0,
+      "LATENT"
+    ],
+    [
+      369,
+      130,
+      3,
+      131,
+      1,
+      "VAE"
+    ],
+    [
+      370,
+      131,
+      0,
+      132,
+      0,
+      "IMAGE"
+    ],
+    [
+      371,
+      141,
+      2,
+      133,
+      0,
+      "STRING"
+    ],
+    [
+      372,
+      141,
+      0,
+      134,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      373,
+      130,
+      1,
+      138,
+      0,
+      "MODEL"
+    ],
+    [
+      374,
+      128,
+      0,
+      138,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      375,
+      129,
+      0,
+      138,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      376,
+      127,
+      0,
+      138,
+      3,
+      "LATENT"
+    ],
+    [
+      377,
+      139,
+      9,
+      138,
+      4,
+      "INT"
+    ],
+    [
+      378,
+      139,
+      10,
+      138,
+      5,
+      "INT"
+    ],
+    [
+      379,
+      139,
+      11,
+      138,
+      6,
+      "FLOAT"
+    ],
+    [
+      380,
+      139,
+      12,
+      138,
+      7,
+      "COMBO"
+    ],
+    [
+      381,
+      139,
+      13,
+      138,
+      8,
+      "COMBO"
+    ],
+    [
+      382,
+      139,
+      0,
+      140,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      383,
+      137,
+      0,
+      140,
+      1,
+      "INT"
+    ],
+    [
+      384,
+      132,
+      0,
+      140,
+      2,
+      "INT"
+    ],
+    [
+      385,
+      132,
+      1,
+      140,
+      3,
+      "INT"
+    ],
+    [
+      386,
+      136,
+      0,
+      140,
+      11,
+      "STRING"
+    ],
+    [
+      387,
+      135,
+      0,
+      140,
+      12,
+      "STRING"
+    ],
+    [
+      389,
+      140,
+      0,
+      141,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      390,
+      131,
+      0,
+      141,
+      1,
+      "IMAGE"
+    ],
+    [
+      392,
+      10,
+      0,
+      130,
+      0,
+      "BASIC_PIPE"
+    ],
+    [
+      393,
+      139,
+      0,
+      119,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      394,
+      109,
+      0,
+      139,
+      0,
+      "IMAGESAVER_PIPE"
+    ],
+    [
+      396,
+      130,
+      0,
+      118,
+      0,
+      "BASIC_PIPE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 2,
+      "title": "Unpacked Subgraph: SCENARIO 01 (contains 2 scenes)",
+      "bounding": [
+        1490,
+        1156.4,
+        2920,
+        2690
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "Unpacked Subgraph: SCENARIO 02 (contains 1 scene)",
+      "bounding": [
+        4590,
+        1156.4,
+        2920,
+        1453.6
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.29172946949807504,
+      "offset": [
+        855.4818178812666,
+        -465.2669997172866
+      ]
+    },
+    "frontendVersion": "1.42.15"
+  },
+  "version": 0.4
+}
