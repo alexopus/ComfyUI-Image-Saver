@@ -1,3 +1,8 @@
+# v1.23.0
+
+ - Introduce an optional Pipe architecture to streamline metadata management and reduce wire clutter in complex, multi-stage workflows. See examples in the examples directory.
+ - Support zero-padded counter format.
+
 # v1.22.0
 
 - Change `steps` minimum to zero so Civitai skips it.

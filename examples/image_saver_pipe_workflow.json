@@ -605,7 +605,7 @@
         "Node name for S&R": "Checkpoint Loader with Name (Image Saver)"
       },
       "widgets_values": [
-        "hf/sdxl10/models--Laxhar--noobai-XL-1.1/snapshots/814a274af2b8097c0828819d561ec74c7d0c6cea/NoobAI-XL-v1.1.safetensors"
+        "1.5/theAllysMixIII_v10.safetensors"
       ]
     },
     {
