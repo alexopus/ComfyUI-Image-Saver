@@ -32,8 +32,12 @@ def _weighted_sample(rng: random.Random, rows: list, weights: list[float], k: in
     return selected
 
 
+def _normalize(value: str) -> str:
+    return value.strip().lower().replace("_", " ")
+
+
 def _parse_exclude(exclude: str) -> set[str]:
-    return {e.strip().lower() for e in exclude.split(",") if e.strip()}
+    return {_normalize(e) for e in exclude.split(",") if e.strip()}
 
 
 def _sample(rng: random.Random, rows: list[dict], k: int, weight_by_count: bool) -> list[dict]:
@@ -58,6 +62,7 @@ class RandomTagPicker:
                 "weight_by_count":    ("BOOLEAN", {"default": False,                                  "tooltip": "use the count column as sampling weight — tags with higher counts are more likely to be picked"}),
                 "seed":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "random seed — same seed produces the same selection"}),
                 "exclude":            ("STRING",  {"default": "", "multiline": False,                 "tooltip": "comma-separated tags to exclude from the pool before sampling (case-insensitive)"}),
+                "filter_str":         ("STRING",  {"default": "", "multiline": False,                 "tooltip": "only consider tags whose name contains this substring (case-insensitive); leave empty for no filtering"}),
             }
         }
 
@@ -66,10 +71,14 @@ class RandomTagPicker:
     FUNCTION = "pick_random_tags"
     CATEGORY = "utils"
 
-    def pick_random_tags(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, exclude: str) -> tuple[str]:
+    def pick_random_tags(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, exclude: str, filter_str: str) -> tuple[str]:
+        excluded = _parse_exclude(exclude)
+        needle = _normalize(filter_str)
         with open(os.path.expanduser(file_path), newline="", encoding="utf-8") as f:
-            excluded = _parse_exclude(exclude)
-            rows = [row for row in csv.DictReader(f) if row.get("tag", "").strip() and row["tag"].strip().lower() not in excluded]
+            rows = [row for row in csv.DictReader(f)
+                    if row.get("tag", "").strip()
+                    and (not needle or needle in _normalize(row["tag"]))
+                    and _normalize(row["tag"]) not in excluded]
 
         rng = random.Random(seed)
         selected = _sample(rng, rows, count, weight_by_count)
@@ -98,6 +107,7 @@ class RandomCharacterPicker:
                 "include_core_tags":  ("BOOLEAN", {"default": False,                                  "tooltip": "append each character's core descriptive tags (e.g. hair color, eye color) after their trigger"}),
                 "include_copyright":  ("BOOLEAN", {"default": False,                                  "tooltip": "append each character's copyright/series name after their tags"}),
                 "exclude":            ("STRING",  {"default": "", "multiline": False,                 "tooltip": "comma-separated character names to exclude from the pool before sampling (case-insensitive, underscores and spaces are equivalent)"}),
+                "filter_str":         ("STRING",  {"default": "", "multiline": False,                 "tooltip": "only consider characters whose name contains this substring (case-insensitive); leave empty for no filtering"}),
             }
         }
 
@@ -106,10 +116,13 @@ class RandomCharacterPicker:
     FUNCTION = "pick_random_characters"
     CATEGORY = "utils"
 
-    def pick_random_characters(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, include_core_tags: bool, include_copyright: bool, exclude: str) -> tuple[str]:
+    def pick_random_characters(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, include_core_tags: bool, include_copyright: bool, exclude: str, filter_str: str) -> tuple[str]:
         excluded = _parse_exclude(exclude)
+        needle = _normalize(filter_str)
         with open(os.path.expanduser(file_path), newline="", encoding="utf-8") as f:
-            rows = [row for row in csv.DictReader(f) if row.get("character", "").strip().lower().replace("_", " ") not in excluded]
+            rows = [row for row in csv.DictReader(f)
+                    if (not needle or needle in _normalize(row.get("character", "")))
+                    and _normalize(row.get("character", "")) not in excluded]
 
         rng = random.Random(seed)
         selected = _sample(rng, rows, count, weight_by_count)
@@ -145,6 +158,7 @@ class RandomArtistPicker:
                 "seed":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "random seed — same seed produces the same selection"}),
                 "prefix":             ("STRING",  {"default": "", "multiline": False,                 "tooltip": "string prepended to each artist trigger, e.g. 'artist:' or '@'"}),
                 "exclude":            ("STRING",  {"default": "", "multiline": False,                 "tooltip": "comma-separated artist names to exclude from the pool before sampling (case-insensitive, underscores and spaces are equivalent)"}),
+                "filter_str":         ("STRING",  {"default": "", "multiline": False,                 "tooltip": "only consider artists whose name contains this substring (case-insensitive); leave empty for no filtering"}),
             }
         }
 
@@ -153,10 +167,13 @@ class RandomArtistPicker:
     FUNCTION = "pick_random_artists"
     CATEGORY = "utils"
 
-    def pick_random_artists(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, prefix: str, exclude: str) -> tuple[str]:
+    def pick_random_artists(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, prefix: str, exclude: str, filter_str: str) -> tuple[str]:
         excluded = _parse_exclude(exclude)
+        needle = _normalize(filter_str)
         with open(os.path.expanduser(file_path), newline="", encoding="utf-8") as f:
-            rows = [row for row in csv.DictReader(f) if row.get("artist", "").strip().lower().replace("_", " ") not in excluded]
+            rows = [row for row in csv.DictReader(f)
+                    if (not needle or needle in _normalize(row.get("artist", "")))
+                    and _normalize(row.get("artist", "")) not in excluded]
 
         rng = random.Random(seed)
         selected = _sample(rng, rows, count, weight_by_count)
