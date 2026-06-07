@@ -115,6 +115,7 @@ class RandomArtistPicker:
                 "escape_parens": ("BOOLEAN", {"default": True}),
                 "trailing_comma": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                "prefix": ("STRING", {"default": "", "multiline": False}),
             }
         }
 
@@ -123,14 +124,14 @@ class RandomArtistPicker:
     FUNCTION = "pick_random_artists"
     CATEGORY = "utils"
 
-    def pick_random_artists(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, seed: int) -> tuple[str]:
+    def pick_random_artists(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, seed: int, prefix: str) -> tuple[str]:
         with open(os.path.expanduser(file_path), newline="", encoding="utf-8") as f:
             rows = list(csv.DictReader(f))
 
         rng = random.Random(seed)
         selected = rng.sample(rows, min(count, len(rows)))
 
-        triggers = [_process_tag(row.get("trigger", ""), replace_underscore, escape_parens) for row in selected if row.get("trigger", "").strip()]
+        triggers = [prefix + _process_tag(row.get("trigger", ""), replace_underscore, escape_parens) for row in selected if row.get("trigger", "").strip()]
         result = delimiter.join(triggers)
         if trailing_comma:
             result += ","
