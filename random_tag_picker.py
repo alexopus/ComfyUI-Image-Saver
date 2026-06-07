@@ -16,8 +16,30 @@ def _split_csv_field(value: str, replace_underscore: bool, escape_parens: bool =
     return [_process_tag(t, replace_underscore, escape_parens) for t in value.split(",") if t.strip()]
 
 
+def _get_weights(rows: list[dict]) -> list[float]:
+    return [max(float(row.get("count", 1) or 1), 1.0) for row in rows]
+
+
+def _weighted_sample(rng: random.Random, rows: list, weights: list[float], k: int) -> list:
+    rows, weights = list(rows), list(weights)
+    selected = []
+    for _ in range(min(k, len(rows))):
+        [chosen] = rng.choices(rows, weights=weights, k=1)
+        idx = rows.index(chosen)
+        selected.append(chosen)
+        rows.pop(idx)
+        weights.pop(idx)
+    return selected
+
+
+def _sample(rng: random.Random, rows: list[dict], k: int, weight_by_count: bool) -> list[dict]:
+    if weight_by_count:
+        return _weighted_sample(rng, rows, _get_weights(rows), k)
+    return rng.sample(rows, min(k, len(rows)))
+
+
 class RandomTagPicker:
-    """Pick N random tags from a CSV file (first column) and join them with a delimiter."""
+    """Pick N random tags from a CSV file (tag column) and join them with a delimiter."""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -29,6 +51,7 @@ class RandomTagPicker:
                 "replace_underscore": ("BOOLEAN", {"default": False}),
                 "escape_parens": ("BOOLEAN", {"default": True}),
                 "trailing_comma": ("BOOLEAN", {"default": False}),
+                "weight_by_count": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
@@ -38,18 +61,13 @@ class RandomTagPicker:
     FUNCTION = "pick_random_tags"
     CATEGORY = "utils"
 
-    def pick_random_tags(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, seed: int) -> tuple[str]:
+    def pick_random_tags(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int) -> tuple[str]:
         with open(os.path.expanduser(file_path), newline="", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            rows = list(reader)
-            if rows and rows[0][0].strip().lower() == "tag":
-                rows = rows[1:]
+            rows = [row for row in csv.DictReader(f) if row.get("tag", "").strip()]
 
-        tags = [row[0] for row in rows if row and row[0].strip()]
-        sample_size = min(count, len(tags))
         rng = random.Random(seed)
-        selected = rng.sample(tags, sample_size)
-        processed = [_process_tag(t, replace_underscore, escape_parens) for t in selected]
+        selected = _sample(rng, rows, count, weight_by_count)
+        processed = [_process_tag(row["tag"], replace_underscore, escape_parens) for row in selected]
         result = delimiter.join(processed)
         if trailing_comma:
             result += ","
@@ -69,6 +87,7 @@ class RandomCharacterPicker:
                 "replace_underscore": ("BOOLEAN", {"default": True}),
                 "escape_parens": ("BOOLEAN", {"default": True}),
                 "trailing_comma": ("BOOLEAN", {"default": False}),
+                "weight_by_count": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
                 "include_core_tags": ("BOOLEAN", {"default": False}),
                 "include_copyright": ("BOOLEAN", {"default": False}),
@@ -80,12 +99,12 @@ class RandomCharacterPicker:
     FUNCTION = "pick_random_characters"
     CATEGORY = "utils"
 
-    def pick_random_characters(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, seed: int, include_core_tags: bool, include_copyright: bool) -> tuple[str]:
+    def pick_random_characters(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, include_core_tags: bool, include_copyright: bool) -> tuple[str]:
         with open(os.path.expanduser(file_path), newline="", encoding="utf-8") as f:
             rows = list(csv.DictReader(f))
 
         rng = random.Random(seed)
-        selected = rng.sample(rows, min(count, len(rows)))
+        selected = _sample(rng, rows, count, weight_by_count)
 
         parts: list[str] = []
         for row in selected:
@@ -114,6 +133,7 @@ class RandomArtistPicker:
                 "replace_underscore": ("BOOLEAN", {"default": True}),
                 "escape_parens": ("BOOLEAN", {"default": True}),
                 "trailing_comma": ("BOOLEAN", {"default": False}),
+                "weight_by_count": ("BOOLEAN", {"default": False}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
                 "prefix": ("STRING", {"default": "", "multiline": False}),
             }
@@ -124,12 +144,12 @@ class RandomArtistPicker:
     FUNCTION = "pick_random_artists"
     CATEGORY = "utils"
 
-    def pick_random_artists(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, seed: int, prefix: str) -> tuple[str]:
+    def pick_random_artists(self, file_path: str, count: int, delimiter: str, replace_underscore: bool, escape_parens: bool, trailing_comma: bool, weight_by_count: bool, seed: int, prefix: str) -> tuple[str]:
         with open(os.path.expanduser(file_path), newline="", encoding="utf-8") as f:
             rows = list(csv.DictReader(f))
 
         rng = random.Random(seed)
-        selected = rng.sample(rows, min(count, len(rows)))
+        selected = _sample(rng, rows, count, weight_by_count)
 
         triggers = [prefix + _process_tag(row.get("trigger", ""), replace_underscore, escape_parens) for row in selected if row.get("trigger", "").strip()]
         result = delimiter.join(triggers)
