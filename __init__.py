@@ -6,7 +6,7 @@ from .nodes_literals import SeedGenerator, StringLiteral, SizeLiteral, IntLitera
 from .nodes_loaders import CheckpointLoaderWithName, UNETLoaderWithName
 from .nodes_selectors import SamplerSelector, SchedulerSelector, SchedulerSelectorInspire, SchedulerSelectorEfficiency, InputParameters, AnyToString, WorkflowInputValue
 from .civitai_nodes import CivitaiHashFetcher
-from .random_tag_picker import RandomTagPicker
+from .random_tag_picker import RandomTagPicker, RandomCharacterPicker, RandomArtistPicker
 
 NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Checkpoint Loader with Name (Image Saver)": CheckpointLoaderWithName,
@@ -37,6 +37,8 @@ NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "RandomShapeGenerator": RandomShapeGenerator,
     "Civitai Hash Fetcher (Image Saver)": CivitaiHashFetcher,
     "Random Tag Picker (Image Saver)": RandomTagPicker,
+    "Random Character Picker (Image Saver)": RandomCharacterPicker,
+    "Random Artist Picker (Image Saver)": RandomArtistPicker,
 }
 
 WEB_DIRECTORY = "js"
