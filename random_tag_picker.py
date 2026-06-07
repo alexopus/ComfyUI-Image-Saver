@@ -49,15 +49,15 @@ class RandomTagPicker:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "file_path": ("STRING", {"default": "", "multiline": False}),
-                "count": ("INT", {"default": 5, "min": 1, "max": 1000, "step": 1}),
-                "delimiter": ("STRING", {"default": ", ", "multiline": False}),
-                "replace_underscore": ("BOOLEAN", {"default": False}),
-                "escape_parens": ("BOOLEAN", {"default": True}),
-                "trailing_comma": ("BOOLEAN", {"default": False}),
-                "weight_by_count": ("BOOLEAN", {"default": False}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-                "exclude": ("STRING", {"default": "", "multiline": False}),
+                "file_path":          ("STRING",  {"default": "", "multiline": False,                 "tooltip": "path to a CSV file with a 'tag' column"}),
+                "count":              ("INT",     {"default": 5, "min": 1, "max": 1000, "step": 1,    "tooltip": "number of tags to pick"}),
+                "delimiter":          ("STRING",  {"default": ", ", "multiline": False,               "tooltip": "string used to join picked tags"}),
+                "replace_underscore": ("BOOLEAN", {"default": False,                                  "tooltip": "replace underscores with spaces in output"}),
+                "escape_parens":      ("BOOLEAN", {"default": True,                                   "tooltip": "escape ( and ) as \\( and \\) to prevent ComfyUI from interpreting them as attention weights"}),
+                "trailing_comma":     ("BOOLEAN", {"default": False,                                  "tooltip": "append a trailing comma to the result"}),
+                "weight_by_count":    ("BOOLEAN", {"default": False,                                  "tooltip": "use the count column as sampling weight — tags with higher counts are more likely to be picked"}),
+                "seed":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "random seed — same seed produces the same selection"}),
+                "exclude":            ("STRING",  {"default": "", "multiline": False,                 "tooltip": "comma-separated tags to exclude from the pool before sampling (case-insensitive)"}),
             }
         }
 
@@ -87,17 +87,17 @@ class RandomCharacterPicker:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "file_path": ("STRING", {"default": "", "multiline": False}),
-                "count": ("INT", {"default": 1, "min": 1, "max": 1000, "step": 1}),
-                "delimiter": ("STRING", {"default": ", ", "multiline": False}),
-                "replace_underscore": ("BOOLEAN", {"default": True}),
-                "escape_parens": ("BOOLEAN", {"default": True}),
-                "trailing_comma": ("BOOLEAN", {"default": False}),
-                "weight_by_count": ("BOOLEAN", {"default": False}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-                "include_core_tags": ("BOOLEAN", {"default": False}),
-                "include_copyright": ("BOOLEAN", {"default": False}),
-                "exclude": ("STRING", {"default": "", "multiline": False}),
+                "file_path":          ("STRING",  {"default": "", "multiline": False,                 "tooltip": "path to a CSV file with character, trigger, core_tags, copyright, and count columns"}),
+                "count":              ("INT",     {"default": 1, "min": 1, "max": 1000, "step": 1,    "tooltip": "number of characters to pick"}),
+                "delimiter":          ("STRING",  {"default": ", ", "multiline": False,               "tooltip": "string used to join all output tags"}),
+                "replace_underscore": ("BOOLEAN", {"default": True,                                   "tooltip": "replace underscores with spaces in output"}),
+                "escape_parens":      ("BOOLEAN", {"default": True,                                   "tooltip": "escape ( and ) as \\( and \\) to prevent ComfyUI from interpreting them as attention weights"}),
+                "trailing_comma":     ("BOOLEAN", {"default": False,                                  "tooltip": "append a trailing comma to the result"}),
+                "weight_by_count":    ("BOOLEAN", {"default": False,                                  "tooltip": "use the count column as sampling weight — characters with more posts are more likely to be picked"}),
+                "seed":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "random seed — same seed produces the same selection"}),
+                "include_core_tags":  ("BOOLEAN", {"default": False,                                  "tooltip": "append each character's core descriptive tags (e.g. hair color, eye color) after their trigger"}),
+                "include_copyright":  ("BOOLEAN", {"default": False,                                  "tooltip": "append each character's copyright/series name after their tags"}),
+                "exclude":            ("STRING",  {"default": "", "multiline": False,                 "tooltip": "comma-separated character names to exclude from the pool before sampling (case-insensitive, underscores and spaces are equivalent)"}),
             }
         }
 
@@ -135,16 +135,16 @@ class RandomArtistPicker:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "file_path": ("STRING", {"default": "", "multiline": False}),
-                "count": ("INT", {"default": 1, "min": 1, "max": 1000, "step": 1}),
-                "delimiter": ("STRING", {"default": ", ", "multiline": False}),
-                "replace_underscore": ("BOOLEAN", {"default": True}),
-                "escape_parens": ("BOOLEAN", {"default": True}),
-                "trailing_comma": ("BOOLEAN", {"default": False}),
-                "weight_by_count": ("BOOLEAN", {"default": False}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-                "prefix": ("STRING", {"default": "", "multiline": False}),
-                "exclude": ("STRING", {"default": "", "multiline": False}),
+                "file_path":          ("STRING",  {"default": "", "multiline": False,                 "tooltip": "path to a CSV file with artist, trigger, count, and url columns"}),
+                "count":              ("INT",     {"default": 1, "min": 1, "max": 1000, "step": 1,    "tooltip": "number of artists to pick"}),
+                "delimiter":          ("STRING",  {"default": ", ", "multiline": False,               "tooltip": "string used to join picked artist triggers"}),
+                "replace_underscore": ("BOOLEAN", {"default": True,                                   "tooltip": "replace underscores with spaces in output"}),
+                "escape_parens":      ("BOOLEAN", {"default": True,                                   "tooltip": "escape ( and ) as \\( and \\) to prevent ComfyUI from interpreting them as attention weights"}),
+                "trailing_comma":     ("BOOLEAN", {"default": False,                                  "tooltip": "append a trailing comma to the result"}),
+                "weight_by_count":    ("BOOLEAN", {"default": False,                                  "tooltip": "use the count column as sampling weight — artists with more posts are more likely to be picked"}),
+                "seed":               ("INT",     {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "random seed — same seed produces the same selection"}),
+                "prefix":             ("STRING",  {"default": "", "multiline": False,                 "tooltip": "string prepended to each artist trigger, e.g. 'artist:' or '@'"}),
+                "exclude":            ("STRING",  {"default": "", "multiline": False,                 "tooltip": "comma-separated artist names to exclude from the pool before sampling (case-insensitive, underscores and spaces are equivalent)"}),
             }
         }
 
