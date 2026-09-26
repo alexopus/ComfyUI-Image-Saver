@@ -45,9 +45,9 @@ beautiful scenery nature glass bottle landscape, purple galaxy bottle, low key
 Negative prompt: (worst quality, low quality, bad quality:1.3), embedding:ng_deepnegative_v1_75t, embedding:EasyNegative, embedding:badhandv4
 Steps: 30, Sampler: DPM++ 2M SDE, CFG scale: 7.0, Seed: 42, Size: 512x512, Model: , Version: ComfyUI,
 Civitai resources: [
-    {"modelName":"Deep Negative V1.x","versionName":"V1 75T","weight":1.0,"air":"urn:air:sd1:embedding:civitai:4629@5637"},
-    {"modelName":"EasyNegative","versionName":"EasyNegative_pt","weight":1.0,"air":"urn:air:sd1:embedding:civitai:7808@9536"},
-    {"modelName":"badhandv4","versionName":"badhandv4","weight":1.0,"air":"urn:air:other:embedding:civitai:16993@20068"}]
+    {"modelName":"Deep Negative V1.x","modelVersionName":"V1 75T","modelVersionId":5637,"type":"textualinversion","weight":1.0,"air":"urn:air:sd1:embedding:civitai:4629@5637"},
+    {"modelName":"EasyNegative","modelVersionName":"EasyNegative_pt","modelVersionId":9536,"type":"textualinversion","weight":1.0,"air":"urn:air:sd1:embedding:civitai:7808@9536"},
+    {"modelName":"badhandv4","modelVersionName":"badhandv4","modelVersionId":20068,"type":"textualinversion","weight":1.0,"air":"urn:air:other:embedding:civitai:16993@20068"}]
 """
 
     prompt = {"prompt": "test prompt", "negative_prompt": "test negative prompt"}

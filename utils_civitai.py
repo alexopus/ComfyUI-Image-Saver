@@ -78,21 +78,27 @@ def get_civitai_metadata(
             if civitai_info is not None:
                 resource_data: Dict[str, str | float] = {}
 
-                # Optional data - modelName, versionName
+                # Optional data - modelName, modelVersionName (display only, ignored by Civitai)
                 resource_data["modelName"] = civitai_info["model"]["name"]
-                resource_data["versionName"] = civitai_info["name"]
+                resource_data["modelVersionName"] = civitai_info["name"]
+
+                # Required data - modelVersionId (unique resource identifier)
+                # Civitai also accepts an AIR alone, but other tools (e.g. Stability Matrix) only read modelVersionId
+                resource_data["modelVersionId"] = civitai_info["id"]
+
+                # Resource type as named by Civitai, lowercased (checkpoint, lora, locon, textualinversion, ...)
+                resource_type = civitai_info["model"].get("type")
+                if resource_type:
+                    resource_data["type"] = resource_type.lower()
 
                 # Weight/strength (for LoRA or embedding)
                 if weight is not None:
                     resource_data["weight"] = weight
 
-                # Required data - AIR or modelVersionId (unique resource identifier)
+                # AIR - preferred identifier for Civitai, overrides modelVersionId and type there
                 # https://github.com/civitai/civitai/wiki/AIR-%E2%80%90-Uniform-Resource-Names-for-AI
                 if "air" in civitai_info:
                     resource_data["air"] = civitai_info["air"]
-                else:
-                    # Fallback if AIR is not found
-                    resource_data["modelVersionId"] = civitai_info["id"]
                 civitai_resources.append(resource_data)
             else:
                 # Fallback in case the data wasn't loaded to add to the "Hashes" section

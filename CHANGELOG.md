@@ -1,3 +1,7 @@
+# v1.26.1
+
+- "Civitai resources" metadata: always include `modelVersionId`, add the resource `type` (as named by Civitai), and rename `versionName` to `modelVersionName`, so tools other than Civitai (e.g. Stability Matrix) can recognize the model and LoRAs (#140).
+
 # v1.26.0
 
 - Add "Time String Generator" node: outputs the current timestamp as a string, re-running every queue execution (via `IS_CHANGED`) so it can feed a shared, always-fresh value into multiple Saver nodes' `label` input.
