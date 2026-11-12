@@ -36,7 +36,7 @@ class CivitaiHashFetcher:
         # Check if inputs are the same as last time
         if (self.last_username is not None and self.last_model_name is not None and self.last_version is not None and 
             username == self.last_username and model_name == self.last_model_name and version == self.last_version):
-            return self.last_hash
+            return (self.last_hash,)
 
         base_url = "https://civitai.com/api/v1/models"
         params = {
