@@ -2,7 +2,7 @@
 
 # Save image with generation metadata in ComfyUI
 
-Allows you to save images with their **generation metadata**. Includes the metadata compatible with *Civitai* geninfo auto-detection. Works with PNG, JPG and WEBP. For PNG stores both the full workflow in comfy format, plus a1111-style parameters. For JPEG/WEBP only the a1111-style parameters are stored. **Includes hashes of Models, LoRAs and embeddings for proper resource linking** on civitai.
+Allows you to save images with their **generation metadata**. Includes the metadata compatible with *Civitai* geninfo auto-detection. Works with PNG, JPG, WEBP and AVIF. All formats store the a1111-style parameters and can embed the full workflow in comfy format (stable for PNG; for JPEG only if it fits the 64 KB EXIF limit). **Includes hashes of Models, LoRAs and embeddings for proper resource linking** on civitai.
 
 You can find example workflows in the [`examples`](./examples) directory.
 <img width="1288" height="1039" alt="workflow" src="https://github.com/user-attachments/assets/dbbb9f67-afa3-48a2-8cd3-e4116393f8e0" />
@@ -26,6 +26,22 @@ If you don't have *ComfyUI-Manager*, then:
 - `cd ComfyUI-Image-Saver`
 - `pip install -r requirements.txt`
 - Start/restart ComfyUI
+
+### AVIF support
+Saving AVIF needs Pillow 11.2 or newer, built with AVIF support (the standard pip packages are). To check, run this with the Python that ComfyUI uses:
+
+```
+python -c "import PIL; from PIL import features; print(PIL.__version__, features.check('avif'))"
+```
+
+If it prints `False`, upgrade Pillow in that same environment, then restart ComfyUI:
+
+| Setup | Command |
+|---|---|
+| Windows portable | `python_embeded\python.exe -m pip install -U "pillow>=11.2"` (from the ComfyUI_windows_portable folder) |
+| venv / manual install | activate the venv, then `python -m pip install -U "pillow>=11.2"` |
+
+Linux distribution packages of Pillow can lack AVIF support even when they are new enough; use a venv with Pillow from pip in that case. All other formats work with any Pillow version.
 
 ## Customization of file/folder names
 
