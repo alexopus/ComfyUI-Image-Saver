@@ -1,6 +1,7 @@
 from typing import Any, cast
 from PIL.PngImagePlugin import PngInfo
 from PIL.Image import Image
+from PIL import features
 
 import json
 import piexif
@@ -20,8 +21,12 @@ def save_image(image: Image, filepath: str, extension: str, quality_jpeg_or_webp
                 metadata.add_text("prompt", json.dumps(prompt, separators=(',', ':')))
 
         image.save(filepath, pnginfo=metadata, optimize=optimize_png)
-    else: # webp & jpeg
-        image.save(filepath, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
+    else: # webp, jpeg & avif
+        if extension == 'avif' and not features.check('avif'):
+            raise RuntimeError("ComfyUI-Image-Saver: AVIF is not supported by the installed Pillow. Upgrade Pillow (>= 11.2, built with libavif) to save AVIF files.")
+
+        if extension != 'avif':
+            image.save(filepath, optimize=True, quality=quality_jpeg_or_webp, lossless=lossless_webp)
 
         # Native example adding workflow to exif:
         # https://github.com/comfyanonymous/ComfyUI/blob/095610717000bffd477a7e72988d1fb2299afacb/comfy_extras/nodes_images.py#L113
@@ -44,6 +49,12 @@ def save_image(image: Image, filepath: str, extension: str, quality_jpeg_or_webp
             return cast(bytes, piexif.dump(exif_dict))
 
         exif_bytes = get_exif_bytes()
+
+        # piexif.insert only handles JPEG/WebP containers; for AVIF, Pillow (libavif) writes the EXIF item itself.
+        # Same Make/Model layout as ComfyUI's native AVIF saver, so the frontend can load the workflow on drop.
+        if extension == 'avif':
+            image.save(filepath, format='AVIF', quality=quality_jpeg_or_webp, exif=exif_bytes)
+            return
 
         # JPEG format limits the EXIF bytes to a maximum of 65535 bytes
         if extension == "jpg" or extension == "jpeg":

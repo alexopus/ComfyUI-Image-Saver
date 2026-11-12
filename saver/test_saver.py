@@ -4,7 +4,7 @@ import json
 import tempfile
 import shutil
 import pytest
-from PIL import Image
+from PIL import Image, features
 import piexif
 import piexif.helper
 from .saver import save_image
@@ -146,16 +146,23 @@ def test_save_jpeg(setup_test_env):
     finally:
         saved_image.close()
 
+requires_avif = pytest.mark.skipif(not features.check("avif"), reason="Pillow built without AVIF support")
+
 @pytest.mark.parametrize(
-    "lossless,quality",
-    [(True, 100), (False, 90)],
-    ids=["lossless-max", "lossy-90"]
+    "extension,lossless,quality",
+    [
+        ("webp", True, 100),
+        ("webp", False, 90),
+        pytest.param("avif", False, 100, marks=requires_avif),
+        pytest.param("avif", False, 80, marks=requires_avif),
+    ],
+    ids=["webp-lossless-max", "webp-lossy-90", "avif-100", "avif-80"]
 )
-def test_save_webp(setup_test_env, lossless, quality):
-    """Test that metadata is correctly saved and can be retrieved for lossless WebP format."""
+def test_save_webp_avif(setup_test_env, extension, lossless, quality):
+    """Test that metadata is correctly saved and can be retrieved for WebP and AVIF formats."""
     temp_dir, test_image, a111_params, prompt, extra_pnginfo, workflow_type, embed_workflow = setup_test_env
-    iamge_path = os.path.join(temp_dir, f"test_lossless_{workflow_type}.webp")
-    save_image(test_image, iamge_path, "webp", quality, lossless, False, a111_params, prompt, extra_pnginfo, embed_workflow)
+    iamge_path = os.path.join(temp_dir, f"test_{workflow_type}.{extension}")
+    save_image(test_image, iamge_path, extension, quality, lossless, False, a111_params, prompt, extra_pnginfo, embed_workflow)
     saved_image = Image.open(iamge_path)
     try:
         # Verify a111_params is correctly stored in EXIF UserComment
