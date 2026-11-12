@@ -126,6 +126,13 @@ def make_civitai_resource(civitai_info: dict[str, Any] | None, weight: float | N
         resource_data["air"] = civitai_info["air"]
     return resource_data
 
+def safe_cache_filename(filename: Any) -> str | None:
+    """Reduce a filename from Civitai (or manual-hashes.json) to a bare name, so it can't point outside the cache folder."""
+    if not isinstance(filename, str):
+        return None
+    name = Path(filename.replace("\\", "/")).name
+    return name if name not in ("", ".", "..") else None
+
 def get_civitai_info(path: Path | str | None, model_hash: str) -> dict[str, Any] | None:
     try:
         if not model_hash:
@@ -136,7 +143,8 @@ def get_civitai_info(path: Path | str | None, model_hash: str) -> dict[str, Any]
         if path is None:
             manual_list = get_manual_list()
             manual_data = manual_list.get(model_hash.upper(), None)
-            if manual_data is None:
+            filename = safe_cache_filename(manual_data.get("filename")) if isinstance(manual_data, dict) else None
+            if filename is None:
                 content = download_model_info(path, model_hash)
                 if content is None:
                     return None
@@ -146,7 +154,10 @@ def get_civitai_info(path: Path | str | None, model_hash: str) -> dict[str, Any]
                 if file is None:
                     print(f"ComfyUI-Image-Saver: ({model_hash}) No file hash matched in metadata (should be impossible)")
                     return content
-                filename = file["name"]
+                filename = safe_cache_filename(file.get("name"))
+                if filename is None:
+                    print(f"ComfyUI-Image-Saver: ({model_hash}) Invalid file name in metadata, not caching it")
+                    return content
 
                 # Cache data in a local file, removing the need for repeat http requests
                 for hash_value in file["hashes"].values():
@@ -156,7 +167,7 @@ def get_civitai_info(path: Path | str | None, model_hash: str) -> dict[str, Any]
                 save_civitai_info_file(content, get_manual_folder() / filename)
                 return content
             else:
-                path = get_manual_folder() / manual_data["filename"]
+                path = get_manual_folder() / filename
 
         info_path = Path(path).with_suffix(".civitai.info").absolute()
         try:
