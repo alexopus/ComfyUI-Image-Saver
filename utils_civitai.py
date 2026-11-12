@@ -1,4 +1,5 @@
 import json
+import time
 from pathlib import Path
 from typing import List, Dict, Tuple, Any
 
@@ -74,33 +75,15 @@ def get_civitai_metadata(
 
     if download_civitai_data:
         for name, (filepath, weight, hash) in ({ modelname: ( ckpt_path, None, modelhash ) } | loras | embeddings | manual_entries).items():
-            civitai_info = get_civitai_info(filepath, hash)
-            if civitai_info is not None:
-                resource_data: Dict[str, str | float] = {}
-
-                # Optional data - modelName, modelVersionName (display only, ignored by Civitai)
-                resource_data["modelName"] = civitai_info["model"]["name"]
-                resource_data["modelVersionName"] = civitai_info["name"]
-
-                # Required data - modelVersionId (unique resource identifier)
-                # Civitai also accepts an AIR alone, but other tools (e.g. Stability Matrix) only read modelVersionId
-                resource_data["modelVersionId"] = civitai_info["id"]
-
-                # Resource type as named by Civitai, lowercased (checkpoint, lora, locon, textualinversion, ...)
-                resource_type = civitai_info["model"].get("type")
-                if resource_type:
-                    resource_data["type"] = resource_type.lower()
-
-                # Weight/strength (for LoRA or embedding)
-                if weight is not None:
-                    resource_data["weight"] = weight
-
-                # AIR - preferred identifier for Civitai, overrides modelVersionId and type there
-                # https://github.com/civitai/civitai/wiki/AIR-%E2%80%90-Uniform-Resource-Names-for-AI
-                if "air" in civitai_info:
-                    resource_data["air"] = civitai_info["air"]
+            # Never let Civitai problems (network, unexpected cache content) abort saving the image
+            try:
+                resource_data = make_civitai_resource(get_civitai_info(filepath, hash), weight)
+            except Exception as e:
+                print(f"ComfyUI-Image-Saver: Ignoring Civitai data for '{name}' ({hash}): {type(e).__name__}: {e}")
+                resource_data = None
+            if resource_data is not None:
                 civitai_resources.append(resource_data)
-            else:
+            elif hash:
                 # Fallback in case the data wasn't loaded to add to the "Hashes" section
                 if name == modelname:
                     add_model_hash = hash.upper()
@@ -112,6 +95,36 @@ def get_civitai_metadata(
         add_model_hash = modelhash
 
     return civitai_resources, hashes, add_model_hash
+
+def make_civitai_resource(civitai_info: dict[str, Any] | None, weight: float | None) -> Dict[str, str | float] | None:
+    """Build a "Civitai resources" entry, or None if the info is missing or not in the expected format
+    (e.g. a .civitai.info file written by another tool)."""
+    if not isinstance(civitai_info, dict) or not isinstance(civitai_info.get("model"), dict) or "id" not in civitai_info:
+        return None
+    resource_data: Dict[str, str | float] = {}
+
+    # Optional data - modelName, modelVersionName (display only, ignored by Civitai)
+    resource_data["modelName"] = civitai_info["model"].get("name", "")
+    resource_data["modelVersionName"] = civitai_info.get("name", "")
+
+    # Required data - modelVersionId (unique resource identifier)
+    # Civitai also accepts an AIR alone, but other tools (e.g. Stability Matrix) only read modelVersionId
+    resource_data["modelVersionId"] = civitai_info["id"]
+
+    # Resource type as named by Civitai, lowercased (checkpoint, lora, locon, textualinversion, ...)
+    resource_type = civitai_info["model"].get("type")
+    if isinstance(resource_type, str) and resource_type:
+        resource_data["type"] = resource_type.lower()
+
+    # Weight/strength (for LoRA or embedding)
+    if weight is not None:
+        resource_data["weight"] = weight
+
+    # AIR - preferred identifier for Civitai, overrides modelVersionId and type there
+    # https://github.com/civitai/civitai/wiki/AIR-%E2%80%90-Uniform-Resource-Names-for-AI
+    if "air" in civitai_info:
+        resource_data["air"] = civitai_info["air"]
+    return resource_data
 
 def get_civitai_info(path: Path | str | None, model_hash: str) -> dict[str, Any] | None:
     try:
@@ -146,21 +159,36 @@ def get_civitai_info(path: Path | str | None, model_hash: str) -> dict[str, Any]
                 path = get_manual_folder() / manual_data["filename"]
 
         info_path = Path(path).with_suffix(".civitai.info").absolute()
-        with open(info_path, 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
+        try:
+            with open(info_path, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            pass
+        # Inside the outer try, so download errors are logged instead of aborting the save
         return download_model_info(path, model_hash)
     except Exception as e:
-        print(f"ComfyUI-Image-Saver: Civitai info error: {e}")
+        print(f"ComfyUI-Image-Saver: Civitai info error: {type(e).__name__}: {e}")
     return None
+
+# Hashes whose lookup failed recently (hash -> time of failure). Avoids repeating a failing request on every
+# saved image, e.g. for models that aren't on Civitai or while Civitai is down. Kept for this ComfyUI session only.
+_failed_lookups: dict[str, float] = {}
+RETRY_FAILED_LOOKUP_AFTER = 3600  # seconds
 
 def download_model_info(path: Path | str | None, model_hash: str) -> dict[str, object] | None:
     model_label = model_hash if path is None else f"{Path(path).stem}:{model_hash}"
+    failed_at = _failed_lookups.get(model_hash.upper())
+    if failed_at is not None and time.monotonic() - failed_at < RETRY_FAILED_LOOKUP_AFTER:
+        return None
+
     print(f"ComfyUI-Image-Saver: Downloading model info for '{model_label}'.")
 
     content = http_get_json(f'https://civitai.com/api/v1/model-versions/by-hash/{model_hash.upper()}')
-    if content is None:
+    if not isinstance(content, dict) or "modelId" not in content or not isinstance(content.get("model"), dict):
+        _failed_lookups[model_hash.upper()] = time.monotonic()
+        print(f"ComfyUI-Image-Saver: No Civitai model info for '{model_label}', not retrying for {RETRY_FAILED_LOOKUP_AFTER // 60} minutes.")
         return None
+    _failed_lookups.pop(model_hash.upper(), None)
     model_id = content["modelId"]
     parent_model = http_get_json(f'https://civitai.com/api/v1/models/{model_id}')
     if not parent_model:

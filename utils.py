@@ -147,14 +147,17 @@ def get_file_path_match(folder_name: str, file_name: str, supported_extensions: 
 
     return str(matching_file_path) if matching_file_path is not None else None
 
+# (connect, read) seconds. Image saving waits on these requests, so keep them short.
+HTTP_TIMEOUT = (5, 15)
+
 def http_get_json(url: str) ->  dict[str, Any] | None:
     try:
-        response = requests.get(url, timeout=300)
+        response = requests.get(url, timeout=HTTP_TIMEOUT)
     except requests.exceptions.Timeout:
         print(f"ComfyUI-Image-Saver: HTTP GET Request timed out for {url}")
         return None
-    except requests.exceptions.ConnectionError as e:
-        print(f"ComfyUI-Image-Saver: Warning - Network connection error for {url}: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"ComfyUI-Image-Saver: Warning - Network error for {url}: {e}")
         return None
 
     if not response.ok:
