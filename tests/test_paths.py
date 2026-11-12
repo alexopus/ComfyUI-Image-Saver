@@ -5,6 +5,8 @@ Regression tests for the output-path/filename containment fix in nodes.py
 See conftest.py for how nodes.py/utils.py get imported without a full ComfyUI
 install.
 """
+import os
+
 import numpy as np
 import pytest
 
@@ -85,6 +87,18 @@ def test_rejects_traversal_via_filename(output_dir):
     with pytest.raises(ValueError):
         call_save_images(path="safe", filename="../../../escape")
     assert list(output_dir.rglob("*.png")) == []
+
+
+def test_folder_in_filename_is_created(output_dir):
+    assert call_save_images(path="safe", filename="sub/img") == [os.path.join("sub", "img.png")]
+    assert (output_dir / "safe" / "sub" / "img.png").is_file()
+
+
+def test_folder_in_filename_does_not_overwrite(output_dir):
+    call_save_images(path="", filename="sub/img")
+    second = call_save_images(path="", filename="sub/img")
+    assert second == [os.path.join("sub", "img_01.png")]
+    assert sorted(p.name for p in (output_dir / "sub").iterdir()) == ["img.png", "img_01.png"]
 
 
 def test_rejects_traversal_via_json_sidecar(output_dir):
