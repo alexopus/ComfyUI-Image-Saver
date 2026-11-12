@@ -1,3 +1,11 @@
+# v1.27.1
+
+- Civitai lookups can no longer prevent an image from being saved: network errors and unreadable or unexpected `.civitai.info` files now fall back to the plain hashes. Requests time out after 15 seconds instead of 5 minutes, and a failed lookup is not retried for an hour instead of on every saved image.
+- A folder in the filename (e.g. `%date/img`) is now created instead of failing, existing files in it are no longer overwritten, and the UI preview shows the right image.
+- Cached Civitai info for manually added hashes always stays in `models/image-saver`, even if Civitai reports a file name containing a path.
+- Civitai Hash Fetcher: fixed the output becoming a single character when the node ran again with the same inputs.
+- README: AVIF output and how to check and upgrade Pillow for it.
+
 # v1.27.0
 
 - Add `avif` output to Image Saver and Image Saver Simple (#141). Stores the A1111 parameters (EXIF `UserComment`) and the workflow/prompt (EXIF `Make`/`Model`, same layout as ComfyUI's native Save Image (Advanced)), so the file can be dragged back into ComfyUI. Quality comes from `quality_jpeg_or_webp`; alpha is preserved. Needs Pillow >= 11.2 built with AVIF support.
