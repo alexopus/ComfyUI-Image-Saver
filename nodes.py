@@ -466,6 +466,14 @@ class ImageSaver:
     ) -> list[str]:
         filename_prefix = make_filename(filename_pattern, metadata.width, metadata.height, metadata.seed, metadata.modelname, counter, time_format, metadata.sampler_name, metadata.steps, metadata.cfg, metadata.scheduler_name, metadata.denoise, metadata.clip_skip, metadata.custom, label)
 
+        # A filename like "%date/img" puts a folder into the filename: move it to the path, so that folder
+        # gets created and existing files in it are found when picking the numeric suffix (no overwrites)
+        filename_subdir, filename_prefix = os.path.split(filename_prefix)
+        if filename_subdir:
+            path = os.path.join(path, filename_subdir)
+        if not filename_prefix:
+            filename_prefix = get_timestamp(time_format)
+
         output_path = resolve_within_output(path)
 
         if not os.path.exists(output_path):
@@ -489,7 +497,8 @@ class ImageSaver:
             if save_workflow_as_json:
                 save_json(extra_pnginfo, resolve_within_output(path, current_filename_prefix))
 
-            result_paths.append(final_filename)
+            # Relative to the caller's path, for the UI preview
+            result_paths.append(os.path.join(filename_subdir, final_filename))
         return result_paths
 
     # Match 'anything' or 'anything:anything' with trimmed white space
