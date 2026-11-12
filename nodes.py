@@ -113,6 +113,16 @@ def make_pathname(filename: str, width: int, height: int, seed: int, modelname: 
     sanitized_basename = sanitize_filename(basename)
     return os.path.join(directory, sanitized_basename)
 
+def preview_images(path: str, filenames: list[str]) -> list[dict[str, str]]:
+    """UI preview entries for saved files. `filenames` are relative to `path` and may contain a folder
+    (from the filename pattern); ComfyUI's /view only uses the basename of `filename`, so the folder must
+    go into `subfolder`."""
+    entries = []
+    for filename in filenames:
+        subfolder = os.path.normpath(os.path.join(path, os.path.dirname(filename)))
+        entries.append({"filename": os.path.basename(filename), "subfolder": subfolder if subfolder != '.' else '', "type": 'output'})
+    return entries
+
 def make_filename(filename: str, width: int, height: int, seed: int, modelname: str, counter: int, time_format: str, sampler_name: str, steps: int, cfg: float, scheduler_name: str, denoise: float, clip_skip: int, custom: str, label: str = "") -> str:
     filename = make_pathname(filename, width, height, seed, modelname, counter, time_format, sampler_name, steps, cfg, scheduler_name, denoise, clip_skip, custom, label)
     return get_timestamp(time_format) if filename == "" else filename
@@ -331,14 +341,12 @@ class ImageSaverSimple:
 
         filenames = ImageSaver.save_images(images, filename, extension, path, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow, counter, time_format, metadata, label=label)
 
-        subfolder = os.path.normpath(path)
-
         result: dict[str, Any] = {
             "result": (metadata.final_hashes, metadata.a111_params),
         }
 
         if show_preview:
-            result["ui"] = {"images": [{"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'} for filename in filenames]}
+            result["ui"] = {"images": preview_images(path, filenames)}
 
         return result
 
@@ -435,14 +443,12 @@ class ImageSaver:
 
         filenames = ImageSaver.save_images(images, filename, extension, path, quality_jpeg_or_webp, lossless_webp, optimize_png, prompt, extra_pnginfo, save_workflow_as_json, embed_workflow, counter, time_format, metadata, label=label)
 
-        subfolder = os.path.normpath(path)
-
         result: dict[str, Any] = {
             "result": (metadata.final_hashes, metadata.a111_params),
         }
 
         if show_preview:
-            result["ui"] = {"images": [{"filename": filename, "subfolder": subfolder if subfolder != '.' else '', "type": 'output'} for filename in filenames]}
+            result["ui"] = {"images": preview_images(path, filenames)}
 
         return result
 
