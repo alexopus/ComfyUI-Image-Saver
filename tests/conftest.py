@@ -30,6 +30,25 @@ def _stub_module(name: str, **attrs) -> types.ModuleType:
     return module
 
 
+class _StubLoadImage:
+    """Stands in for ComfyUI's LoadImage: returns markers instead of tensors."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"image": (["stub.png"], {"image_upload": True})}}
+
+    def load_image(self, image):
+        return ("IMAGE:" + image, "MASK:" + image)
+
+    @classmethod
+    def IS_CHANGED(cls, image):
+        return "changed:" + image
+
+    @classmethod
+    def VALIDATE_INPUTS(cls, image):
+        return True
+
+
 def _install_comfyui_stubs() -> None:
     _stub_module("torch", Tensor=object)
     _stub_module("tqdm", tqdm=lambda iterable=None, **kw: iterable if iterable is not None else [])
@@ -39,7 +58,7 @@ def _install_comfyui_stubs() -> None:
         supported_pt_extensions={".safetensors", ".ckpt", ".pt"},
         get_full_path=lambda *a, **kw: None,
     )
-    _stub_module("nodes", MAX_RESOLUTION=16384)
+    _stub_module("nodes", MAX_RESOLUTION=16384, LoadImage=_StubLoadImage)
     comfy = _stub_module("comfy")
     comfy.__path__ = []  # mark as a package so `comfy.sd1_clip` resolves under it
     _stub_module(

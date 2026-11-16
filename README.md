@@ -90,6 +90,17 @@ Example:
 | `%F` | YYYY-MM-DD | 2023-11-16 |
 | `%T` | HH:MM:SS | 13:13:31 |
 
+## Reusing metadata from an image
+
+**Load Image with Metadata** works like ComfyUI's Load Image (upload, preview, mask editor, `image` and `mask` outputs) and also reads the generation metadata stored in the file. Use it to keep the original prompt, settings and Civitai resources when saving an upscaled or otherwise processed version:
+
+- `metadata` → connect to the `metadata` input of **Image Saver Simple**. The original A1111 parameters are written unchanged; filename variables like `%seed` use the original values.
+- `positive` / `negative` → the prompts, e.g. for a second sampling pass.
+
+The node shows the metadata as soon as an image is selected, without running the workflow, as a table or as the raw text. Both can be copied.
+
+It reads images saved by Image Saver, A1111/Forge and ComfyUI (PNG, JPEG, WebP, AVIF). For images saved by ComfyUI's own nodes, which store no A1111 parameters, prompts and settings are read from the embedded workflow on a best-effort basis, and the `metadata` output carries no parameters to write. Editing the image in the mask editor creates a copy without the original's metadata; the node warns about that.
+
 ## Optional: Pipe Integration (Advanced Orchestration)
 
 For orchestrating complicated workflows—such as projects involving dozens of character scenarios each with multiple scenes—the standard wiring can become dense. To help manage this, an optional **Pipe** system is available.

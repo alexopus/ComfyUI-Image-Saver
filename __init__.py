@@ -8,6 +8,7 @@ from .nodes_selectors import SamplerSelector, SchedulerSelector, SchedulerSelect
 from .civitai_nodes import CivitaiHashFetcher
 from .random_tag_picker import RandomTagPicker, RandomCharacterPicker, RandomArtistPicker
 from .nodes_vae import VAEForceIndividualImages
+from .nodes_image_loader import LoadImageWithMetadata
 
 NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Checkpoint Loader with Name (Image Saver)": CheckpointLoaderWithName,
@@ -15,6 +16,7 @@ NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Image Saver": ImageSaver,
     "Image Saver Simple": ImageSaverSimple,
     "Image Saver Metadata": ImageSaverMetadata,
+    "Load Image with Metadata (Image Saver)": LoadImageWithMetadata,
     "Make Image Saver Simple Config": MakeImageSaverSimpleConfig,
     "Make Image Saver Metadata Config": MakeImageSaverMetadataConfig,
     "Make Image Saver Pipe": MakeImageSaverPipe,
