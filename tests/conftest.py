@@ -61,6 +61,10 @@ def _install_comfyui_stubs() -> None:
     _stub_module("nodes", MAX_RESOLUTION=16384, LoadImage=_StubLoadImage)
     comfy = _stub_module("comfy")
     comfy.__path__ = []  # mark as a package so `comfy.sd1_clip` resolves under it
+    comfy.samplers = _stub_module("comfy.samplers", KSampler=type("KSampler", (), {
+        "SAMPLERS": ["euler", "euler_ancestral", "dpmpp_2m", "dpmpp_2m_sde"],
+        "SCHEDULERS": ["normal", "karras", "exponential", "simple", "beta"],
+    }))
     _stub_module(
         "comfy.sd1_clip",
         escape_important=lambda *a, **kw: None,

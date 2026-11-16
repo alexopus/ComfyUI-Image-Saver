@@ -4,6 +4,25 @@ import comfy.samplers
 
 from .nodes import ImageSaverSimple, ImageSaverMetadata
 
+ORIGINAL_PLACEHOLDER = "[original]"
+
+def apply_string_edit(new_val: Any, original_val: Any) -> Any:
+    """String edit with the [original] placeholder, shared by the edit nodes:
+    None or exactly "[original]" keeps the value, "[original], more" appends/prepends, other text replaces
+    (empty text erases)."""
+    if new_val is not None:
+        # Fast-fail if the user left the widget completely untouched
+        if new_val == ORIGINAL_PLACEHOLDER:
+            return original_val
+
+        # If they modified it but kept the placeholder (e.g., "[original], masterpiece")
+        if isinstance(new_val, str) and ORIGINAL_PLACEHOLDER in new_val:
+            return new_val.replace(ORIGINAL_PLACEHOLDER, str(original_val) if original_val is not None else "")
+
+        # If they completely replaced the text
+        return new_val
+    return original_val
+
 class MakeImageSaverSimpleConfig:
     """Standalone node for creating Saver Settings (filename, path, extension, etc.)."""
     @classmethod
@@ -149,20 +168,6 @@ class EditImageSaverPipe:
     def edit_pipe(self, pipe: dict[str, Any], **kwargs) -> tuple[dict[str, Any]]:
         metadata_config = pipe["metadata_config"].copy()
         simple_saver_config = pipe["simple_saver_config"].copy()
-
-        def apply_string_edit(new_val: Any, original_val: Any) -> Any:
-            if new_val is not None:
-                # Fast-fail if the user left the widget completely untouched
-                if new_val == "[original]":
-                    return original_val
-
-                # If they modified it but kept the placeholder (e.g., "[original], masterpiece")
-                if isinstance(new_val, str) and "[original]" in new_val:
-                    return new_val.replace("[original]", str(original_val) if original_val is not None else "")
-
-                # If they completely replaced the text
-                return new_val
-            return original_val
 
         # 1. Handle Saver Config Overrides
         for key in ["filename", "path"]:

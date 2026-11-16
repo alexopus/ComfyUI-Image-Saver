@@ -99,6 +99,13 @@ Example:
 
 The node shows the metadata as soon as an image is selected, without running the workflow, as a table or as the raw text. Both can be copied.
 
+To change parts of the metadata before saving, put **Edit Metadata** in between. Only what you change is rewritten in the A1111 parameters; hashes, Civitai resources and all other settings stay as they are, without hashing or Civitai lookups:
+
+- `positive`, `negative`, `modelname`: `[original]` keeps the text, `[original], 4k` appends, other text replaces it, empty text removes it (same as Edit Image Saver Pipe).
+- `seed`, `steps`, `cfg`, `width`, `height`, `denoise`, `clip_skip`, `sampler_name`, `scheduler_name`: only change when connected, e.g. the size of the upscaled image or the denoise of a second pass.
+- `remove_settings`: comma-separated settings to remove, e.g. `Civitai resources, Hashes, Model hash`.
+- `remove_resources`: comma-separated resources to remove from `Hashes`, `Civitai resources` and `Lora hashes`/`TI hashes`, by name (e.g. `EasyNegative`, or the Civitai name shown in the loader's table), hash, Civitai version ID or AIR. Useful after removing embeddings or LoRAs from a prompt; the model's hash stays.
+
 It reads images saved by Image Saver, A1111/Forge and ComfyUI (PNG, JPEG, WebP, AVIF). For images saved by ComfyUI's own nodes, which store no A1111 parameters, prompts and settings are read from the embedded workflow on a best-effort basis, and the `metadata` output carries no parameters to write. Editing the image in the mask editor creates a copy without the original's metadata; the node warns about that.
 
 ## Optional: Pipe Integration (Advanced Orchestration)

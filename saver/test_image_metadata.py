@@ -7,7 +7,7 @@ import pytest
 from PIL import Image, features
 from PIL.PngImagePlugin import PngInfo
 
-from .image_metadata import display_rows, parse_parameters, parse_settings, read_image_metadata
+from .image_metadata import display_rows, edit_parameters, parse_parameters, parse_settings, read_image_metadata
 from .saver import save_image
 
 PARAMETERS = """beautiful scenery, purple galaxy bottle,
@@ -105,3 +105,52 @@ def test_display_rows_format_resources_and_hashes():
     assert rows["Civitai resources"] == "Pony Diffusion V6 XL V6 (type checkpoint)\nSome, Style v2 (type lora, weight 0.8)"
     assert rows["Hashes"] == "LORA:style: 0123456789\nmodel: ABCDEF1234"
     assert rows["Workflow embedded"] == "no"
+
+
+FOREIGN = ('a cat\nNegative prompt: dog\nSteps: 20, Sampler: Euler a, Schedule type: Karras, CFG scale: 7, Seed: 1, '
+           'Lora hashes: "style: 0123456789, other: abcdef", Hashes: {"model": "abc", "LORA:x": "def"}, Version: v1.10.1')
+
+
+def test_edit_parameters_without_changes_returns_input():
+    assert edit_parameters(FOREIGN) is FOREIGN
+
+
+def test_edit_parameters_keeps_untouched_values_verbatim():
+    edited = edit_parameters(FOREIGN, settings={"Seed": "2"})
+    assert edited == FOREIGN.replace("Seed: 1", "Seed: 2")
+
+
+def test_edit_parameters_prompts_remove_and_insert():
+    edited = edit_parameters(FOREIGN, positive="a dog", negative="", settings={"Size": "64x64", "Schedule type": None},
+                             remove=["lora hashes"])
+    assert edited == ('a dog\nSteps: 20, Sampler: Euler a, CFG scale: 7, Seed: 1, '
+                      'Hashes: {"model": "abc", "LORA:x": "def"}, Size: 64x64, Version: v1.10.1')
+
+
+def test_edit_parameters_on_text_without_settings():
+    assert edit_parameters("just a prompt", settings={"Seed": "3"}) == "just a prompt\nSeed: 3"
+
+
+SAVED = ('a cat\nNegative prompt: embedding:EasyNegative, embedding:badhandv4\nSteps: 20, Sampler: Euler, Seed: 1, '
+         'Model hash: 4ecddc97d4, Model: helloart, '
+         'Hashes: {"embed:EasyNegative":"66a7279a88","embed:badhandv4":"5e40d722fc","model":"4ecddc97d4"}, Version: ComfyUI, '
+         'Civitai resources: [{"modelName":"helloArt, Oil","modelVersionId":257926,"type":"checkpoint"},'
+         '{"modelName":"EasyNegative","modelVersionName":"EasyNegative_pt","modelVersionId":9536,"type":"textualinversion","weight":1.0},'
+         '{"modelName":"Deep Negative V1.x","modelVersionId":5637,"type":"textualinversion","weight":1.0}]')
+
+
+def test_remove_resources_by_name_hash_and_version_id():
+    edited = edit_parameters(SAVED, remove_resources=["easynegative", "5e40d722fc", "5637"])
+    assert ('Hashes: {"model":"4ecddc97d4"}, Version: ComfyUI, '
+            'Civitai resources: [{"modelName":"helloArt, Oil","modelVersionId":257926,"type":"checkpoint"}]') in edited
+    assert "Model hash: 4ecddc97d4" in edited
+
+
+def test_remove_resources_drops_emptied_settings_and_keeps_spaced_style():
+    assert "Hashes" not in edit_parameters(SAVED, remove_resources=["EasyNegative", "badhandv4", "4ecddc97d4"])
+    assert edit_parameters(FOREIGN, remove_resources=["x"]) == FOREIGN.replace(', "LORA:x": "def"', "")
+    assert edit_parameters(FOREIGN, remove_resources=["style"]) == FOREIGN.replace('style: 0123456789, ', "")
+
+
+def test_remove_resources_without_matches_changes_nothing():
+    assert edit_parameters(SAVED, remove_resources=["nothing"]) == SAVED

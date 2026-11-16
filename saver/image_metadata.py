@@ -11,7 +11,7 @@ import json
 import os
 import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Iterable
 
 import piexif
 import piexif.helper
@@ -145,6 +145,88 @@ def parse_parameters(parameters: str) -> tuple[str, str, dict[str, Any]]:
     prompts, settings_text = split_parameters(parameters)
     positive, negative = split_prompts(prompts)
     return positive, negative, parse_settings(settings_text)
+
+
+def _dump_like(value: Any, raw: str) -> str:
+    """JSON in the style of the original text: compact (Image Saver) or with spaces (A1111)."""
+    original = decode_setting(raw)
+    for ensure_ascii in (False, True):
+        if json.dumps(original, ensure_ascii=ensure_ascii, separators=(", ", ": ")) == raw:
+            return json.dumps(value, ensure_ascii=ensure_ascii, separators=(", ", ": "))
+        if json.dumps(original, ensure_ascii=ensure_ascii, separators=(",", ":")) == raw:
+            return json.dumps(value, ensure_ascii=ensure_ascii, separators=(",", ":"))
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+
+
+def _matches(names: set[str], *values: Any) -> bool:
+    return any(str(value).strip().casefold() in names for value in values if value not in (None, ""))
+
+
+def prune_resources(key: str, raw: str, names: set[str]) -> str | None:
+    """Remove resources matching `names` (casefolded names, hashes, Civitai version IDs or AIRs) from one setting.
+    Returns the new raw value, the unchanged raw value, or None if nothing is left."""
+    lowered = key.lower()
+    value = decode_setting(raw)
+    if lowered == "hashes" and isinstance(value, dict):
+        # Keys like "embed:EasyNegative" or "LORA:style" match by the name after the prefix
+        kept = {k: v for k, v in value.items() if not _matches(names, k, str(k).split(":", 1)[-1], v)}
+        return raw if len(kept) == len(value) else (_dump_like(kept, raw) if kept else None)
+    if lowered == "civitai resources" and isinstance(value, list):
+        kept = [r for r in value if not (isinstance(r, dict) and _matches(
+            names, r.get("modelName"), r.get("modelVersionName"), r.get("modelVersionId"), r.get("air")))]
+        return raw if len(kept) == len(value) else (_dump_like(kept, raw) if kept else None)
+    if lowered.endswith(" hashes") and isinstance(value, str):
+        # A1111 "Lora hashes"/"TI hashes": "name: hash, name2: hash2"
+        entries = [entry for entry in value.split(",") if entry.strip()]
+        kept = [entry.strip() for entry in entries if not _matches(names, *entry.split(":", 1))]
+        return raw if len(kept) == len(entries) else (json.dumps(", ".join(kept), ensure_ascii=False) if kept else None)
+    if lowered == "model hash" and _matches(names, raw):
+        return None
+    return raw
+
+
+def edit_parameters(parameters: str, positive: str | None = None, negative: str | None = None,
+                    settings: dict[str, str | None] | None = None, remove: Iterable[str] = (),
+                    remove_resources: Iterable[str] = ()) -> str:
+    """Change parts of A1111 parameters in place, keeping everything else as written.
+
+    positive/negative: new prompt, None keeps it (an empty negative drops the "Negative prompt:" line).
+    settings: key -> new raw value text, or None to remove the key. New keys go before "Version" or at the end.
+    remove: keys to remove (case-insensitive).
+    remove_resources: names, hashes, Civitai version IDs or AIRs to remove from "Hashes", "Civitai resources",
+    "Lora hashes"/"TI hashes" and "Model hash" (case-insensitive); emptied settings are removed."""
+    settings = dict(settings or {})
+    removed = {key.strip().lower() for key in remove if key.strip()}
+    resources = {name.strip().casefold() for name in remove_resources if name.strip()}
+    if positive is None and negative is None and not settings and not removed and not resources:
+        return parameters
+
+    prompts, settings_text = split_parameters(parameters)
+    if positive is not None or negative is not None:
+        old_positive, old_negative = split_prompts(prompts)
+        positive = old_positive if positive is None else positive.strip()
+        negative = old_negative if negative is None else negative.strip()
+        prompts = positive + (f"\nNegative prompt: {negative}" if negative else "")
+
+    pairs: list[tuple[str, str]] = []
+    for key, raw in split_settings(settings_text):
+        if key.lower() in removed:
+            continue
+        if key in settings:
+            raw = settings.pop(key)
+            if raw is None:
+                continue
+        if resources:
+            raw = prune_resources(key, raw, resources)
+            if raw is None:
+                continue
+        pairs.append((key, raw))
+    new_pairs = [(key, raw) for key, raw in settings.items() if raw is not None and key.lower() not in removed]
+    insert_at = next((i for i, (key, _) in enumerate(pairs) if key == "Version"), len(pairs))
+    pairs[insert_at:insert_at] = new_pairs
+
+    settings_line = ", ".join(f"{key}: {raw}" for key, raw in pairs)
+    return "\n".join(part for part in (prompts, settings_line) if part)
 
 
 def _is_link(value: Any) -> bool:
