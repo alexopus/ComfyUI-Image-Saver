@@ -1,3 +1,8 @@
+# v1.28.0
+
+- Add "Load Image with Metadata": Load Image plus the generation metadata stored in the file, as `metadata`, `positive` and `negative` outputs. Connect `metadata` to Image Saver Simple to keep the original prompt, settings and Civitai resources when saving a processed version, e.g. an upscale. The node shows the metadata as soon as an image is selected, without running the workflow, as a table or as text, both copyable. Reads PNG, JPEG, WebP and AVIF from Image Saver, A1111/Forge and ComfyUI; for images without A1111 parameters, values are read from the embedded workflow (best effort). Proposed in #143.
+- Add "Edit Metadata": change or remove parts of existing metadata before saving. Only what you change is rewritten; hashes, Civitai resources and other settings stay as they are, without hashing or Civitai lookups. Text fields use the `[original]` placeholder like Edit Image Saver Pipe, numbers and sampler/scheduler only change when connected, `remove_settings` removes settings by name and `remove_resources` removes individual resources by name, hash, Civitai version ID or AIR.
+
 # v1.27.1
 
 - Civitai lookups can no longer prevent an image from being saved: network errors and unreadable or unexpected `.civitai.info` files now fall back to the plain hashes. Requests time out after 15 seconds instead of 5 minutes, and a failed lookup is not retried for an hour instead of on every saved image.
