@@ -3,7 +3,7 @@ from typing import Any
 from .nodes import ImageSaver, ImageSaverSimple, ImageSaverMetadata
 from .nodes_pipe import MakeImageSaverPipe, EditImageSaverPipe, ReadImageSaverPipe, ImageSaverFromPipe, MakeImageSaverSimpleConfig, MakeImageSaverMetadataConfig
 from .nodes_literals import SeedGenerator, StringLiteral, SizeLiteral, IntLiteral, FloatLiteral, CfgLiteral, ConditioningConcatOptional, RandomShapeGenerator, EmptyLatent, TimeStringGenerator
-from .nodes_loaders import CheckpointLoaderWithName, UNETLoaderWithName
+from .nodes_loaders import CheckpointLoaderWithName, GetModelFilename, UNETLoaderWithName
 from .nodes_selectors import SamplerSelector, SchedulerSelector, SchedulerSelectorInspire, SchedulerSelectorEfficiency, InputParameters, AnyToString, WorkflowInputValue
 from .civitai_nodes import CivitaiHashFetcher
 from .random_tag_picker import RandomTagPicker, RandomCharacterPicker, RandomArtistPicker
@@ -14,6 +14,7 @@ from .nodes_metadata_edit import EditMetadata
 NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "Checkpoint Loader with Name (Image Saver)": CheckpointLoaderWithName,
     "UNet loader with Name (Image Saver)": UNETLoaderWithName,
+    "Get Model Filename (Image Saver)": GetModelFilename,
     "Image Saver": ImageSaver,
     "Image Saver Simple": ImageSaverSimple,
     "Image Saver Metadata": ImageSaverMetadata,

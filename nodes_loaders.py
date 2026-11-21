@@ -1,6 +1,9 @@
+from pathlib import Path
+
 import torch
 import folder_paths
 import comfy.sd
+from comfy_api.latest import io
 
 class CheckpointLoaderWithName:
     RETURN_TYPES = ("MODEL", "CLIP", "VAE", "STRING")
@@ -58,3 +61,37 @@ class UNETLoaderWithName:
         unet_path = folder_paths.get_full_path_or_raise("diffusion_models", unet_name)
         model = comfy.sd.load_diffusion_model(unet_path, model_options=model_options)
         return (model, unet_name)
+
+
+class GetModelFilename(io.ComfyNode):
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="Get Model Filename (Image Saver)",
+            display_name="Get Model Filename (Image Saver)",
+            category="ImageSaver/utils",
+            description="Reads the source filename from the connected MODEL after switches and patches. Returns empty text if the loader did not retain a source file.",
+            inputs=[io.Model.Input("model", tooltip="Connect the same MODEL output that feeds your sampler.")],
+            outputs=[io.String.Output("model_name", tooltip="Source filename with extension and any subfolder in the model directory.")],
+        )
+
+    @classmethod
+    def execute(cls, model):
+        # Core checkpoint and diffusion loaders store the source path as the first reload argument.
+        reload_info = getattr(model, "cached_patcher_init", None)
+        if not isinstance(reload_info, tuple) or len(reload_info) < 2:
+            return io.NodeOutput("")
+        args = reload_info[1]
+        if not isinstance(args, tuple) or not args or not isinstance(args[0], (str, Path)) or not args[0]:
+            return io.NodeOutput("")
+
+        path = Path(args[0])
+        if not path.is_absolute():
+            return io.NodeOutput(str(path))
+
+        for folder in ("checkpoints", "diffusion_models"):
+            for directory in folder_paths.get_folder_paths(folder):
+                root = Path(directory).absolute()
+                if path.is_relative_to(root):
+                    return io.NodeOutput(str(path.relative_to(root)))
+        return io.NodeOutput(path.name)
