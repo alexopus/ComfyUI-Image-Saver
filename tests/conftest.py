@@ -65,6 +65,7 @@ def _install_comfyui_stubs() -> None:
         "SAMPLERS": ["euler", "euler_ancestral", "dpmpp_2m", "dpmpp_2m_sde"],
         "SCHEDULERS": ["normal", "karras", "exponential", "simple", "beta"],
     }))
+    comfy.sd = _stub_module("comfy.sd")  # loader functions are monkeypatched per test
     _stub_module(
         "comfy.sd1_clip",
         escape_important=lambda *a, **kw: None,
